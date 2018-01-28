@@ -8,40 +8,69 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 
-# Naive Bayes
-class MultinomialNB:
-    def __init__(self):
+
+class MultinomialNB(nn.Module):
+    def __init__(self, TEXT, LABEL):
+        super(MultinomialNB2, self).__init__()
+        self._TEXT = TEXT
+        self._LABEL = LABEL
+        self._text_vocab_len = len(self._TEXT.vocab)        
         self.n_positive = 0
         self.n_negative = 0
-        self.p = torch.zeros(len(TEXT.vocab))
-        self.q = torch.zeros(len(TEXT.vocab))
-        self.r = 0
-        
-    def get_features(self, case):
-        f = np.zeros(len(TEXT.vocab))
-        for i in case.data:
-            f[i] += 1
-        return torch.Tensor(f)
-    
+        # Smoothing para is 1 for all features
+        self.p = torch.ones(self._text_vocab_len)
+        self.q = torch.ones(self._text_vocab_len)
+        self.r = None
+        self.index_pos = LABEL.vocab.itos.index('positive')
+        self.index_neg = LABEL.vocab.itos.index('negative')
+
+    # could use EmbeddingsBag, but there's not a huge difference in
+    # performance
+    def get_features(self, batch):
+        size_batch = batch.size()[0]
+        features = torch.zeros(size_batch, self._text_vocab_len)
+        for i in range(size_batch):
+            for j in batch[i, :]:
+                features[i, j.data[0]] += 1
+        return features
+        # return torch.Tensor(features)
+
     def train(self, train_iter):
-        for i in range(len(train_iter)):
-            batch = next(iter(train_iter))
+        # There's probably a better way to do this
+        num_iter = len(train_iter)
+        train_iter = iter(train_iter)
+        for i in range(num_iter):
+            batch = next(train_iter)
             if i % 100 == 0:
                 print(i)
-            for i in range(batch.text.size()[1]):
-                fi = self.get_features(batch.text[:,i])
-                if LABEL.vocab.itos[batch.label.data[i]] == "negative":
-                    self.n_negative += 1
-                    self.p += fi
-                elif LABEL.vocab.itos[batch.label.data[i]] == "positive":
-                    self.n_positive += 1
-                    self.q += fi
+            # Should be [N, num-features]
+            features = self.get_features(torch.t(batch.text).contiguous())
+
+            # Using broadcasting
+            inds_pos = torch.nonzero(batch.label.data == self.index_pos)
+            inds_neg = torch.nonzero(batch.label.data == self.index_neg)
+
+
+            if inds_pos.size():
+                self.n_positive += inds_pos.size()[0]
+                self.p = torch.add(self.p, torch.sum(features[inds_pos, :], dim=0))                
+            if inds_neg.size():
+                self.n_negative += inds_neg.size()[0]
+                self.q = torch.add(self.q, torch.sum(features[inds_neg, :], dim=0))
+
+            # print(features)
+            # print(inds_neg, inds_pos)
+            # print(self.p.size(), torch.sum(features, dim=0).size())
+
         self.r = torch.log((self.p / self.p.sum()) / (self.q / self.q.sum()))
         
-    def predict(self, batch_text):
-        for k in range(batch_text.size()[1]):
-            fk = self.get_features(batch.text[:,k])
-            y = self.r * fk + np.log(self.n_positive / self.n_negative)
+    def forward(self, batch):
+        # for k in range(batch_text.size()[1]):
+        features = self.get_features(batch)
+        # Using broadcasting
+        return torch.matmul(features, torch.squeeze(self.r)) + \
+            np.log(self.n_positive / self.n_negative)
+
 
 # Logistic regression; following Torch tutorial
 class LogisticRegressionSlow(nn.Module):
