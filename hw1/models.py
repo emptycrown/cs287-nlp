@@ -44,7 +44,7 @@ class MultinomialNB:
             y = self.r * fk + np.log(self.n_positive / self.n_negative)
 
 # Logistic regression; following Torch tutorial
-class LogisticRegression(nn.Module):
+class LogisticRegressionSlow(nn.Module):
     def __init__(self, TEXT, LABEL):
         super(LogisticRegression, self).__init__()
         # TODO: figure out what the <unk> are!!
@@ -54,12 +54,49 @@ class LogisticRegression(nn.Module):
     def forward(self, bow):
         return F.log_softmax(self.linear(bow), dim=1)
 
+class LogisticRegression(nn.Module):
+    def __init__(self, TEXT, LABEL):
+        super(LogisticRegression2, self).__init__()
+        # Embeddings vectors (should be trainable); [V, d]
+        # TODO: is default for requires_grad True?
+        self.embeddings = nn.EmbeddingBag(len(TEXT.vocab),
+                                          len(TEXT.vocab),
+                                          mode='sum')
+        self.embeddings.weight = nn.Parameter(torch.eye(len(TEXT.vocab)),
+                                              requires_grad=False)
+        # Linear layer
+        self.linear = nn.Linear(len(TEXT.vocab), len(LABEL.vocab))
+        
+    # Here bow is [len-of-sentence, N] -- it is an integer matrix
+    def forward(self, bow):
+        bow_features = self.embeddings(bow)
+        return F.log_softmax(self.linear(bow_features), dim=1)
+    
+class CBOW(nn.Module):
+    def __init__(self, TEXT, LABEL):
+        super(CBOW, self).__init__()
+        # Embeddings vectors (should be trainable); [V, d]
+        # TODO: is default for requires_grad True?
+        self.embeddings = nn.EmbeddingBag(TEXT.vocab.vectors.size()[0],
+                                          TEXT.vocab.vectors.size()[1],
+                                          mode='sum')
+        self.embeddings.weight = nn.Parameter(TEXT.vocab.vectors, requires_grad=True)
+        
+        # Linear layer
+        self.linear = nn.Linear(TEXT.vocab.vectors.size()[1], len(LABEL.vocab))
+        
+    # Here bow is [len-of-sentence, N] -- it is an integer matrix
+    def forward(self, bow):
+        bow_features = self.embeddings(bow)
+        return F.log_softmax(self.linear(bow_features), dim=1)
+    
             
 class TextTrainer(object):
     def __init__(self, TEXT, LABEL, model):
         # NLLLoss works with labels, not 1-hot encoding
         self._loss_fn = nn.NLLLoss()
-        self._optimizer = optim.SGD(model.parameters(), lr=0.1)
+        self._optimizer = optim.SGD(filter(lambda p : p.requires_grad,
+                                           model.parameters()), lr=0.1)
         self._TEXT = TEXT
         self._LABEL = LABEL
         self._text_vocab_len = len(self._TEXT.vocab)
@@ -68,12 +105,14 @@ class TextTrainer(object):
     # TODO: this is horribly slow, can use nn.EmbeddingsBag and put
     # this in LogisticRegression class!
     def get_feature(self, batch):
-        size_batch = batch.text.size()[1]
-        features = torch.zeros(size_batch, self._text_vocab_len)
-        for i in range(size_batch):
-            for j in batch.text[:, i]:
-                features[i, j.data[0]] += 1
-        return features
+        # Need transpose so that batch size is first dimension
+        return torch.t(batch.text.data).contiguous()
+        # size_batch = batch.text.size()[1]
+        # features = torch.zeros(size_batch, self._text_vocab_len)
+        # for i in range(size_batch):
+        #     for j in batch.text[:, i]:
+        #         features[i, j.data[0]] += 1
+        # return features
     
     def get_label(self, batch):
         return batch.label.data
