@@ -28,13 +28,18 @@ def main():
     train_iter, val_iter, test_iter = torchtext.data.BucketIterator.splits(
     (train, val, test), batch_size=10, device=-1)
 
+    if args.model == 'cbow':
+        # Build the vocabulary with word embeddings
+        url = 'https://s3-us-west-1.amazonaws.com/fasttext-vectors/wiki.simple.vec'
+        TEXT.vocab.load_vectors(vectors=Vectors('wiki.simple.vec', url=url))
+
     if args.model == 'nb':
         model = MultinomialNB()
         model.train(train_iter)
     elif args.model == 'lr':
-        model = LogisticRegression()
+        model = LogisticRegression(TEXT, LABEL, model)
         trainer = TextTrainer(TEXT, LABEL)
-        trainer.train(train_iter, model)
+        trainer.train(train_iter)
     elif args.model == 'cbow':
         raise NotImplementedError('CBOW')
     elif args.model == 'cnn':

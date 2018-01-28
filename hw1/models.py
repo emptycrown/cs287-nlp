@@ -48,7 +48,7 @@ class LogisticRegression(nn.Module):
     def __init__(self, TEXT, LABEL):
         super(LogisticRegression, self).__init__()
         # TODO: figure out what the <unk> are!!
-        self.tlinear = nn.Linear(len(TEXT.vocab), len(LABEL.vocab))
+        self.linear = nn.Linear(len(TEXT.vocab), len(LABEL.vocab))
     
     # Here bow is [N, num-features]
     def forward(self, bow):
@@ -56,18 +56,20 @@ class LogisticRegression(nn.Module):
 
             
 class TextTrainer(object):
-    def __init__(self, TEXT, LABEL):
+    def __init__(self, TEXT, LABEL, model):
         # NLLLoss works with labels, not 1-hot encoding
         self._loss_fn = nn.NLLLoss()
         self._optimizer = optim.SGD(model.parameters(), lr=0.1)
         self._TEXT = TEXT
         self._LABEL = LABEL
         self._text_vocab_len = len(self._TEXT.vocab)
-        
+        self._model = model
+
+    # TODO: this is horribly slow, can use nn.EmbeddingsBag and put
+    # this in LogisticRegression class!
     def get_feature(self, batch):
         size_batch = batch.text.size()[1]
         features = torch.zeros(size_batch, self._text_vocab_len)
-        # TODO: find a better way to do this!
         for i in range(size_batch):
             for j in batch.text[:, i]:
                 features[i, j.data[0]] += 1
@@ -79,15 +81,16 @@ class TextTrainer(object):
     def make_loss(self, batch):
         bow = autograd.Variable(self.get_feature(batch))
         label = autograd.Variable(self.get_label(batch))
-        loss = self._loss_fn(model(bow), label)
+        loss = self._loss_fn(self._model(bow), label)
         return loss
     
-    def train(self, train_iter, model):
-        for i in range(10):
+    def train(self, train_iter, num_iter=100, skip_iter=10):
+        for i in range(num_iter):
             batch = next(iter(train_iter))
-            model.zero_grad()
+            self._model.zero_grad()
             loss = self.make_loss(batch)
-            print('Iteration %d, loss: %f' % (i, loss))
+            if i % skip_iter == 0:
+                print('Iteration %d, loss: %f' % (i, loss))
             loss.backward()
             self._optimizer.step()
             
