@@ -54,6 +54,8 @@ class LogisticRegressionSlow(nn.Module):
     def forward(self, bow):
         return F.log_softmax(self.linear(bow), dim=1)
 
+# This ends up not being much faster than LogisticRegressionSlow
+# (perhaps even a bit slower...), but it's more elegant...
 class LogisticRegression(nn.Module):
     def __init__(self, TEXT, LABEL):
         super(LogisticRegression2, self).__init__()
@@ -105,7 +107,8 @@ class TextTrainer(object):
     # TODO: this is horribly slow, can use nn.EmbeddingsBag and put
     # this in LogisticRegression class!
     def get_feature(self, batch):
-        # Need transpose so that batch size is first dimension
+        # Need transpose so that batch size is first dimension; need
+        # contiguous because of the transpose
         return torch.t(batch.text.data).contiguous()
         # size_batch = batch.text.size()[1]
         # features = torch.zeros(size_batch, self._text_vocab_len)
