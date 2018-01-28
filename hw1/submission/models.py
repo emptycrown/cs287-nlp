@@ -11,7 +11,7 @@ import numpy as np
 
 class MultinomialNB(nn.Module):
     def __init__(self, TEXT, LABEL):
-        super(MultinomialNB2, self).__init__()
+        super(MultinomialNB, self).__init__()
         self._TEXT = TEXT
         self._LABEL = LABEL
         self._text_vocab_len = len(self._TEXT.vocab)        
@@ -87,7 +87,7 @@ class LogisticRegressionSlow(nn.Module):
 # (perhaps even a bit slower...), but it's more elegant...
 class LogisticRegression(nn.Module):
     def __init__(self, TEXT, LABEL):
-        super(LogisticRegression2, self).__init__()
+        super(LogisticRegression, self).__init__()
         # Embeddings vectors (should be trainable); [V, d]
         # TODO: is default for requires_grad True?
         self.embeddings = nn.EmbeddingBag(len(TEXT.vocab),

@@ -2,4 +2,7 @@ cs287-s18
 .vector_cache
 *~
 .ipynb_checkpoints/*
+hw1/.ipynb_checkpoints/*
 hw1/__pycache__/*
+hw1/submission/__pycache__/*
+hw1/.data/*
