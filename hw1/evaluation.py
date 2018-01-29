@@ -31,14 +31,14 @@ def model_eval(model, test):
     for batch in test_iter:
         probs = model(torch.t(batch.text).contiguous())
         if len(probs.size()) == 1 or (len(probs.size()) == 2 \
-                                      and probes.size()[1] == 1):
+                                      and probs.size()[1] == 1):
             signs = torch.sign(probs).type(torch.LongTensor)
             classes = (signs + 1) * (model.index_pos - model.index_neg) / 2 + \
                       model.index_neg
             # print(classes, probs)
         else:
             _, argmax = probs.max(1)
-            classes = argmax
+            classes = argmax.data
             
         cnt_total += batch.text.size()[1]
         # print(batch.label == argmax, (batch.label == argmax).sum().data[0])
