@@ -84,10 +84,10 @@ class TextEvaluator(object):
                 _, argmax = probs.max(1)
                 classes = argmax.data
             if i % 100 == 0:
-                print('Iteration %d, predictions:' % (i), list(argmax.data))
-            self._predictions += list(argmax.data)
+                print('Iteration %d, predictions:' % (i), list(classes))
+            self._predictions += list(classes)
 
-            correct += (argmax.data == batch.label.data).sum()
+            correct += (classes == batch.label.data).sum()
             total += len(batch.label.data)
 
         print("Accuracy:", correct, total, correct/total)
@@ -96,5 +96,7 @@ class TextEvaluator(object):
                 f.write("Id,Cat\n")
                 for index,p in enumerate(self._predictions):
                     f.write(str(index) + "," + str(p) + "\n")
+
+            
 
             
