@@ -29,18 +29,38 @@ def model_eval(model, test):
     cnt_correct = 0
     cnt_total = 0
     for batch in test_iter:
-        probs = model(torch.t(batch.text).contiguous())
-        if len(probs.size()) == 1 or (len(probs.size()) == 2 \
-                                      and probs.size()[1] == 1):
-            signs = torch.sign(probs).type(torch.LongTensor)
-            classes = (signs + 1) * (model.index_pos - model.index_neg) / 2 + \
-                      model.index_neg
-            # print(classes, probs)
-        else:
-            _, argmax = probs.max(1)
-            classes = argmax.data
-            
+        classes = get_predictions(model, batch)
         cnt_total += batch.text.size()[1]
         # print(batch.label == argmax, (batch.label == argmax).sum().data[0])
         cnt_correct += (classes == batch.label.data).sum()
     return (cnt_correct, cnt_total)
+
+def get_predictions(model, batch):
+    probs = model(torch.t(batch.text).contiguous())
+    
+    if len(probs.size()) == 1 or (len(probs.size()) == 2 \
+                                  and probs.size()[1] == 1):
+        signs = torch.sign(probs).type(torch.LongTensor)
+        assert(hasattr(model, 'index_pos'))
+        classes = (signs + 1) * (model.index_pos - model.index_neg) / 2 + \
+                  model.index_neg
+        # print(classes, probs)
+    else:
+        _, argmax = probs.max(1)
+        classes = argmax.data
+    return classes
+
+def model_save_predictions(model, test_iter, predictions_file='predictions.txt'):
+    predictions_arr = list()
+    for i,batch in enumerate(test_iter):            
+        # Get predictions
+        predictions = get_predictions(model, batch)
+        # if i % 100 == 0:
+        #     print('Iteration %d, predictions:' % (i), list(predictions))
+        predictions_arr += list(predictions)
+
+        if predictions_file:
+            with open(predictions_file, 'w') as f:
+                f.write('Id,Cat\n')
+                for index,p in enumerate(predictions_arr):
+                    f.write(str(index) + ',' + str(p) + '\n')
