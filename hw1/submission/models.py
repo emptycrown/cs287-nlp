@@ -157,6 +157,6 @@ class CNN(nn.Module):
         x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]  # [(N, out_channels)]*len(kernel_sizes)
         x = torch.cat(x, 1)
 
-        x = self.dropout(x)  # (N, len(Ks)*Co)
+        x = self.dropout(x)  # (N, len(kernet_sizes)*out_channels)
         logit = F.log_softmax(self.fc1(x), dim=1)  # (N, C)
         return logit
