@@ -129,16 +129,17 @@ class CNN(nn.Module):
         C = len(LABEL.vocab)
         in_channels = 1
         out_channels = 100
-        kernel_sizes = [2,3] 
+        kernel_sizes = [3, 4, 5] 
         
         self.embeddings = nn.Embedding(N, D)
         self.embeddings.weight = nn.Parameter(TEXT.vocab.vectors, requires_grad=True)
         
-        # Linear layer
-        self.linear = nn.Linear(TEXT.vocab.vectors.size()[1], len(LABEL.vocab))
-
         # List of convolutional layers
-        self.convs1 = nn.ModuleList([nn.Conv2d(in_channels, out_channels, (K, D)) for K in kernel_sizes])
+        self.convs1 = nn.ModuleList([nn.Conv2d(in_channels,
+                                               out_channels,
+                                               (K, D),
+                                               padding=(K-1, 0)) \
+                                     for K in kernel_sizes])
 
         self.dropout = nn.Dropout(0.5)
         self.fc1 = nn.Linear(len(kernel_sizes)*out_channels, C)
@@ -152,8 +153,8 @@ class CNN(nn.Module):
         x = self.embeddings(x)  # (N, W, D)
 
         x = x.unsqueeze(1)  # (N, in_channels, W, D)
-        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1]  # [(N, out_channels, W), ...]*len(kernel_sizes)
-        x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]  # [(N, out_channels), ...]*len(kernel_sizes)
+        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1]  # [(N, out_channels, W)]*len(kernel_sizes)
+        x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]  # [(N, out_channels)]*len(kernel_sizes)
         x = torch.cat(x, 1)
 
         x = self.dropout(x)  # (N, len(Ks)*Co)

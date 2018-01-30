@@ -23,9 +23,11 @@ def save_test(model, test):
         for u in upload:
             f.write(str(u) + "\n")
 
-def model_eval(model, test):
-    test_iter = torchtext.data.BucketIterator(test, train=False, batch_size=10,
-                                              device=-1)
+def model_eval(model, test, test_iter=None):
+    if test_iter is None:
+        test_iter = torchtext.data.BucketIterator(test, train=False,
+                                                  batch_size=10,
+                                                  device=-1)
     cnt_correct = 0
     cnt_total = 0
     for batch in test_iter:

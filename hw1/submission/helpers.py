@@ -11,10 +11,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class TextTrainer(object):
-    def __init__(self, TEXT, LABEL, model):
+    def __init__(self, TEXT, LABEL, model, optimizer=optim.SGD):
         # NLLLoss works with labels, not 1-hot encoding
         self._loss_fn = nn.NLLLoss()
-        self._optimizer = optim.SGD(filter(lambda p : p.requires_grad,
+        self._optimizer = optimizer(filter(lambda p : p.requires_grad,
                                            model.parameters()), lr=0.1)
         self._TEXT = TEXT
         self._LABEL = LABEL
