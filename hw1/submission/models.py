@@ -121,12 +121,16 @@ class CBOW(nn.Module):
         return F.log_softmax(self.linear(bow_features), dim=1)
     
 class CNN(nn.Module):
-    def __init__(self, TEXT, LABEL):
+    def __init__(self, TEXT, LABEL, do_binary=False):
         super(CNN, self).__init__()
         
         N = TEXT.vocab.vectors.size()[0]
         D = TEXT.vocab.vectors.size()[1]
-        C = len(LABEL.vocab)
+        C = 1 if do_binary else len(LABEL.vocab)
+        if do_binary:
+            self.index_pos = 1
+            self.index_neg = 0
+        self.do_binary = do_binary
         in_channels = 1
         out_channels = 100
         kernel_sizes = [3, 4, 5] 
@@ -158,5 +162,7 @@ class CNN(nn.Module):
         x = torch.cat(x, 1)
 
         x = self.dropout(x)  # (N, len(kernet_sizes)*out_channels)
-        logit = F.log_softmax(self.fc1(x), dim=1)  # (N, C)
-        return logit
+        if not self.do_binary:
+            return F.log_softmax(self.fc1(x), dim=1)  # (N, C)
+        else:
+            return torch.squeeze(self.fc1(x), dim=1)

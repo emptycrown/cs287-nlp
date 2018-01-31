@@ -13,13 +13,15 @@ import matplotlib.pyplot as plt
 class TextTrainer(object):
     def __init__(self, TEXT, LABEL, model, optimizer=optim.SGD):
         # NLLLoss works with labels, not 1-hot encoding
-        self._loss_fn = nn.NLLLoss()
         self._optimizer = optimizer(filter(lambda p : p.requires_grad,
                                            model.parameters()), lr=0.1)
         self._TEXT = TEXT
         self._LABEL = LABEL
         self._text_vocab_len = len(self._TEXT.vocab)
         self._model = model
+        self._do_binary = model.do_binary
+        self._loss_fn = nn.BCEWithLogitsLoss() if self._do_binary \
+                        else nn.NLLLoss()
         
         # For review and assessment
         self._training_losses = []
@@ -36,13 +38,20 @@ class TextTrainer(object):
         #     for j in batch.text[:, i]:
         #         features[i, j.data[0]] += 1
         # return features
-    
-    def get_label(self, batch):
-        return batch.label.data
+
+    @staticmethod
+    def get_label(batch, do_binary):
+        if do_binary:
+            labels = batch.label.data - 1
+            labels[labels < 0] = 0
+            labels = labels.type(torch.FloatTensor)
+        else:
+            labels = batch.label.data
+        return labels
     
     def make_loss(self, batch):
         bow = autograd.Variable(self.get_feature(batch))
-        label = autograd.Variable(self.get_label(batch))
+        label = autograd.Variable(self.get_label(batch, self._do_binary))
         loss = self._loss_fn(self._model(bow), label)
         return loss
     

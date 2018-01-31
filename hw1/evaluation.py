@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
+from submission.helpers import TextTrainer
 
 def save_test(model, test):
     "All models should be able to be run with following command."
@@ -23,7 +24,7 @@ def save_test(model, test):
         for u in upload:
             f.write(str(u) + "\n")
 
-def model_eval(model, test, test_iter=None):
+def model_eval(model, test, test_iter=None, do_binary=False):
     if test_iter is None:
         test_iter = torchtext.data.BucketIterator(test, train=False,
                                                   batch_size=10,
@@ -34,7 +35,7 @@ def model_eval(model, test, test_iter=None):
         classes = get_predictions(model, batch)
         cnt_total += batch.text.size()[1]
         # print(batch.label == argmax, (batch.label == argmax).sum().data[0])
-        cnt_correct += (classes == batch.label.data).sum()
+        cnt_correct += (classes == TextTrainer.get_label(batch, do_binary)).sum()
     return (cnt_correct, cnt_total)
 
 def get_predictions(model, batch):
