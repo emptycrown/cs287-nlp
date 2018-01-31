@@ -1,0 +1,163 @@
+
+\documentclass[11pt]{article}
+
+\usepackage{common}
+\title{HW0: Classification}
+\author{Noah Golowich and Jesse Zhang}
+\begin{document}
+
+\maketitle{}
+\section{Introduction}
+
+In this assignment we experiment with different techniques for sentence sentiment classification. We use the Stanford Sentiment Treebank dataset \cite{socher_recursive_2013}, which consists of sentences ,each of which is labeled either ``positive'' or ``negative'' sentiment. We use a Naive Bayes unigram classifier, a logistic regression model, a continuous bag of words model (using the FastText embeddings \cite{bojanowski_enriching_2016}), and a convolutional neural network.
+
+[TODO: extensions]
+
+
+\section{Problem Description}
+Let $\mcV$ denote the vocabulary and $\mcT = \{ \mbox{pos}, \mbox{neg} \}$ denote the possible labels that can be given to a sentence. We are given a collection of sentences $\mcS = \{ S^1, \ldots, S^N \}$, where each $S^j$ consists of an ordered tuple $(\boldx^j_{1}, \ldots, \boldx^j_{\ell(j)})$ of words. Here $\boldx_i^j \in \{0,1\}^{|\mcV|}$ is a one-hot encoding of the $i$-th word in the $j$-th sentence. Corresponding to each $S^j$ is a label $y^j \in \mcT$. $\ell(j)$ denotes the length of sentence $j$, $1 \leq j \leq N$; sentences can have varying lengths. Our goal is to predict $y^j$ given $S^j$.
+
+
+%In general, homeworks will be specified using informal
+%language. As part of the assignment, we expect you to write-out a
+%definition of the problem and your model in formal language. For this
+%class, we will use the following notation:
+%
+%\begin{itemize}
+%\item $\boldb, \boldm$;  bold letters for vectors.
+%\item $\boldB, \boldM$;  bold capital letters for matrices.
+%\item $\mcB, \mcM$;  script-case for sets.
+%\item $b_i, x_i$; lower case for scalars or indexing into vectors.
+%\end{itemize}
+%
+%
+%For instance in natural language processing, it is common to use
+%discrete sets like $\mcV$ for the vocabulary of the language, or $\mcT$ for a
+%tag set of the language.  We might also want one-hot vectors
+%representing words. These will be of the type
+%$\boldv \in \{0,1\}^{|\mcV|}$. In a note, it is crucial to define the
+%types of all variables that are introduced. The problem description is the
+%right place to do this.
+
+% NLP is also
+% full of sequences. For instance sentences, $w_1, \ldots, w_N$, where
+% here $N$ is a constant length and $w_i \in \mcV$ for all
+% $i \in \{1, \ldots N\}$. If we pretend sentences are all the same
+% length, we can have scoring function over sentences,
+% $s : \mcV^N \mapsto \reals$.  One might be defined as:
+
+% \[ s(w_1, \ldots, w_N) = \sum_{i = 1}^N p(w_i | w_{i-2}, w_{i-1}), \]
+
+% \noindent where $p$ is the bigram probability, which we will cover later in the class.
+
+\section{Model and Algorithms}
+
+Here you specify the model itself. This section should formally
+describe the model used to solve the task proposed in the previous
+section. This section should try to avoid introducing new vocabulary
+or notation, when possible use the notation from the previous section.
+Feel free to use the notation from class, but try to make the note
+understandable as a standalone piece of text.
+
+This section is also a great place to include other material that
+describes the underlying structure and choices of your model, for
+instance here are some example tables and algorithms from full
+research papers:
+
+
+
+\begin{itemize}
+\item diagrams of your model,
+
+  \begin{center}
+    \includegraphics[width=0.4\textwidth]{network}
+  \end{center}
+\item feature tables,
+
+  \begin{center}
+    \begin{tabular}{@{}lll@{}}
+      \toprule
+      &\multicolumn{2}{c}{Mention Features  } \\
+      & Feature & Value Set\\
+      \midrule
+      & Mention Head & $\mcV$ \\
+      & Mention First Word & $\mcV$ \\
+      & Mention Last Word & $\mcV$ \\
+      & Word Preceding Mention & $\mcV$ \\
+      & Word Following Mention & $\mcV$\\
+      & \# Words in Mention & $\{1, 2, \ldots \}$ \\
+      & Mention Type & $\mathcal{T}$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+\item pseudo-code,
+
+  \begin{algorithmic}[1]
+    \Procedure{Linearize}{$x_1\ldots x_N$, $K$, $g$}
+    \State{$B_0 \gets \langle (\langle \rangle, \{1, \ldots, N\}, 0, \boldh_0, \mathbf{0})  \rangle$}
+    \For{$m = 0, \ldots, M-1$ }
+    \For{$k = 1, \ldots, |B_m|$}
+    \For{$i \in \mcR$}
+    \State{$(y, \mcR, s, \boldh) \gets \mathrm{copy}(B_m^{(k)})$}
+    \For{word $w$ in phrase $x_i$}
+    \State{$y \gets y $ append $w$ }
+    \State{$s \gets s + \log q(w, \boldh) $ }
+    \State{$\boldh \gets \delta(w, \boldh)$}
+    \EndFor{}
+    \State{$B_{m+|w_i|} \gets B_{m+|w_i|} + (y, \mcR - i, s,   \boldh)$}
+    \State{keep top-$K$ of $B_{m+|w_i|}$ by $f(x, y) + g(\mcR)$}
+    \EndFor{}
+    \EndFor{}
+    \EndFor{}
+    \State{\Return{$B_{M}^{(k)}$}}
+    \EndProcedure{}
+  \end{algorithmic}
+
+\end{itemize}
+
+
+\section{Experiments}
+
+Finally we end with the experimental section. Each assignment will make clear the main experiments and baselines that you should run. For these experiments you should present a main results table. Here we give a sample Table~\ref{tab:results}. In addition to these results you should describe in words what the table shows and the relative performance of the models.
+
+Besides the main results we will also ask you to present other results
+comparing particular aspects of the models. For instance, for word
+embedding experiments, we may ask you to show a chart of the projected
+word vectors. This experiment will lead to something like
+Figure~\ref{fig:clusters}. This should also be described within the
+body of the text itself.
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llr}
+ \toprule
+ Model &  & Acc. \\
+ \midrule
+ \textsc{Baseline 1} & & 0.45\\
+ \textsc{Baseline 2} & & 2.59 \\
+ \textsc{Model 1} & & 10.59  \\
+ \textsc{Model 2} & &13.42 \\
+ \textsc{Model 3} & & 7.49\\
+ \bottomrule
+\end{tabular}
+\caption{\label{tab:results} Table with the main results.}
+\end{table}
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=6cm]{cluster_viz}
+  \caption{\label{fig:clusters} Sample qualitative chart.}
+\end{figure}
+
+
+\section{Conclusion}
+
+End the write-up with a very short recap of the main experiments and the main results. Describe any challenges you may have faced, and what could have been improved in the model.
+
+\bibliographystyle{apalike}
+\bibliography{CS287-papers}
+
+\end{document}

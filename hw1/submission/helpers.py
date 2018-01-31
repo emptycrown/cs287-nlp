@@ -7,7 +7,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
-
 import matplotlib.pyplot as plt
 
 class TextTrainer(object):
@@ -40,11 +39,11 @@ class TextTrainer(object):
         # return features
 
     @staticmethod
-    def get_label(batch, do_binary):
+    def get_label(batch, do_binary, type_return=torch.FloatTensor):
         if do_binary:
             labels = batch.label.data - 1
             labels[labels < 0] = 0
-            labels = labels.type(torch.FloatTensor)
+            labels = labels.type(type_return)
         else:
             labels = batch.label.data
         return labels
@@ -68,6 +67,7 @@ class TextTrainer(object):
             loss.backward()
             self._optimizer.step()
         if plot:
+            plt.clf()
             plt.plot(np.arange(len(self._training_losses)), self._training_losses)
             plt.title("Training loss over time")
             plt.show()

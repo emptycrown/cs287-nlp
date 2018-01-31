@@ -35,7 +35,8 @@ def model_eval(model, test, test_iter=None, do_binary=False):
         classes = get_predictions(model, batch)
         cnt_total += batch.text.size()[1]
         # print(batch.label == argmax, (batch.label == argmax).sum().data[0])
-        cnt_correct += (classes == TextTrainer.get_label(batch, do_binary)).sum()
+        cnt_correct += (classes == TextTrainer.get_label(batch, do_binary,
+                                                         type_return=torch.LongTensor)).sum()
     return (cnt_correct, cnt_total)
 
 def get_predictions(model, batch):
@@ -47,6 +48,9 @@ def get_predictions(model, batch):
         assert(hasattr(model, 'index_pos'))
         classes = (signs + 1) * (model.index_pos - model.index_neg) / 2 + \
                   model.index_neg
+        # hack here; should be more carefuly about this
+        if hasattr(classes, 'data'):
+            classes = classes.data
         # print(classes, probs)
     else:
         _, argmax = probs.max(1)
