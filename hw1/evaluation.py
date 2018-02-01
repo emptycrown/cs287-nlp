@@ -48,10 +48,13 @@ def get_predictions(model, batch):
         assert(hasattr(model, 'index_pos'))
         classes = (signs + 1) * (model.index_pos - model.index_neg) / 2 + \
                   model.index_neg
-        # hack here; should be more carefuly about this
-        if hasattr(classes, 'data'):
+        # hack here; should be more carefuly about thisy
+        try:
             classes = classes.data
-        # print(classes, probs)
+        except:
+            classes = classes
+            # print('Warning: cannot take data attribute of classes')
+            # print(classes, probs)
     else:
         _, argmax = probs.max(1)
         classes = argmax.data
@@ -62,8 +65,6 @@ def model_save_predictions(model, test_iter, predictions_file='predictions.txt')
     for i,batch in enumerate(test_iter):            
         # Get predictions
         predictions = get_predictions(model, batch)
-        # if i % 100 == 0:
-        #     print('Iteration %d, predictions:' % (i), list(predictions))
         predictions_arr += list(predictions)
 
         if predictions_file:

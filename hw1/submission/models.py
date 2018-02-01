@@ -10,8 +10,9 @@ import numpy as np
 
 
 class MultinomialNB(nn.Module):
-    def __init__(self, TEXT, LABEL):
+    def __init__(self, TEXT, LABEL, bag_or_set='bag'):
         super(MultinomialNB, self).__init__()
+        self._bag_or_set = bag_or_set
         self._TEXT = TEXT
         self._LABEL = LABEL
         self._text_vocab_len = len(self._TEXT.vocab)        
@@ -31,7 +32,13 @@ class MultinomialNB(nn.Module):
         features = torch.zeros(size_batch, self._text_vocab_len)
         for i in range(size_batch):
             for j in batch[i, :]:
-                features[i, j.data[0]] += 1
+                if self._bag_or_set == 'bag':
+                    features[i, j.data[0]] += 1
+                elif self._bag_or_set == 'set':
+                    features[i, j.data[0]] = 1
+                else:
+                    raise ValueError('Invalid value for bag_or_set: %s' % \
+                                     self._bag_or_set)
         return features
         # return torch.Tensor(features)
 
@@ -103,14 +110,15 @@ class LogisticRegression(nn.Module):
         return F.log_softmax(self.linear(bow_features.float()), dim=1)
     
 class CBOW(nn.Module):
-    def __init__(self, TEXT, LABEL):
+    def __init__(self, TEXT, LABEL, dynamic=True):
         super(CBOW, self).__init__()
         # Embeddings vectors (should be trainable); [V, d]
         # TODO: is default for requires_grad True?
         self.embeddings = nn.EmbeddingBag(TEXT.vocab.vectors.size()[0],
                                           TEXT.vocab.vectors.size()[1],
                                           mode='sum')
-        self.embeddings.weight = nn.Parameter(TEXT.vocab.vectors, requires_grad=True)
+        self.embeddings.weight = nn.Parameter(TEXT.vocab.vectors,
+                                              requires_grad=dynamic)
         
         # Linear layer
         self.linear = nn.Linear(TEXT.vocab.vectors.size()[1], len(LABEL.vocab))
@@ -121,8 +129,11 @@ class CBOW(nn.Module):
         return F.log_softmax(self.linear(bow_features), dim=1)
     
 class CNN(nn.Module):
-    def __init__(self, TEXT, LABEL, do_binary=False):
+    def __init__(self, TEXT, LABEL, do_binary=False, activation=F.relu):
         super(CNN, self).__init__()
+
+        # Save parameters:
+        self.activation = activation
         
         N = TEXT.vocab.vectors.size()[0]
         D = TEXT.vocab.vectors.size()[1]
@@ -157,7 +168,7 @@ class CNN(nn.Module):
         x = self.embeddings(x)  # (N, W, D)
 
         x = x.unsqueeze(1)  # (N, in_channels, W, D)
-        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1]  # [(N, out_channels, W)]*len(kernel_sizes)
+        x = [self.activation(conv(x)).squeeze(3) for conv in self.convs1]  # [(N, out_channels, W)]*len(kernel_sizes)
         x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]  # [(N, out_channels)]*len(kernel_sizes)
         x = torch.cat(x, 1)
 

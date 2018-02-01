@@ -10,15 +10,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class TextTrainer(object):
-    def __init__(self, TEXT, LABEL, model, optimizer=optim.SGD):
+    def __init__(self, TEXT, LABEL, model, optimizer=optim.SGD, lrt=0.1):
         # NLLLoss works with labels, not 1-hot encoding
         self._optimizer = optimizer(filter(lambda p : p.requires_grad,
-                                           model.parameters()), lr=0.1)
+                                           model.parameters()), lr=lrt)
         self._TEXT = TEXT
         self._LABEL = LABEL
         self._text_vocab_len = len(self._TEXT.vocab)
         self._model = model
-        self._do_binary = model.do_binary
+        if hasattr(model, 'do_binary'):
+            self._do_binary = model.do_binary
+        else:
+            self._do_binary = False
         self._loss_fn = nn.BCEWithLogitsLoss() if self._do_binary \
                         else nn.NLLLoss()
         
