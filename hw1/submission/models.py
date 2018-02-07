@@ -129,7 +129,8 @@ class CBOW(nn.Module):
         return F.log_softmax(self.linear(bow_features), dim=1)
     
 class CNN(nn.Module):
-    def __init__(self, TEXT, LABEL, do_binary=False, activation=F.relu):
+    def __init__(self, TEXT, LABEL, do_binary=False, activation=F.relu,
+                 train_embeddings=True):
         super(CNN, self).__init__()
 
         # Save parameters:
@@ -147,7 +148,7 @@ class CNN(nn.Module):
         kernel_sizes = [3, 4, 5] 
         
         self.embeddings = nn.Embedding(N, D)
-        self.embeddings.weight = nn.Parameter(TEXT.vocab.vectors, requires_grad=True)
+        self.embeddings.weight = nn.Parameter(TEXT.vocab.vectors, requires_grad=train_embeddings)
         
         # List of convolutional layers
         self.convs1 = nn.ModuleList([nn.Conv2d(in_channels,
@@ -158,11 +159,6 @@ class CNN(nn.Module):
 
         self.dropout = nn.Dropout(0.5)
         self.fc1 = nn.Linear(len(kernel_sizes)*out_channels, C)
-
-    def conv_and_pool(self, x, conv):
-        x = F.relu(conv(x)).squeeze(3)  # (N, out_channels, W)
-        x = F.max_pool1d(x, x.size(2)).squeeze(2)
-        return x
 
     def forward(self, x):
         x = self.embeddings(x)  # (N, W, D)
