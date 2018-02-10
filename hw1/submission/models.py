@@ -123,7 +123,7 @@ class CBOW(nn.Module):
         # Linear layer
         self.linear = nn.Linear(TEXT.vocab.vectors.size()[1], len(LABEL.vocab))
         
-    # Here bow is [len-of-sentence, N] -- it is an integer matrix
+    # Here bow is [N, len-of-sentence] -- it is an integer matrix
     def forward(self, bow):
         bow_features = self.embeddings(bow)
         return F.log_softmax(self.linear(bow_features), dim=1)
