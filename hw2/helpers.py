@@ -35,10 +35,16 @@ class LangEvaluator(object):
         return np.exp(sum_nll / cnt_nll)
 
 
+# THIS IS NOT THE MOST UP-TO-DATE: see HW3-models-Noah FOR THE MOST
+# UP-TO-DATE VERSION OF THIS CLASS!
 class LangTrainer(object):
     def __init__(self, TEXT, model, **kwargs):
         self._TEXT = TEXT
         self._model = model
+        optimizer = kwargs.get('optimizer', optim.SGD)
+        self._optimizer = optimizer(filter(lambda p : p.requires_grad,
+                                           model.parameters()),
+                                    lr=kwargs.get('lr', 0.1))
     
     # Here batch is output from a RNN/NNLM/Trigram model:
     # [..., size_vocab], and output are the real words: [...]
