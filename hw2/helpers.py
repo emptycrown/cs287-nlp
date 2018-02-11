@@ -136,31 +136,33 @@ class LangTrainer(object):
 
     # le is a LangEvaluator, and if supplied must have a val_iter
     # along with it
-    def train(self, train_iter, le=None, val_iter=None,
+    def train(self, torch_train_iter, le=None, val_iter=None,
               **kwargs):
         start_time = time.time()
-        train_iter = iter(train_iter)
-        for i in range(kwargs.get('num_iter', 100)):
+        for epoch in range(kwargs.get('num_iter', 100)):
             # Learning rate decay, if any
             self.scheduler.step()
-            
-            batch = next(train_iter)
-            self.model.zero_grad()
-            loss = self.make_loss(batch)
+            train_iter = iter(torch_train_iter)
 
-            if self.clip_norm > 0:
-                # Norm clipping: returns a float
-                norm = nn.utils.clip_grad_norm(filter(lambda p : p.requires_grad,
-                                                      self.model.parameters()), self.clip_norm)
-                self.training_norms.append(norm)
-            else:
-                self.training_norms.append(-1)
-            # Do gradient updates
-            loss.backward()
-            self._optimizer.step()
+            for batch in train_iter:
+                self.model.zero_grad()
+                loss = self.make_loss(batch)
+
+                if self.clip_norm > 0:
+                    # Norm clipping: returns a float
+                    norm = nn.utils.clip_grad_norm(
+                        filter(lambda p : p.requires_grad,
+                               self.model.parameters()), self.clip_norm)
+                    self.training_norms.append(norm)
+                else:
+                    self.training_norms.append(-1)
+                    
+                # Do gradient updates
+                loss.backward()
+                self._optimizer.step()
 
             # Logging, early stopping
-            if i % kwargs.get('skip_iter', 10) == 0:
+            if epoch % kwargs.get('skip_iter', 1) == 0:
                 # Update training_losses
                 if self.cuda:
                     self.training_losses.append(loss.data.cpu().numpy()[0])
@@ -168,14 +170,14 @@ class LangTrainer(object):
                     self.training_losses.append(loss.data.numpy()[0])
 
                 # Logging
-                print('Iteration %d, loss: %f, norm: %f, elapsed: %f, lrn_rate: %f' \
-                      % (i, self.training_losses[-1],
+                print('Epoch %d, loss: %f, norm: %f, elapsed: %f, lrn_rate: %f' \
+                      % (epoch, self.training_losses[-1],
                          self.training_norms[-1],
                          time.time() - start_time,
-                         self.base_lrn_rate * self.lambda_lr(i)))
+                         self.base_lrn_rate * self.lambda_lr(epoch)))
                 if (not le is None) and (not val_iter is None):
                     self.val_perfs.append(le.evaluate(val_iter))
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
-                
-                
+
+
