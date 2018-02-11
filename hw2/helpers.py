@@ -58,7 +58,7 @@ class LangTrainer(object):
         optimizer = kwargs.get('optimizer', optim.SGD)
         self._optimizer = optimizer(filter(lambda p : p.requires_grad,
                                            model.parameters()),
-                                    lr=kwargs.get('lr', 0.1))        
+                                    lr=kwargs.get('lrn_rate', 0.1))        
         self.cuda = kwargs.get('cuda', True) and \
             torch.cuda.is_available()
         if self.cuda:

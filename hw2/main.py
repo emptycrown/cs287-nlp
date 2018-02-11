@@ -24,6 +24,9 @@ def parse_input():
     parser.add_argument('--bptt_len', type=int, default=32)
     parser.add_argument('--early_stop', action='store_true', default=False)
 
+    # Arguments for LangTrainer:
+    parser.add_argument('--t_lrn_rate', type=float, default=0.1)
+    
     # Process of training args:
     parser.add_argument('--tt_num_iter', type=int, default=100)
     parser.add_argument('--tt_skip_iter', type=int, default=10)
@@ -36,6 +39,7 @@ def prepare_kwargs(args, root):
     for key in args_dict:
         root_len = len(root) + 1
         if key[:root_len] == root + '_':
+            print('Argument: %s, Value: %s' % (key, args_dict[key]))
             ret_dict[key[root_len:]] = args_dict[key]
     return ret_dict
 
