@@ -22,7 +22,7 @@ def parse_input():
                         default=['nnlm'])
     parser.add_argument('--batch_sz', type=int, default=10)
     parser.add_argument('--bptt_len', type=int, default=32)
-    parser.add_argument('--early_stop', action='store_true', default=True)
+    parser.add_argument('--early_stop', action='store_true', default=False)
 
     # Process of training args:
     parser.add_argument('--tt_num_iter', type=int, default=100)
