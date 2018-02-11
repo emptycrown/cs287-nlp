@@ -64,7 +64,7 @@ class Trigram(nn.Module):
         # case_sums = torch.sum(ret_arr, dim=2, keepdim=True)
         # print(torch.sum(case_sums, dim=2))
         # Using broadcasting
-        return torch.log(ret_arr)
+        return autograd.Variable(torch.log(ret_arr))
                 
     # Batch is an torch tensor of size [batch_size, bptt_len]
     def update_trigram_cnts(self, batch):
