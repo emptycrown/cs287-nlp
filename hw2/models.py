@@ -91,7 +91,6 @@ class NNLM(nn.Module):
 
         # Save parameters:
         self.activation = kwargs.get('activation', F.tanh)
-        self.direct_cxn = kwargs.get('direct_cxn', False)
         
         # V is size of vocab, D is dim of embedding
         V = TEXT.vocab.vectors.size()[0]
@@ -107,20 +106,21 @@ class NNLM(nn.Module):
             self.embeddings = nn.Embedding(V, D, max_norm=max_embed_norm)
         
         in_channels = 1
-        out_channels = 60
-        self.kernel_sizes_inner = [6] 
-        self.kernel_size_direct = 6
+        out_channels = kwargs.get('hidden_size', 100)
+        self.kernel_sizes_inner = [kwargs.get('kern_size_inner', 5)] 
+        self.kernel_size_direct = kwargs.get('kern_size_direct', -1)
 
         # List of convolutional layers
         self.convs_inner = nn.ModuleList(
             [nn.Conv2d(in_channels, out_channels, (K, D),
                        padding=(K, 0)) for K in self.kernel_sizes_inner])
-        # Bias is already in self.linear, so don't put another here
-        self.conv_direct = nn.Conv2d(
-            in_channels, V, (self.kernel_size_direct, D),
-            padding=(self.kernel_size_direct,0), bias=False)
+        if self.kernel_size_direct > 0:
+            # Bias is already in self.linear, so don't put another here
+            self.conv_direct = nn.Conv2d(
+                in_channels, V, (self.kernel_size_direct, D),
+                padding=(self.kernel_size_direct,0), bias=False)
 
-        self.dropout = nn.Dropout(kwargs.get('dropout', 0.5))
+        self.dropout = nn.Dropout(kwargs.get('dropout', 0.25))
         
         self.linear = nn.Linear(len(self.kernel_sizes_inner) * out_channels, V)
     
@@ -137,13 +137,13 @@ class NNLM(nn.Module):
         # [btch_sz, sent_len, out_channels * len(kerns)]
         x = x.permute(0, 2, 1)
         
-        # x = self.dropout(x) # Bengio et al. doesn't mention dropout 
+        x = self.dropout(x) # Bengio et al. doesn't mention dropout 
         # (it hadn't been 'discovered')
         
         # [btch_sz, sent_len, V]
         x = self.linear(x) # has a bias term
         
-        if self.direct_cxn:
+        if self.kernel_size_direct > 0:
             # [btch_sz, V, sent_len]
             y = self.conv_direct(x)[:,:,:-(self.kernel_size_direct+1)]
             # [btch_sz, sent_len, V]

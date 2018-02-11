@@ -66,7 +66,7 @@ class LangTrainer(object):
         if lr_decay_opt == 'none':
             self.lambda_lr = lambda i : 1
         elif lr_decay_opt == 'invlin':
-            decay_rate = kwargs.get('lrn_decay_rate', 0.001)
+            decay_rate = kwargs.get('lrn_decay_rate', 0.1)
             self.lambda_lr = lambda i : 1 / (1 + i * decay_rate)
         else:
             raise ValueError('Invalid learning rate decay option: %s' \
@@ -142,6 +142,7 @@ class LangTrainer(object):
         for epoch in range(kwargs.get('num_iter', 100)):
             # Learning rate decay, if any
             self.scheduler.step()
+            torch_train_iter.init_epoch()
             train_iter = iter(torch_train_iter)
 
             for batch in train_iter:
