@@ -13,7 +13,8 @@ from helpers import *
 import argparse
 
 NET_NAMES = {'trigram' : Trigram,
-             'nnlm' : NNLM}
+             'nnlm' : NNLM,
+             'lstmlm' : LSTMLM}
 
 OPT_NAMES = {'sgd' : optim.SGD,
              'adam' : optim.Adam,

@@ -158,7 +158,7 @@ class LSTMLM(nn.Module):
         super(LSTMLM, self).__init__()
         
         # Save parameters:
-        self.hidden_dim = kwargs.get('hidden_dim', 50)
+        self.hidden_dim = kwargs.get('hidden_dim', 650)
         
         # V is size of vocab, D is dim of embedding
         V = TEXT.vocab.vectors.size()[0]
