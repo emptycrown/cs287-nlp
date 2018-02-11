@@ -15,7 +15,9 @@ class LangEvaluator(object):
         self.model = model
         self.eval_metric = kwargs.get('evalmetric', 'perplexity')
         self.cuda = kwargs.get('cuda', True) and \
-            torch.cuda.is_available()        
+            torch.cuda.is_available()
+        if self.cuda:
+            print('Using CUDA for evaluation...')
         
     def evaluate(self, test_iter, num_iter=None, use_variable=True):
         start_time = time.time()

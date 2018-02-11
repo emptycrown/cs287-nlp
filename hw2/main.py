@@ -22,6 +22,11 @@ def parse_input():
                         default=['nnlm'])
     parser.add_argument('--batch_sz', type=int, default=10)
     parser.add_argument('--bptt_len', type=int, default=32)
+    parser.add_argument('--early_stop', action='store_true', default=True)
+
+    # Process of training args:
+    parser.add_argument('--tt_num_iter', type=int, default=100)
+    parser.add_argument('--tt_skip_iter', type=int, default=10)
     args = parser.parse_args()
     return args
 
@@ -29,8 +34,9 @@ def prepare_kwargs(args, root):
     ret_dict = dict()
     args_dict = vars(args)
     for key in args_dict:
-        if key[:2] == root + '_':
-            ret_dict[key[2:]] = args_dict[key]
+        root_len = len(root) + 1
+        if key[:root_len] == root + '_':
+            ret_dict[key[root_len:]] = args_dict[key]
     return ret_dict
 
 # train_val_test is a tuple of those datasets
@@ -41,8 +47,12 @@ def train_network(net_name, args, TEXT, train_val_test):
     train_iter, val_iter, test_iter = torchtext.data.BPTTIterator.splits(
         train_val_test, batch_size=args.batch_sz, device=-1,
         bptt_len=args.bptt_len, repeat=False)
-
-    trainer.train(train_iter)
+    if args.early_stop:
+        le = LangEvaluator(model, TEXT)
+        trainer.train(train_iter, le=le, val_iter=val_iter,
+                      **prepare_kwargs(args, 'tt'))
+    else:
+        trainer.train(train_iter, **prepare_kwargs(args, 'tt'))
 
 
 def main(args):
