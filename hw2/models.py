@@ -83,3 +83,66 @@ class Trigram(nn.Module):
                                                  n > 0 else torch.ones(self._text_vocab_len)
                     # Here's where we increment the ocunt
                     self.cnts[n][dict_key][batch[j, k+n]] += 1    
+
+
+class NNLM(nn.Module):
+    def __init__(self, TEXT, **kwargs):
+        super(NNLM, self).__init__()
+
+        # Save parameters:
+        self.activation = kwargs.get('activation', F.tanh)
+        self.direct_cxn = kwargs.get('direct_cxn', False)
+        
+        # V is size of vocab, D is dim of embedding
+        V = TEXT.vocab.vectors.size()[0]
+        D = TEXT.vocab.vectors.size()[1]
+        self.embeddings = nn.Embedding(V, D)
+        self.embeddings.weight = nn.Parameter(
+            TEXT.vocab.vectors, requires_grad= \
+            kwargs.get('train_embeddings', True))
+        
+        in_channels = 1
+        out_channels = 60
+        self.kernel_sizes_inner = [6] 
+        self.kernel_size_direct = 6
+
+        # List of convolutional layers
+        self.convs_inner = nn.ModuleList(
+            [nn.Conv2d(in_channels, out_channels, (K, D),
+                       padding=(K, 0)) for K in self.kernel_sizes_inner])
+        
+        self.conv_direct = nn.Conv2d(
+            in_channels, V, (self.kernel_size_direct, D),
+            padding=(self.kernel_size_direct,0))
+
+        self.dropout = nn.Dropout(kwargs.get('dropout', 0.5))
+        
+        self.linear = nn.Linear(len(self.kernel_sizes_inner) * out_channels, V)
+    
+    # x is [batch_sz, sent_len]: words are encoded as integers (indices)
+    def forward(self, x):
+        x = self.embeddings(x) # [btch_sz, sent_len, D]
+        x = x.unsqueeze(1) # [btch_sz, in_channels, sent_len, D]
+        # [btch_sz, out_channels, sent_len] * len(kerns)
+        x = [self.activation(conv(x)).squeeze(3)\
+             [:,:,:-(self.kernel_sizes_inner[i]+1)] for \
+             i,conv in enumerate(self.convs_inner)]
+        # [btch_sz, out_channels * len(kerns), sent_len]
+        x = torch.cat(x, 1)
+        # [btch_sz, sent_len, out_channels * len(kerns)]
+        x = x.permute(0, 2, 1)
+        
+        # x = self.dropout(x) # Bengio et al. doesn't mention dropout 
+        # (it hadn't been 'discovered')
+        
+        # [btch_sz, sent_len, V]
+        x = self.linear(x) # has a bias term
+        
+        if self.direct_cxn:
+            # [btch_sz, V, sent_len]
+            y = self.conv_direct(x)[:,:,:-(self.kernel_size_direct+1)]
+            # [btch_sz, sent_len, V]
+            y = y.permute(0, 2, 1)
+            x = x + y # Should be overloaded
+            
+        return F.log_softmax(x, dim=2)        
