@@ -1,0 +1,278 @@
+Setting 1 of parameters
+Namespace(batch_sz=1, bptt_len=1000, early_stop=True, m_hidden_size=100, m_kern_size_inner=4, m_word_features=100, t_lrn_decay='invlin', t_lrn_decay_rate=0.05, t_lrn_rate=0.0005, t_optimizer='adam', tt_num_iter=100000)
+Namespace(batch_sz=1, bptt_len=1000, debug=False, early_stop=True, m_hidden_size=100, m_kern_size_direct=-1, m_kern_size_inner=4, m_pretrain_embeddings=False, m_word_features=100, network='nnlm', t_clip_norm=-1, t_lrn_decay='invlin', t_lrn_decay_rate=0.05, t_lrn_rate=0.0005, t_optimizer='adam', tt_num_iter=100000, tt_skip_iter=1)
+Argument: m_kern_size_inner, Value: 4
+Argument: m_kern_size_direct, Value: -1
+Argument: m_pretrain_embeddings, Value: False
+Argument: m_word_features, Value: 100
+Argument: m_hidden_size, Value: 100
+Argument: t_optimizer, Value: adam
+Argument: t_clip_norm, Value: -1
+Argument: t_lrn_decay_rate, Value: 0.05
+Argument: t_lrn_rate, Value: 0.0005
+Argument: t_lrn_decay, Value: invlin
+Using CUDA...
+Using CUDA for evaluation...
+Argument: tt_skip_iter, Value: 1
+Argument: tt_num_iter, Value: 100000
+Epoch 0, loss: 5.983182, norm: -1.000000, elapsed: 11.423575, lrn_rate: 0.000500
+Validation time: 0.302844 seconds
+Validation set metric: 423.465154
+Epoch 1, loss: 5.697524, norm: -1.000000, elapsed: 22.369431, lrn_rate: 0.000476
+Validation time: 0.311984 seconds
+Validation set metric: 330.911239
+Epoch 2, loss: 5.536030, norm: -1.000000, elapsed: 33.264287, lrn_rate: 0.000455
+Validation time: 0.296591 seconds
+Validation set metric: 288.060029
+Epoch 3, loss: 5.439905, norm: -1.000000, elapsed: 44.404859, lrn_rate: 0.000435
+Validation time: 0.305976 seconds
+Validation set metric: 262.186490
+Epoch 4, loss: 5.370405, norm: -1.000000, elapsed: 55.351884, lrn_rate: 0.000417
+Validation time: 0.301955 seconds
+Validation set metric: 244.951685
+Epoch 5, loss: 5.265177, norm: -1.000000, elapsed: 66.283643, lrn_rate: 0.000400
+Validation time: 0.303320 seconds
+Validation set metric: 232.457445
+Epoch 6, loss: 5.200057, norm: -1.000000, elapsed: 77.282266, lrn_rate: 0.000385
+Validation time: 0.304838 seconds
+Validation set metric: 223.036412
+Epoch 7, loss: 5.180775, norm: -1.000000, elapsed: 88.265680, lrn_rate: 0.000370
+Validation time: 0.300808 seconds
+Validation set metric: 215.747589
+Epoch 8, loss: 5.160449, norm: -1.000000, elapsed: 99.356990, lrn_rate: 0.000357
+Validation time: 0.294479 seconds
+Validation set metric: 209.926485
+Epoch 9, loss: 5.142313, norm: -1.000000, elapsed: 110.521681, lrn_rate: 0.000345
+Validation time: 0.307151 seconds
+Validation set metric: 205.133150
+Epoch 10, loss: 5.069344, norm: -1.000000, elapsed: 121.542120, lrn_rate: 0.000333
+Validation time: 0.308601 seconds
+Validation set metric: 201.177772
+Epoch 11, loss: 5.060883, norm: -1.000000, elapsed: 132.638401, lrn_rate: 0.000323
+Validation time: 0.312845 seconds
+Validation set metric: 197.825940
+Epoch 12, loss: 5.003371, norm: -1.000000, elapsed: 143.697031, lrn_rate: 0.000313
+Validation time: 0.304192 seconds
+Validation set metric: 194.898105
+Epoch 13, loss: 4.981893, norm: -1.000000, elapsed: 154.775439, lrn_rate: 0.000303
+Validation time: 0.299502 seconds
+Validation set metric: 192.543040
+Epoch 14, loss: 4.987592, norm: -1.000000, elapsed: 165.935563, lrn_rate: 0.000294
+Validation time: 0.302608 seconds
+Validation set metric: 190.304127
+Epoch 15, loss: 4.977456, norm: -1.000000, elapsed: 177.154178, lrn_rate: 0.000286
+Validation time: 0.296086 seconds
+Validation set metric: 188.357870
+Epoch 16, loss: 4.925376, norm: -1.000000, elapsed: 188.200230, lrn_rate: 0.000278
+Validation time: 0.299693 seconds
+Validation set metric: 186.751197
+Epoch 17, loss: 4.862820, norm: -1.000000, elapsed: 199.285858, lrn_rate: 0.000270
+Validation time: 0.300026 seconds
+Validation set metric: 185.281771
+Epoch 18, loss: 4.845707, norm: -1.000000, elapsed: 210.349534, lrn_rate: 0.000263
+Validation time: 0.304534 seconds
+Validation set metric: 183.946424
+Epoch 19, loss: 4.842885, norm: -1.000000, elapsed: 221.430241, lrn_rate: 0.000256
+Validation time: 0.301141 seconds
+Validation set metric: 182.733348
+Epoch 20, loss: 4.859344, norm: -1.000000, elapsed: 232.553666, lrn_rate: 0.000250
+Validation time: 0.318672 seconds
+Validation set metric: 181.674523
+Epoch 21, loss: 4.792699, norm: -1.000000, elapsed: 243.639163, lrn_rate: 0.000244
+Validation time: 0.309705 seconds
+Validation set metric: 180.670624
+Epoch 22, loss: 4.808515, norm: -1.000000, elapsed: 254.694169, lrn_rate: 0.000238
+Validation time: 0.345472 seconds
+Validation set metric: 179.821338
+Epoch 23, loss: 4.795509, norm: -1.000000, elapsed: 265.831459, lrn_rate: 0.000233
+Validation time: 0.299596 seconds
+Validation set metric: 179.017431
+Epoch 24, loss: 4.793108, norm: -1.000000, elapsed: 276.930873, lrn_rate: 0.000227
+Validation time: 0.303321 seconds
+Validation set metric: 178.296437
+Epoch 25, loss: 4.750309, norm: -1.000000, elapsed: 288.045380, lrn_rate: 0.000222
+Validation time: 0.310168 seconds
+Validation set metric: 177.581175
+Epoch 26, loss: 4.720407, norm: -1.000000, elapsed: 299.134873, lrn_rate: 0.000217
+Validation time: 0.311267 seconds
+Validation set metric: 176.949772
+Epoch 27, loss: 4.700387, norm: -1.000000, elapsed: 310.213440, lrn_rate: 0.000213
+Validation time: 0.295369 seconds
+Validation set metric: 176.327506
+Epoch 28, loss: 4.713160, norm: -1.000000, elapsed: 321.299877, lrn_rate: 0.000208
+Validation time: 0.302664 seconds
+Validation set metric: 175.847663
+Epoch 29, loss: 4.717082, norm: -1.000000, elapsed: 332.355378, lrn_rate: 0.000204
+Validation time: 0.302969 seconds
+Validation set metric: 175.375081
+Epoch 30, loss: 4.684994, norm: -1.000000, elapsed: 343.386472, lrn_rate: 0.000200
+Validation time: 0.309009 seconds
+Validation set metric: 174.921596
+Epoch 31, loss: 4.676775, norm: -1.000000, elapsed: 354.497899, lrn_rate: 0.000196
+Validation time: 0.297104 seconds
+Validation set metric: 174.522648
+Epoch 32, loss: 4.671993, norm: -1.000000, elapsed: 365.547754, lrn_rate: 0.000192
+Validation time: 0.310931 seconds
+Validation set metric: 174.163648
+Epoch 33, loss: 4.659085, norm: -1.000000, elapsed: 376.636742, lrn_rate: 0.000189
+Validation time: 0.297671 seconds
+Validation set metric: 173.771330
+Epoch 34, loss: 4.680308, norm: -1.000000, elapsed: 387.661805, lrn_rate: 0.000185
+Validation time: 0.324310 seconds
+Validation set metric: 173.444931
+Epoch 35, loss: 4.657198, norm: -1.000000, elapsed: 398.760554, lrn_rate: 0.000182
+Validation time: 0.312350 seconds
+Validation set metric: 173.147047
+Epoch 36, loss: 4.648176, norm: -1.000000, elapsed: 409.830933, lrn_rate: 0.000179
+Validation time: 0.302870 seconds
+Validation set metric: 172.882460
+Epoch 37, loss: 4.593925, norm: -1.000000, elapsed: 420.865984, lrn_rate: 0.000175
+Validation time: 0.305634 seconds
+Validation set metric: 172.625500
+Epoch 38, loss: 4.675626, norm: -1.000000, elapsed: 431.889908, lrn_rate: 0.000172
+Validation time: 0.306176 seconds
+Validation set metric: 172.353747
+Epoch 39, loss: 4.613013, norm: -1.000000, elapsed: 442.891531, lrn_rate: 0.000169
+Validation time: 0.299009 seconds
+Validation set metric: 172.119796
+Epoch 40, loss: 4.575675, norm: -1.000000, elapsed: 453.912519, lrn_rate: 0.000167
+Validation time: 0.303944 seconds
+Validation set metric: 171.931633
+Epoch 41, loss: 4.609004, norm: -1.000000, elapsed: 464.991511, lrn_rate: 0.000164
+Validation time: 0.304637 seconds
+Validation set metric: 171.749442
+Epoch 42, loss: 4.573866, norm: -1.000000, elapsed: 475.953223, lrn_rate: 0.000161
+Validation time: 0.304075 seconds
+Validation set metric: 171.583104
+Epoch 43, loss: 4.544528, norm: -1.000000, elapsed: 487.017234, lrn_rate: 0.000159
+Validation time: 0.306191 seconds
+Validation set metric: 171.401747
+Epoch 44, loss: 4.551341, norm: -1.000000, elapsed: 498.026166, lrn_rate: 0.000156
+Validation time: 0.313571 seconds
+Validation set metric: 171.265337
+Epoch 45, loss: 4.521839, norm: -1.000000, elapsed: 509.056572, lrn_rate: 0.000154
+Validation time: 0.296391 seconds
+Validation set metric: 171.139568
+Epoch 46, loss: 4.536271, norm: -1.000000, elapsed: 520.058726, lrn_rate: 0.000152
+Validation time: 0.298629 seconds
+Validation set metric: 171.028507
+Epoch 47, loss: 4.544661, norm: -1.000000, elapsed: 531.039914, lrn_rate: 0.000149
+Validation time: 0.307904 seconds
+Validation set metric: 170.909909
+Epoch 48, loss: 4.528189, norm: -1.000000, elapsed: 542.108845, lrn_rate: 0.000147
+Validation time: 0.304241 seconds
+Validation set metric: 170.795124
+Epoch 49, loss: 4.499712, norm: -1.000000, elapsed: 553.102206, lrn_rate: 0.000145
+Validation time: 0.303227 seconds
+Validation set metric: 170.697915
+Epoch 50, loss: 4.562155, norm: -1.000000, elapsed: 564.140621, lrn_rate: 0.000143
+Validation time: 0.293684 seconds
+Validation set metric: 170.603931
+Epoch 51, loss: 4.535777, norm: -1.000000, elapsed: 575.167843, lrn_rate: 0.000141
+Validation time: 0.303701 seconds
+Validation set metric: 170.490127
+Epoch 52, loss: 4.498796, norm: -1.000000, elapsed: 586.387926, lrn_rate: 0.000139
+Validation time: 0.301994 seconds
+Validation set metric: 170.393914
+Epoch 53, loss: 4.474912, norm: -1.000000, elapsed: 597.400966, lrn_rate: 0.000137
+Validation time: 0.301251 seconds
+Validation set metric: 170.322196
+Epoch 54, loss: 4.456179, norm: -1.000000, elapsed: 608.378762, lrn_rate: 0.000135
+Validation time: 0.294070 seconds
+Validation set metric: 170.249691
+Epoch 55, loss: 4.481945, norm: -1.000000, elapsed: 619.355939, lrn_rate: 0.000133
+Validation time: 0.300330 seconds
+Validation set metric: 170.188011
+Epoch 56, loss: 4.424106, norm: -1.000000, elapsed: 630.502192, lrn_rate: 0.000132
+Validation time: 0.320070 seconds
+Validation set metric: 170.130331
+Epoch 57, loss: 4.498885, norm: -1.000000, elapsed: 641.617024, lrn_rate: 0.000130
+Validation time: 0.314690 seconds
+Validation set metric: 170.105366
+Epoch 58, loss: 4.464222, norm: -1.000000, elapsed: 652.845589, lrn_rate: 0.000128
+Validation time: 0.321558 seconds
+Validation set metric: 170.048075
+Epoch 59, loss: 4.456385, norm: -1.000000, elapsed: 664.100429, lrn_rate: 0.000127
+Validation time: 0.310566 seconds
+Validation set metric: 169.963627
+Epoch 60, loss: 4.485569, norm: -1.000000, elapsed: 675.268580, lrn_rate: 0.000125
+Validation time: 0.317154 seconds
+Validation set metric: 169.932953
+Epoch 61, loss: 4.379814, norm: -1.000000, elapsed: 686.456691, lrn_rate: 0.000123
+Validation time: 0.297191 seconds
+Validation set metric: 169.904090
+Epoch 62, loss: 4.450380, norm: -1.000000, elapsed: 697.628124, lrn_rate: 0.000122
+Validation time: 0.323214 seconds
+Validation set metric: 169.861201
+Epoch 63, loss: 4.469436, norm: -1.000000, elapsed: 708.922415, lrn_rate: 0.000120
+Validation time: 0.298826 seconds
+Validation set metric: 169.817466
+Epoch 64, loss: 4.458081, norm: -1.000000, elapsed: 720.240777, lrn_rate: 0.000119
+Validation time: 0.305203 seconds
+Validation set metric: 169.779409
+Epoch 65, loss: 4.454297, norm: -1.000000, elapsed: 731.344240, lrn_rate: 0.000118
+Validation time: 0.300703 seconds
+Validation set metric: 169.766672
+Epoch 66, loss: 4.459258, norm: -1.000000, elapsed: 742.472021, lrn_rate: 0.000116
+Validation time: 0.303770 seconds
+Validation set metric: 169.762550
+Epoch 67, loss: 4.476517, norm: -1.000000, elapsed: 753.496278, lrn_rate: 0.000115
+Validation time: 0.299030 seconds
+Validation set metric: 169.710218
+Epoch 68, loss: 4.380414, norm: -1.000000, elapsed: 764.578746, lrn_rate: 0.000114
+Validation time: 0.302433 seconds
+Validation set metric: 169.730054
+FINAL VALID PERF 169.7300540320091
+Setting 2 of parameters
+Namespace(batch_sz=1, bptt_len=2000, early_stop=True, m_hidden_size=100, m_kern_size_inner=4, m_word_features=100, t_lrn_decay='invlin', t_lrn_decay_rate=0.05, t_lrn_rate=0.0005, t_optimizer='adam', tt_num_iter=100000)
+Namespace(batch_sz=1, bptt_len=2000, debug=False, early_stop=True, m_hidden_size=100, m_kern_size_direct=-1, m_kern_size_inner=4, m_pretrain_embeddings=False, m_word_features=100, network='nnlm', t_clip_norm=-1, t_lrn_decay='invlin', t_lrn_decay_rate=0.05, t_lrn_rate=0.0005, t_optimizer='adam', tt_num_iter=100000, tt_skip_iter=1)
+Argument: m_kern_size_inner, Value: 4
+Argument: m_kern_size_direct, Value: -1
+Argument: m_pretrain_embeddings, Value: False
+Argument: m_word_features, Value: 100
+Argument: m_hidden_size, Value: 100
+Argument: t_optimizer, Value: adam
+Argument: t_clip_norm, Value: -1
+Argument: t_lrn_decay_rate, Value: 0.05
+Argument: t_lrn_rate, Value: 0.0005
+Argument: t_lrn_decay, Value: invlin
+Using CUDA...
+Using CUDA for evaluation...
+Argument: tt_skip_iter, Value: 1
+Argument: tt_num_iter, Value: 100000
+Epoch 0, loss: 6.267806, norm: -1.000000, elapsed: 9.284122, lrn_rate: 0.000500
+Validation time: 0.281898 seconds
+Validation set metric: 513.187406
+Epoch 1, loss: 5.991076, norm: -1.000000, elapsed: 18.972188, lrn_rate: 0.000476
+Validation time: 0.279572 seconds
+Validation set metric: 398.741925
+Epoch 2, loss: 5.802730, norm: -1.000000, elapsed: 28.639093, lrn_rate: 0.000455
+Validation time: 0.287172 seconds
+Validation set metric: 342.190324
+Epoch 3, loss: 5.684658, norm: -1.000000, elapsed: 38.324765, lrn_rate: 0.000435
+Validation time: 0.279754 seconds
+Validation set metric: 308.080022
+Epoch 4, loss: 5.600492, norm: -1.000000, elapsed: 47.973683, lrn_rate: 0.000417
+Validation time: 0.278847 seconds
+Validation set metric: 284.916348
+Epoch 5, loss: 5.486207, norm: -1.000000, elapsed: 57.626320, lrn_rate: 0.000400
+Validation time: 0.275418 seconds
+Validation set metric: 268.141418
+Epoch 6, loss: 5.446307, norm: -1.000000, elapsed: 67.274492, lrn_rate: 0.000385
+Validation time: 0.269292 seconds
+Validation set metric: 255.482127
+Epoch 7, loss: 5.363241, norm: -1.000000, elapsed: 76.987420, lrn_rate: 0.000370
+Validation time: 0.279746 seconds
+Validation set metric: 245.458412
+Epoch 8, loss: 5.340130, norm: -1.000000, elapsed: 86.590717, lrn_rate: 0.000357
+Validation time: 0.278660 seconds
+Validation set metric: 237.467913
+Epoch 9, loss: 5.309368, norm: -1.000000, elapsed: 96.225291, lrn_rate: 0.000345
+Validation time: 0.273880 seconds
+Validation set metric: 230.922862
+Epoch 10, loss: 5.250016, norm: -1.000000, elapsed: 105.913685, lrn_rate: 0.000333
+Validation time: 0.281748 seconds
+Validation set metric: 225.330787
+Epoch 11, loss: 5.209615, norm: -1.000000, elapsed: 115.592792, lrn_rate: 0.000323
+Validation time: 0.284753 seconds
+Validation set metric: 220.609448

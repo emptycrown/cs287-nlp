@@ -180,5 +180,11 @@ class LangTrainer(object):
                     self.val_perfs.append(le.evaluate(val_iter))
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
-
-
+                    # We've stopped improving, so stop training
+                    if len(self.val_perfs) > 2 and \
+                       self.val_perfs[-1] > self.val_perfs[-2]:
+                        break
+        if len(self.val_perfs) > 1:
+            print('FINAL VALID PERF', self.val_perfs[-1])
+            return self.val_perfs[-1]
+        return 0

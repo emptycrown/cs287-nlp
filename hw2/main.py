@@ -27,8 +27,7 @@ ACT_NAMES = {'tanh' : F.tanh,
 def parse_input():
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true', default=False)
-    parser.add_argument('--networks', nargs='+',
-                        default=['nnlm'])
+    parser.add_argument('--network', default='nnlm')
     parser.add_argument('--batch_sz', type=int, default=10)
     parser.add_argument('--bptt_len', type=int, default=32)
     parser.add_argument('--early_stop', action='store_true', default=False)
@@ -86,10 +85,10 @@ def train_network(net_name, args, TEXT, train_val_test):
         bptt_len=args.bptt_len, repeat=False, shuffle=True)
     if args.early_stop:
         le = LangEvaluator(model, TEXT)
-        trainer.train(train_iter, le=le, val_iter=val_iter,
+        return trainer.train(train_iter, le=le, val_iter=val_iter,
                       **prepare_kwargs(args, 'tt'))
     else:
-        trainer.train(train_iter, **prepare_kwargs(args, 'tt'))
+        return trainer.train(train_iter, **prepare_kwargs(args, 'tt'))
 
 
 def main(args):
@@ -113,8 +112,7 @@ def main(args):
     url = 'https://s3-us-west-1.amazonaws.com/fasttext-vectors/wiki.simple.vec'
     TEXT.vocab.load_vectors(vectors=Vectors('wiki.simple.vec', url=url))
 
-    for net_name in args.networks:
-        train_network(net_name, args, TEXT, (train, val, test))
+    return train_network(args.network, args, TEXT, (train, val, test))
 
         
 if __name__ == '__main__':
