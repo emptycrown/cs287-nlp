@@ -110,10 +110,10 @@ class NNLM(nn.Module):
         self.convs_inner = nn.ModuleList(
             [nn.Conv2d(in_channels, out_channels, (K, D),
                        padding=(K, 0)) for K in self.kernel_sizes_inner])
-        
+        # Bias is already in self.linear, so don't put another here
         self.conv_direct = nn.Conv2d(
             in_channels, V, (self.kernel_size_direct, D),
-            padding=(self.kernel_size_direct,0))
+            padding=(self.kernel_size_direct,0), bias=False)
 
         self.dropout = nn.Dropout(kwargs.get('dropout', 0.5))
         
