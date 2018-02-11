@@ -18,6 +18,8 @@ class LangEvaluator(object):
             torch.cuda.is_available()
         if self.cuda:
             print('Using CUDA for evaluation...')
+        else:
+            print('CUDA is unavailable...')
         
     def evaluate(self, test_iter, num_iter=None, use_variable=True):
         start_time = time.time()
@@ -139,6 +141,7 @@ class LangTrainer(object):
     def train(self, torch_train_iter, le=None, val_iter=None,
               **kwargs):
         start_time = time.time()
+        retain_graph = kwargs.get('retain_graph', False)
         for epoch in range(kwargs.get('num_iter', 100)):
             # Learning rate decay, if any
             self.scheduler.step()
@@ -159,7 +162,7 @@ class LangTrainer(object):
                     self.training_norms.append(-1)
                     
                 # Do gradient updates
-                loss.backward()
+                loss.backward(retain_graph=retain_graph)
                 self._optimizer.step()
 
             # Logging, early stopping

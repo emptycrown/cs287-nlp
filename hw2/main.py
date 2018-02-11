@@ -39,6 +39,7 @@ def parse_input():
     parser.add_argument('--t_lrn_decay_rate', type=float, default=1.0)
     parser.add_argument('--t_clip_norm', type=int, default=-1)
     parser.add_argument('--t_optimizer', default='sgd')
+    parser.add_argument('--t_retain_graph', action='store_true', default=False)
 
     # ARguments for model:
     parser.add_argument('--m_pretrain_embeddings', action='store_true',
@@ -87,6 +88,7 @@ def train_network(net_name, args, TEXT, train_val_test):
     if args.early_stop:
         le = LangEvaluator(model, TEXT)
         return trainer.train(train_iter, le=le, val_iter=val_iter,
+                      retain_graph=(args.t_retain_graph),
                       **prepare_kwargs(args, 'tt'))
     else:
         return trainer.train(train_iter, **prepare_kwargs(args, 'tt'))
