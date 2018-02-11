@@ -26,6 +26,13 @@ def parse_input():
 
     # Arguments for LangTrainer:
     parser.add_argument('--t_lrn_rate', type=float, default=0.1)
+    parser.add_argument('--t_lrn_decay', default='none')
+    parser.add_argument('--t_clip_norm', type=int, default=-1)
+
+    # ARguments for model:
+    parser.add_argument('--m_pretrain_embeddings', action='store_true',
+                        default=False)
+    parser.add_argument('--m_word_features', type=int, default=100)
     
     # Process of training args:
     parser.add_argument('--tt_num_iter', type=int, default=100)

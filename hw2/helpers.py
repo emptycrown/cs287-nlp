@@ -55,10 +55,25 @@ class LangEvaluator(object):
 class LangTrainer(object):
     def __init__(self, TEXT, model, **kwargs):
         # Settings:
+        self.base_lrn_rate = kwargs.get('lrn_rate', 0.1)
         optimizer = kwargs.get('optimizer', optim.SGD)
         self._optimizer = optimizer(filter(lambda p : p.requires_grad,
                                            model.parameters()),
-                                    lr=kwargs.get('lrn_rate', 0.1))        
+                                    lr=self.base_lrn_rate)
+
+        # Do learning rate decay:
+        lr_decay_opt = kwargs.get('lrn_decay', 'none')
+        if lr_decay_opt == 'none':
+            self.lambda_lr = lambda i : 1
+        elif lr_decay_opt == 'invlin':
+            decay_rate = kwargs.get('lrn_decay_rate', 0.001)
+            self.lambda_lr = lambda i : 1 / (1 + i * decay_rate)
+        else:
+            raise ValueError('Invalid learning rate decay option: %s' \
+                             % lr_decay_opt)
+        self.scheduler = optim.lr_scheduler.LambdaLR(self._optimizer,
+                                                     self.lambda_lr)
+            
         self.cuda = kwargs.get('cuda', True) and \
             torch.cuda.is_available()
         if self.cuda:
@@ -126,14 +141,20 @@ class LangTrainer(object):
         start_time = time.time()
         train_iter = iter(train_iter)
         for i in range(kwargs.get('num_iter', 100)):
+            # Learning rate decay, if any
+            self.scheduler.step()
+            
             batch = next(train_iter)
             self.model.zero_grad()
             loss = self.make_loss(batch)
-                
-            # Norm clipping: returns a float
-            norm = nn.utils.clip_grad_norm(filter(lambda p : p.requires_grad,
-                                                  self.model.parameters()), self.clip_norm)
-            self.training_norms.append(norm)    
+
+            if self.clip_norm > 0:
+                # Norm clipping: returns a float
+                norm = nn.utils.clip_grad_norm(filter(lambda p : p.requires_grad,
+                                                      self.model.parameters()), self.clip_norm)
+                self.training_norms.append(norm)
+            else:
+                self.training_norms.append(-1)
             # Do gradient updates
             loss.backward()
             self._optimizer.step()
@@ -147,10 +168,11 @@ class LangTrainer(object):
                     self.training_losses.append(loss.data.numpy()[0])
 
                 # Logging
-                print('Iteration %d, loss: %f, norm: %f, elapsed: %f' \
+                print('Iteration %d, loss: %f, norm: %f, elapsed: %f, lrn_rate: %f' \
                       % (i, self.training_losses[-1],
                          self.training_norms[-1],
-                         time.time() - start_time))
+                         time.time() - start_time,
+                         self.base_lrn_rate * self.lambda_lr(i)))
                 if (not le is None) and (not val_iter is None):
                     self.val_perfs.append(le.evaluate(val_iter))
                     print('Validation set metric: %f' % \

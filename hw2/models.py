@@ -95,11 +95,16 @@ class NNLM(nn.Module):
         
         # V is size of vocab, D is dim of embedding
         V = TEXT.vocab.vectors.size()[0]
-        D = TEXT.vocab.vectors.size()[1]
-        self.embeddings = nn.Embedding(V, D)
-        self.embeddings.weight = nn.Parameter(
-            TEXT.vocab.vectors, requires_grad= \
-            kwargs.get('train_embeddings', True))
+        max_embed_norm = kwargs.get('max_embed_norm', 10)
+        if kwargs.get('pretrain_embeddings', True):
+            D = TEXT.vocab.vectors.size()[1]
+            self.embeddings = nn.Embedding(V, D, max_norm=max_embed_norm)
+            self.embeddings.weight = nn.Parameter(
+                TEXT.vocab.vectors, requires_grad= \
+                kwargs.get('train_embeddings', True))
+        else:
+            D = kwargs.get('word_features', 100)
+            self.embeddings = nn.Embedding(V, D, max_norm=max_embed_norm)
         
         in_channels = 1
         out_channels = 60
