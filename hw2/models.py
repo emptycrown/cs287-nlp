@@ -151,3 +151,42 @@ class NNLM(nn.Module):
             x = x + y # '+' should be overloaded
             
         return F.log_softmax(x, dim=2)        
+
+    
+class LSTMLM(nn.Module):
+    def __init__(self, TEXT, **kwargs):
+        super(LSTMLM, self).__init__()
+        
+        # Save parameters:
+        self.hidden_dim = kwargs.get('hidden_dim', 50)
+        
+        # V is size of vocab, D is dim of embedding
+        V = TEXT.vocab.vectors.size()[0]
+        D = TEXT.vocab.vectors.size()[1]
+        self.embeddings = nn.Embedding(V, D)
+        self.embeddings.weight = nn.Parameter(
+            TEXT.vocab.vectors, requires_grad= \
+            kwargs.get('train_embeddings', True))
+        
+        # The LSTM takes word embeddings as inputs, and outputs hidden states
+        # with dimensionality hidden_dim.
+        self.lstm = nn.LSTM(D, self.hidden_dim)
+        
+        # The linear layer that maps from hidden state space to label space
+        self.linear = nn.Linear(self.hidden_dim, V)
+        self.hidden = self.init_hidden()
+        
+    def init_hidden(self):
+        # Before we've done anything, we dont have any hidden state.
+        # The axes semantics are (num_layers, minibatch_size, hidden_dim)
+        return (autograd.Variable(torch.zeros(1, 1, self.hidden_dim)),
+                autograd.Variable(torch.zeros(1, 1, self.hidden_dim)))
+        
+    def forward(self, x):
+        sent_len = x.size(1)
+        btch_sz = x.size(0)
+        x = self.embeddings(x) # [btch_sz, sent_len, D]
+        lstm_out, self.hidden = self.lstm(
+            x.view(sent_len, btch_sz, -1), self.hidden)
+        pred = self.linear(lstm_out.view(sent_len, btch_sz, -1))
+        return F.log_softmax(pred, dim=2)
