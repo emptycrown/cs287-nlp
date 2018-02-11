@@ -127,9 +127,6 @@ class LangTrainer(object):
             batch = next(train_iter)
             self.model.zero_grad()
             loss = self.make_loss(batch)
-            self.training_losses.append(loss.data.numpy()[0])
-
-                
                 
             # Norm clipping: returns a float
             norm = nn.utils.clip_grad_norm(filter(lambda p : p.requires_grad,
@@ -141,6 +138,13 @@ class LangTrainer(object):
 
             # Logging, early stopping
             if i % kwargs.get('skip_iter', 10) == 0:
+                # Update training_losses
+                if self.cuda:
+                    self.training_losses.append(loss.data.cpu().numpy()[0])
+                else:
+                    self.training_losses.append(loss.data.numpy()[0])
+
+                # Logging
                 print('Iteration %d, loss: %f, norm: %f, elapsed: %f' \
                       % (i, self.training_losses[-1],
                          self.training_norms[-1],
