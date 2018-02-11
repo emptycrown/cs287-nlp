@@ -43,6 +43,8 @@ class LangTrainer(object):
                                     lr=kwargs.get('lr', 0.1))        
         self.cuda = kwargs.get('cuda', True) and \
             torch.cuda.is_available()
+        if self.cuda:
+            print('Using CUDA...')
         self.clip_norm = kwargs.get('clip_norm', 5)
             
         self._TEXT = TEXT
