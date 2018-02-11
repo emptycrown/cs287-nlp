@@ -104,15 +104,18 @@ class LangTrainer(object):
             batch = next(train_iter)
             self.model.zero_grad()
             loss = self.make_loss(batch)
-            self.training_losses.append(loss.data.numpy()[0])
-
-                
                 
             # Norm clipping: returns a float
             norm = nn.utils.clip_grad_norm(filter(lambda p : p.requires_grad,
                                                   self.model.parameters()), self.clip_norm)
             self.training_norms.append(norm)    
             if i % kwargs.get('skip_iter', 10) == 0:
+
+                if self.cuda:
+                    self.training_losses.append(loss.data.cpu().numpy()[0])
+                else:
+                    self.training_losses.append(loss.data.numpy()[0])
+
                 print('Iteration %d, loss: %f, norm: %f' % (i, self.training_losses[-1],
                                                             self.training_norms[-1]))
             # Do gradient updates
