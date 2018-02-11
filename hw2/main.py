@@ -44,9 +44,12 @@ def train_network(net_name, args, TEXT, train_val_test):
     model = NET_NAMES[net_name](TEXT, **prepare_kwargs(args, 'm'))
     trainer = LangTrainer(TEXT, model, **prepare_kwargs(args, 't'))
 
-    train_iter, val_iter, test_iter = torchtext.data.BPTTIterator.splits(
+    _, val_iter, test_iter = torchtext.data.BPTTIterator.splits(
         train_val_test, batch_size=args.batch_sz, device=-1,
         bptt_len=args.bptt_len, repeat=False)
+    train_iter, _, _ = torchtext.data.BPTTIterator.splits(
+        train_val_test, batch_size=args.batch_sz, device=-1,
+        bptt_len=args.bptt_len, repeat=True)
     if args.early_stop:
         le = LangEvaluator(model, TEXT)
         trainer.train(train_iter, le=le, val_iter=val_iter,
