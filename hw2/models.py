@@ -143,6 +143,6 @@ class NNLM(nn.Module):
             y = self.conv_direct(x)[:,:,:-(self.kernel_size_direct+1)]
             # [btch_sz, sent_len, V]
             y = y.permute(0, 2, 1)
-            x = x + y # Should be overloaded
+            x = x + y # '+' should be overloaded
             
         return F.log_softmax(x, dim=2)        
