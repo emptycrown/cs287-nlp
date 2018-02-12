@@ -16,7 +16,7 @@ NET_NAMES = {'trigram' : Trigram,
              'nnlm' : NNLM,
              'lstmlm' : LSTMLM}
 
-RNN_NAMES = ['lstm']
+RNN_NAMES = ['lstmlm']
 
 OPT_NAMES = {'sgd' : optim.SGD,
              'adam' : optim.Adam,
