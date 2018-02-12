@@ -9,6 +9,14 @@ import numpy as np
 import itertools as it
 import time
 
+# Debugging functions
+
+# batch is [batch_size, sent_len], is a tensor
+def inspect_batch(batch, TEXT):
+    for i in range(batch.size(0)):
+        print(' '.join([TEXT.vocab.itos[j] for j in batch[i,:]]))
+
+# Class that Lang{Trainer/Evaluator} extends
 class LangModelUser(object):
     def __init__(self, model, TEXT, use_hidden=False,
                  **kwargs):
@@ -87,6 +95,12 @@ class LangModelUser(object):
             if self.use_hidden:
                 hidden = (self.prepare_hidden(batch),
                           self.prepare_hidden(batch))
+
+        # print('FEATURE BATCH')
+        # inspect_batch(feature, self._TEXT)
+        # print('LABEL BATCH')
+        # inspect_batch(label, self._TEXT)
+        
         var_feature = autograd.Variable(feature)
         var_label = autograd.Variable(label)
         if self.use_hidden:
