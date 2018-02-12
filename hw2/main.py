@@ -43,8 +43,6 @@ def parse_input():
     parser.add_argument('--t_optimizer', default='sgd')
     parser.add_argument('--t_retain_graph', action='store_true',
                         default=False)
-    parser.add_argument('--t_produce_predictions', action='store_true', 
-                        default=False)
 
     # ARguments for model:
     parser.add_argument('--m_pretrain_embeddings', action='store_true',
@@ -59,6 +57,8 @@ def parse_input():
     # Process of training args:
     parser.add_argument('--tt_num_iter', type=int, default=100)
     parser.add_argument('--tt_skip_iter', type=int, default=1)
+    parser.add_argument('--tt_produce_predictions', action='store_true', 
+                        default=False)
 
     args = parser.parse_args()
     return args
