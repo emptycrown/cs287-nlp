@@ -59,7 +59,7 @@ def parse_input():
     parser.add_argument('--tt_skip_iter', type=int, default=1)
 
     #Testing
-    parser.add_argument('--produce_predictions', type=int, default=100)
+    parser.add_argument('--produce_predictions', action='store_true', default=False)
 
     args = parser.parse_args()
     return args
