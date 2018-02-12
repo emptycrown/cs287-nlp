@@ -159,7 +159,8 @@ class LSTMLM(nn.Module):
         
         # Save parameters:
         self.hidden_dim = kwargs.get('hidden_dim', 650)
-        
+        self.btch_sz = kwargs.get('btch_sz', 10)
+ 
         # V is size of vocab, D is dim of embedding
         V = TEXT.vocab.vectors.size()[0]
         D = TEXT.vocab.vectors.size()[1]
@@ -179,8 +180,8 @@ class LSTMLM(nn.Module):
     def init_hidden(self):
         # Before we've done anything, we dont have any hidden state.
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        return (autograd.Variable(torch.zeros(1, 1, self.hidden_dim)),
-                autograd.Variable(torch.zeros(1, 1, self.hidden_dim)))
+        return (autograd.Variable(torch.zeros(1, self.btch_sz, self.hidden_dim).cuda()),
+                autograd.Variable(torch.zeros(1, self.btch_sz, self.hidden_dim).cuda()))
         
     def forward(self, x):
         sent_len = x.size(1)

@@ -1,0 +1,15 @@
+Argument: m_pretrain_embeddings, Value: False
+Argument: m_word_features, Value: 100
+Argument: m_hidden_size, Value: 100
+Argument: m_kern_size_inner, Value: 5
+Argument: m_kern_size_direct, Value: 5
+Argument: t_lrn_rate, Value: 0.001
+Argument: t_lrn_decay, Value: invlin
+Argument: t_lrn_decay_rate, Value: 0.1
+Argument: t_clip_norm, Value: -1
+Argument: t_optimizer, Value: adam
+Argument: t_retain_graph, Value: True
+Using CUDA...
+Using CUDA for evaluation...
+Argument: tt_num_iter, Value: 100000
+Argument: tt_skip_iter, Value: 1
