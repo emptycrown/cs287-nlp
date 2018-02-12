@@ -52,6 +52,10 @@ class LangModelUser(object):
     def get_label(batch):
         return LangTrainer.get_feature(batch)
 
+    def prepare_hidden(self, batch):
+        return torch.zeros(batch.text.size(0), self.model.num_layers,
+                           self.model.hidden_dim)
+
     def prepare_model_inputs(self, batch):
         # TODO: this might break trigram stuff (easy to fix)...
         if self.cuda:
@@ -60,18 +64,19 @@ class LangModelUser(object):
                              LangTrainer.get_label(batch).cuda()
             if self.use_hidden:
                 # [batch_sz, num_layers, hidden_dim]
-                hidden = torch.zeros(batch.size(0), self.model.num_layers,
-                                     self.model.hidden_dim).cuda()
+                hidden = (self.prepare_hidden(batch).cuda(),
+                          self.prepare_hidden(batch).cuda())
         else:
             feature, label = LangTrainer.get_feature(batch), \
                              LangTrainer.get_label(batch)
             if self.use_hidden:
-                hidden = torch.zeros(batch.size(0), self.model.num_layers,
-                                     self.model.hidden_dim)
+                hidden = (self.prepare_hidden(batch),
+                          self.prepare_hidden(batch))
         var_feature = autograd.Variable(feature)
         var_label = autograd.Variable(label)
         if self.use_hidden:
-            var_hidden = autograd.Variable(hidden)
+            var_hidden = (autograd.Variable(hidden[0]),
+                          autograd.Variable(hidden[1]))
             return ([var_feature, var_hidden], var_label)
         else:
             return ([var_feature], var_label)
@@ -86,7 +91,7 @@ class LangEvaluator(LangModelUser):
                                             **kwargs)
         self.eval_metric = kwargs.get('evalmetric', 'perplexity')
         
-    def evaluate(self, test_iter, num_iter=None, use_variable=True):
+    def evaluate(self, test_iter, num_iter=None):
         start_time = time.time()
         self.model.eval() # In case we have dropout
         sum_nll = 0
@@ -97,8 +102,11 @@ class LangEvaluator(LangModelUser):
             # but this doesn't matter.
             
             var_feature_arr, var_label = self.prepare_model_inputs(batch)
-            log_probs = self.model(*var_feature_arr)
-            
+            if self.use_hidden:
+                log_probs, _ = self.model(*var_feature_arr)
+            else:
+                log_probs = self.model(*var_feature_arr)
+                
             # This is the true feature (might have hidden at 1)            
             var_feature = var_feature_arr[0] 
             cnt_nll += var_feature.data.size()[0] * \
@@ -113,7 +121,7 @@ class LangEvaluator(LangModelUser):
         return np.exp(sum_nll / cnt_nll)
 
 # Option use_hidden is special: only intended for LSTM/RNN usage!
-class LangTrainer(object):
+class LangTrainer(LangModelUser):
     def __init__(self, TEXT, model, use_hidden=False,
                  **kwargs):
         super(LangTrainer, self).__init__(model, TEXT, use_hidden=use_hidden,
@@ -153,7 +161,11 @@ class LangTrainer(object):
     # variable...this is kinda unnecessary and ugly
     def make_loss(self, batch):
         var_feature_arr, var_label = self.prepare_model_inputs(batch)
-        loss = self.loss_nll(var_label, self.model(*var_feature_arr))
+        if self.use_hidden:
+            log_probs, _ = self.model(*var_feature_arr)
+        else:
+            log_probs = self.model(*var_feature_arr)
+        loss = self.loss_nll(var_label, log_probs)
         return loss
 
     # le is a LangEvaluator, and if supplied must have a val_iter
