@@ -165,7 +165,7 @@ class LSTMLM2(EmbeddingsLM):
         super(LSTMLM2, self).__init__(TEXT, **kwargs)
         
         # Save parameters:
-        self.hidden_dim = kwargs.get('hidden_dim', 650)
+        self.hidden_dim = kwargs.get('hidden_size', 650)
         self.num_layers = kwargs.get('num_layers', 2)
         
         # The LSTM takes word embeddings as inputs, and outputs hidden states
