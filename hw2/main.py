@@ -16,6 +16,8 @@ NET_NAMES = {'trigram' : Trigram,
              'nnlm' : NNLM,
              'lstmlm' : LSTMLM}
 
+RNN_NAMES = ['lstm']
+
 OPT_NAMES = {'sgd' : optim.SGD,
              'adam' : optim.Adam,
              'adagrad' : optim.Adagrad,
@@ -39,7 +41,8 @@ def parse_input():
     parser.add_argument('--t_lrn_decay_rate', type=float, default=1.0)
     parser.add_argument('--t_clip_norm', type=int, default=-1)
     parser.add_argument('--t_optimizer', default='sgd')
-    parser.add_argument('--t_retain_graph', action='store_true', default=False)
+    parser.add_argument('--t_retain_graph', action='store_true',
+                        default=False)
 
     # ARguments for model:
     parser.add_argument('--m_pretrain_embeddings', action='store_true',
@@ -77,7 +80,8 @@ def prepare_kwargs(args, root):
 # train_val_test is a tuple of those datasets
 def train_network(net_name, args, TEXT, train_val_test):
     model = NET_NAMES[net_name](TEXT, **prepare_kwargs(args, 'm'))
-    trainer = LangTrainer(TEXT, model, **prepare_kwargs(args, 't'))
+    trainer = LangTrainer(TEXT, model, use_hidden=(net_name in RNN_NAMES),
+                          **prepare_kwargs(args, 't'))
 
     _, val_iter, test_iter = torchtext.data.BPTTIterator.splits(
         train_val_test, batch_size=args.batch_sz, device=-1,
@@ -86,7 +90,7 @@ def train_network(net_name, args, TEXT, train_val_test):
         train_val_test, batch_size=args.batch_sz, device=-1,
         bptt_len=args.bptt_len, repeat=False, shuffle=True)
     if args.early_stop:
-        le = LangEvaluator(model, TEXT)
+        le = LangEvaluator(model, TEXT, use_hidden=(net_name in RNN_NAMES))
         return trainer.train(train_iter, le=le, val_iter=val_iter,
                       retain_graph=(args.t_retain_graph),
                       **prepare_kwargs(args, 'tt'))
