@@ -109,6 +109,12 @@ class LangModelUser(object):
             return ([var_feature, var_hidden], var_label)
         else:
             return ([var_feature], var_label)
+
+    def process_model_output(self, log_probs):
+        print(log_probs.data)
+        print(log_probs.data.size())
+        return "<>"
+
         
             
 
@@ -126,18 +132,20 @@ class LangEvaluator(LangModelUser):
         sum_nll = 0
         cnt_nll = 0
 
-        labels = []
+        predictions = []
         for i,batch in enumerate(test_iter):
             # Model output: [batch_size, sent_len, size_vocab]; these
             # aren't actually probabilities if the model is a Trigram,
             # but this doesn't matter.
             
             var_feature_arr, var_label = self.prepare_model_inputs(batch)
-            labels.append(var_label)
+            
             if self.use_hidden:
                 log_probs, _ = self.model(*var_feature_arr)
             else:
                 log_probs = self.model(*var_feature_arr)
+
+            predictions.append(self.process_model_output(log_probs))
                 
             # This is the true feature (might have hidden at 1)            
             var_feature = var_feature_arr[0] 
@@ -151,7 +159,7 @@ class LangEvaluator(LangModelUser):
         if produce_predictions:
             with open("predictions.txt", "w") as fout: 
                 print("id,word", file=fout)
-                for i, l in enumerate(labels, 1):
+                for i, l in enumerate(predictions, 1):
                     print("%d,%s"%(i, " ".join(l)), file=fout)
 
         self.model.train() # Wrap model.eval()
