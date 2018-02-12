@@ -185,6 +185,9 @@ class LSTMLM2(EmbeddingsLM):
         btch_sz = x.size(0)
         x = self.embeddings(x) # [btch_sz, sent_len, D]
 
+        # Put dropout before the LSTM as in the paper
+        x = self.dropout(x)
+
         # hidden_out is [batch_sz, num_layers, hidden_dim]
         lstm_out, hidden_out = self.lstm(x, hidden)
 

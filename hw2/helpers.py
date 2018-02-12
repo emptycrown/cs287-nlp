@@ -213,7 +213,11 @@ class LangTrainer(LangModelUser):
             for batch in train_iter:
                 self.model.zero_grad()
                 loss = self.make_loss(batch)
+                    
+                # Do gradient updates
+                loss.backward(retain_graph=retain_graph)
 
+                # Clip grad norm after backward but before step
                 if self.clip_norm > 0:
                     # Norm clipping: returns a float
                     norm = nn.utils.clip_grad_norm(
@@ -221,9 +225,7 @@ class LangTrainer(LangModelUser):
                     self.training_norms.append(norm)
                 else:
                     self.training_norms.append(-1)
-                    
-                # Do gradient updates
-                loss.backward(retain_graph=retain_graph)
+
                 self._optimizer.step()
 
             # Logging, early stopping
