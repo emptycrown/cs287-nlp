@@ -14,6 +14,14 @@ class LangModelUser(object):
                  **kwargs):
         self._TEXT = TEXT
         self.use_hidden = use_hidden
+        # Amount by which to shift label in a batch (this is a bit
+        # wasteful since we're therefore wasting the first
+        # self.shift_label words of a batch, but oh well...); TODO:
+        # this is problematic for validation/testing...
+        if self.use_hidden:
+            self.shift_label = 1
+        else:
+            self.shift_label = 0
         self.model = model
         self.cuda = kwargs.get('cuda', True) and \
             torch.cuda.is_available()
@@ -43,14 +51,15 @@ class LangModelUser(object):
     def loss_perplexity(*args):
         return torch.exp(self.loss_nll(*args))
 
-    @staticmethod
-    def get_feature(batch):
-        return torch.t(batch.text.data).contiguous()
+    # Ignore the last self.shift_label words in each sentence
+    def get_feature(self, batch):
+        batch_transpose = torch.t(batch.text.data)
+        return batch_transpose[:, :-self.shift_label].contiguous()
 
-    # The labels we use as the true words: same as features
-    @staticmethod
-    def get_label(batch):
-        return LangTrainer.get_feature(batch)
+    # Ignore the first self.shift_label words in each sentence
+    def get_label(self, batch):
+        batch_transpose = torch.t(batch.text.data)
+        return batch_transpose[:, self.shift_label:].contiguous()
 
     # We haven't yet transposed batch, so this should work (and
     # batch_first does not apply to hidden layers in lstm, for some
@@ -63,15 +72,15 @@ class LangModelUser(object):
         # TODO: this might break trigram stuff (easy to fix)...
         if self.cuda:
             # [batch_size, sent_len]                
-            feature, label = LangTrainer.get_feature(batch).cuda(), \
-                             LangTrainer.get_label(batch).cuda()
+            feature, label = self.get_feature(batch).cuda(), \
+                             self.get_label(batch).cuda()
             if self.use_hidden:
                 # [batch_sz, num_layers, hidden_dim]
                 hidden = (self.prepare_hidden(batch).cuda(),
                           self.prepare_hidden(batch).cuda())
         else:
-            feature, label = LangTrainer.get_feature(batch), \
-                             LangTrainer.get_label(batch)
+            feature, label = self.get_feature(batch), \
+                             self.get_label(batch)
             if self.use_hidden:
                 hidden = (self.prepare_hidden(batch),
                           self.prepare_hidden(batch))
