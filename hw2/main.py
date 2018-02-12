@@ -51,6 +51,7 @@ def parse_input():
     parser.add_argument('--m_hidden_size', type=int, default=100)
     parser.add_argument('--m_kern_size_inner', type=int, default=5)
     parser.add_argument('--m_kern_size_direct', type=int, default=-1)
+    parser.add_argument('--m_dropout', type=float, default=0.5)
     
     # Process of training args:
     parser.add_argument('--tt_num_iter', type=int, default=100)

@@ -54,7 +54,10 @@ class LangModelUser(object):
     # Ignore the last self.shift_label words in each sentence
     def get_feature(self, batch):
         batch_transpose = torch.t(batch.text.data)
-        return batch_transpose[:, :-self.shift_label].contiguous()
+        if self.shift_label > 0:
+            return batch_transpose[:, :-self.shift_label].contiguous()
+        else:
+            return batch_transpose.contiguous()
 
     # Ignore the first self.shift_label words in each sentence
     def get_label(self, batch):
