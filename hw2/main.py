@@ -14,7 +14,7 @@ import argparse
 
 NET_NAMES = {'trigram' : Trigram,
              'nnlm' : NNLM,
-             'lstmlm' : LSTMLM}
+             'lstmlm' : LSTMLM2}
 
 RNN_NAMES = ['lstmlm']
 

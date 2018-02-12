@@ -218,9 +218,9 @@ class LangTrainer(LangModelUser):
                     self.val_perfs.append(le.evaluate(val_iter))
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
-                    # We've stopped improving, so stop training
+                    # We've stopped improving (basically), so stop training
                     if len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2]:
+                       self.val_perfs[-1] > self.val_perfs[-2] - 0.1:
                         break
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
