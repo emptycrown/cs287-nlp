@@ -111,14 +111,14 @@ def main(args):
     # Data distributed with the assignment
     train, val, test = torchtext.datasets.LanguageModelingDataset.splits(
         path=".", 
-        train="train.txt", validation="valid.txt", test="valid.txt", text_field=TEXT)
+        train="train.txt", validation="valid.txt", test="input.txt", text_field=TEXT)
 
     TEXT.build_vocab(train)
     if args.debug:
         TEXT.build_vocab(train, max_size=1000)
 
-    train_iter, val_iter, test_iter = torchtext.data.BPTTIterator.splits(
-        (train, val, test), batch_size=10, device=-1, bptt_len=32, repeat=False)
+    # train_iter, val_iter, test_iter = torchtext.data.BPTTIterator.splits(
+    #     (train, val, test), batch_size=10, device=-1, bptt_len=32, repeat=False)
 
     # Build the vocabulary with word embeddings
     url = 'https://s3-us-west-1.amazonaws.com/fasttext-vectors/wiki.simple.vec'

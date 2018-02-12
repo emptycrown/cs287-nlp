@@ -120,17 +120,20 @@ class LangEvaluator(LangModelUser):
                                             **kwargs)
         self.eval_metric = kwargs.get('evalmetric', 'perplexity')
         
-    def evaluate(self, test_iter, num_iter=None):
+    def evaluate(self, test_iter, num_iter=None, produce_predictions=False):
         start_time = time.time()
         self.model.eval() # In case we have dropout
         sum_nll = 0
         cnt_nll = 0
+
+        labels = []
         for i,batch in enumerate(test_iter):
             # Model output: [batch_size, sent_len, size_vocab]; these
             # aren't actually probabilities if the model is a Trigram,
             # but this doesn't matter.
             
             var_feature_arr, var_label = self.prepare_model_inputs(batch)
+            labels.append(var_label)
             if self.use_hidden:
                 log_probs, _ = self.model(*var_feature_arr)
             else:
@@ -144,6 +147,12 @@ class LangEvaluator(LangModelUser):
                                      log_probs, mode='sum').data[0]
             if not num_iter is None and i > num_iter:
                 break
+
+        if produce_predictions:
+            with open("predictions.txt", "w") as fout: 
+                print("id,word", file=fout)
+                for i, l in enumerate(labels, 1):
+                    print("%d,%s"%(i, " ".join(l)), file=fout)
 
         self.model.train() # Wrap model.eval()
         print('Validation time: %f seconds' % (time.time() - start_time))
@@ -248,23 +257,14 @@ class LangTrainer(LangModelUser):
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
                     if len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2] - 100:
+                       self.val_perfs[-1] > self.val_perfs[-2] - 100: #TODO: Change back to 0.1
                         break
         if kwargs.get('produce_predictions',False):
-            print('Writing test predictions to predictions.txt...')
             if (not le is None) and (not test_iter is None):
+                print('Writing test predictions to predictions.txt...')
                 print('Test set metric: %f' % \
-                    le.evaluate(test_iter))
-            if self.use_hidden:
-                log_probs, _ = self.model(*var_feature_arr)
-            else:
-                log_probs = self.model(*var_feature_arr)
-            print(log_probs.size())
-            # predictions = [TEXT.vocab.itos[i] for i, c in count.most_common(20)]
-            # with open("sample.txt", "w") as fout: 
-            #     print("id,word", file=fout)
-            #     for i, l in enumerate(open("input.txt"), 1):
-            #         print("%d,%s"%(i, " ".join(predictions)), file=fout)
+                    le.evaluate(test_iter, produce_predictions=kwargs.get('produce_predictions',False)))
+
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
             return self.val_perfs[-1]
