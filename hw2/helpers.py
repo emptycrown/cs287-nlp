@@ -52,8 +52,11 @@ class LangModelUser(object):
     def get_label(batch):
         return LangTrainer.get_feature(batch)
 
+    # We haven't yet transposed batch, so this should work (and
+    # batch_first does not apply to hidden layers in lstm, for some
+    # reason)
     def prepare_hidden(self, batch):
-        return torch.zeros(batch.text.size(0), self.model.num_layers,
+        return torch.zeros(self.model.num_layers, batch.text.size(1),
                            self.model.hidden_dim)
 
     def prepare_model_inputs(self, batch):
