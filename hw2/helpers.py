@@ -204,6 +204,7 @@ class LangTrainer(LangModelUser):
         start_time = time.time()
         retain_graph = kwargs.get('retain_graph', False)
         for epoch in range(kwargs.get('num_iter', 100)):
+            self.model.train()
             # Learning rate decay, if any
             self.scheduler.step()
             torch_train_iter.init_epoch()
@@ -244,9 +245,9 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    if len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2] - 0.1:
-                        break
+                    # if len(self.val_perfs) > 2 and \
+                    #    self.val_perfs[-1] > self.val_perfs[-2] - 0.1:
+                    #     break
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
             return self.val_perfs[-1]
