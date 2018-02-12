@@ -84,27 +84,34 @@ class Trigram(nn.Module):
                     # Here's where we increment the ocunt
                     self.cnts[n][dict_key][batch[j, k+n]] += 1    
 
-
-class NNLM(nn.Module):
+class EmbeddingsLM(nn.Module):
     def __init__(self, TEXT, **kwargs):
-        super(NNLM, self).__init__()
-
-        # Save parameters:
-        self.activation = kwargs.get('activation', F.tanh)
+        super(EmbeddingsLM, self).__init__()
+        # Initialize dropout
+        self.dropout = nn.Dropout(kwargs.get('dropout', 0.5))
         
         # V is size of vocab, D is dim of embedding
-        V = TEXT.vocab.vectors.size()[0]
+        self.V = TEXT.vocab.vectors.size()[0]
         max_embed_norm = kwargs.get('max_embed_norm', 10)
         if kwargs.get('pretrain_embeddings', True):
-            D = TEXT.vocab.vectors.size()[1]
-            self.embeddings = nn.Embedding(V, D, max_norm=max_embed_norm)
+            self.D = TEXT.vocab.vectors.size()[1]
+            self.embeddings = nn.Embedding(self.V, self.D, max_norm=max_embed_norm)
             self.embeddings.weight = nn.Parameter(
                 TEXT.vocab.vectors, requires_grad= \
                 kwargs.get('train_embeddings', True))
         else:
-            D = kwargs.get('word_features', 100)
-            self.embeddings = nn.Embedding(V, D, max_norm=max_embed_norm)
+            self.D = kwargs.get('word_features', 100)
+            self.embeddings = nn.Embedding(self.V, self.D, max_norm=max_embed_norm)
         
+
+class NNLM(EmbeddingsLM):
+    def __init__(self, TEXT, **kwargs):
+        # sets up self.embeddings, self.D, self.V, self.dropout
+        super(NNLM, self).__init__(TEXT, **kwargs)
+
+        # Save parameters:
+        self.activation = kwargs.get('activation', F.tanh)
+                
         in_channels = 1
         out_channels = kwargs.get('hidden_size', 100)
         self.kernel_sizes_inner = [kwargs.get('kern_size_inner', 5)] 
@@ -112,17 +119,17 @@ class NNLM(nn.Module):
 
         # List of convolutional layers
         self.convs_inner = nn.ModuleList(
-            [nn.Conv2d(in_channels, out_channels, (K, D),
+            [nn.Conv2d(in_channels, out_channels, (K, self.D),
                        padding=(K, 0)) for K in self.kernel_sizes_inner])
         if self.kernel_size_direct > 0:
             # Bias is already in self.linear, so don't put another here
             self.conv_direct = nn.Conv2d(
-                in_channels, V, (self.kernel_size_direct, D),
+                in_channels, self.V, (self.kernel_size_direct, self.D),
                 padding=(self.kernel_size_direct,0), bias=False)
 
-        self.dropout = nn.Dropout(kwargs.get('dropout', 0.25))
         
-        self.linear = nn.Linear(len(self.kernel_sizes_inner) * out_channels, V)
+        self.linear = nn.Linear(len(self.kernel_sizes_inner) * out_channels,
+                                self.V)
     
     # x is [batch_sz, sent_len]: words are encoded as integers (indices)
     def forward(self, x):
@@ -151,3 +158,78 @@ class NNLM(nn.Module):
             x = x + y # '+' should be overloaded
             
         return F.log_softmax(x, dim=2)        
+
+class LSTMLM2(EmbeddingsLM):
+    def __init__(self, TEXT, **kwargs):
+        # sets up self.D, self.V, self.embeddings, self.dropout
+        super(LSTMLM2, self).__init__(TEXT, **kwargs)
+        
+        # Save parameters:
+        self.hidden_dim = kwargs.get('hidden_dim', 650)
+        self.num_layers = kwargs.get('num_layers', 1)
+        
+        # The LSTM takes word embeddings as inputs, and outputs hidden states
+        # with dimensionality hidden_dim.
+        # TODO: Make sure LSTM does dropout the right way on the inner parameters
+        self.lstm = nn.LSTM(self.D, self.hidden_dim,
+                            num_layers=self.num_layers,
+                            dropout=kwargs.get('dropout', 0.5),
+                            batch_first=True)
+        
+        # The linear layer that maps from hidden state space to label space
+        self.linear = nn.Linear(self.hidden_dim, self.V)
+
+    # hidden should be [batch_sz, num_layers, hidden_dim]
+    def forward(self, x, hidden):
+        sent_len = x.size(1)
+        btch_sz = x.size(0)
+        x = self.embeddings(x) # [btch_sz, sent_len, D]
+
+        # hidden_out is [batch_sz, num_layers, hidden_dim]
+        lstm_out, hidden_out = self.lstm(x, hidden)
+
+        lstm_out = self.dropout(lstm_out)
+        # lstm_out is [batch_sz, sent_len, hidden]
+        pred = self.linear(lstm_out)
+        return F.log_softmax(pred, dim=2), hidden_out
+    
+
+# OLD VERSION
+class LSTMLM(nn.Module):
+    def __init__(self, TEXT, **kwargs):
+        super(LSTMLM, self).__init__()
+        
+        # Save parameters:
+        self.hidden_dim = kwargs.get('hidden_dim', 650)
+        self.btch_sz = kwargs.get('btch_sz', 10)
+ 
+        # V is size of vocab, D is dim of embedding
+        V = TEXT.vocab.vectors.size()[0]
+        D = TEXT.vocab.vectors.size()[1]
+        self.embeddings = nn.Embedding(V, D)
+        self.embeddings.weight = nn.Parameter(
+            TEXT.vocab.vectors, requires_grad= \
+            kwargs.get('train_embeddings', True))
+        
+        # The LSTM takes word embeddings as inputs, and outputs hidden states
+        # with dimensionality hidden_dim.
+        self.lstm = nn.LSTM(D, self.hidden_dim)
+        
+        # The linear layer that maps from hidden state space to label space
+        self.linear = nn.Linear(self.hidden_dim, V)
+        self.hidden = self.init_hidden()
+        
+    def init_hidden(self):
+        # Before we've done anything, we dont have any hidden state.
+        # The axes semantics are (num_layers, minibatch_size, hidden_dim)
+        return (autograd.Variable(torch.zeros(1, self.btch_sz, self.hidden_dim).cuda()),
+                autograd.Variable(torch.zeros(1, self.btch_sz, self.hidden_dim).cuda()))
+        
+    def forward(self, x):
+        sent_len = x.size(1)
+        btch_sz = x.size(0)
+        x = self.embeddings(x) # [btch_sz, sent_len, D]
+        lstm_out, self.hidden = self.lstm(
+            x.view(sent_len, btch_sz, -1), self.hidden)
+        pred = self.linear(lstm_out.view(sent_len, btch_sz, -1))
+        return F.log_softmax(pred, dim=2)
