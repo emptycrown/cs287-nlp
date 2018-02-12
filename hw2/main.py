@@ -93,7 +93,7 @@ def train_network(net_name, args, TEXT, train_val_test):
         bptt_len=args.bptt_len, repeat=False, shuffle=True)
     if args.early_stop:
         le = LangEvaluator(model, TEXT, use_hidden=(net_name in RNN_NAMES))
-        return trainer.train(train_iter, le=le, val_iter=val_iter,
+        return trainer.train(train_iter, le=le, val_iter=val_iter, test_iter=test_iter,
                       retain_graph=(args.t_retain_graph),
                       **prepare_kwargs(args, 'tt'))
     else:

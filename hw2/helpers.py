@@ -199,7 +199,7 @@ class LangTrainer(LangModelUser):
 
     # le is a LangEvaluator, and if supplied must have a val_iter
     # along with it
-    def train(self, torch_train_iter, le=None, val_iter=None,
+    def train(self, torch_train_iter, le=None, val_iter=None, test_iter=None,
               **kwargs):
         start_time = time.time()
         retain_graph = kwargs.get('retain_graph', False)
@@ -247,9 +247,14 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    # if len(self.val_perfs) > 2 and \
-                    #    self.val_perfs[-1] > self.val_perfs[-2] - 0.1:
-                    #     break
+                    if len(self.val_perfs) > 2 and \
+                       self.val_perfs[-1] > self.val_perfs[-2] - 0.1:
+                        break
+        if kwargs.get('produce_predictions',False):
+            print('Writing test predictions to predictions.txt...')
+            if (not le is None) and (not test_iter is None):
+                print('Test set metric: %f' % \
+                    le.evaluate(test_iter))
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
             return self.val_perfs[-1]
