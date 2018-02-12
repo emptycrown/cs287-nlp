@@ -57,6 +57,10 @@ def parse_input():
     # Process of training args:
     parser.add_argument('--tt_num_iter', type=int, default=100)
     parser.add_argument('--tt_skip_iter', type=int, default=1)
+
+    #Testing
+    parser.add_argument('--produce_predictions', type=int, default=100)
+
     args = parser.parse_args()
     return args
 
