@@ -248,13 +248,23 @@ class LangTrainer(LangModelUser):
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
                     if len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2] - 0.1:
+                       self.val_perfs[-1] > self.val_perfs[-2] - 100:
                         break
         if kwargs.get('produce_predictions',False):
             print('Writing test predictions to predictions.txt...')
             if (not le is None) and (not test_iter is None):
                 print('Test set metric: %f' % \
                     le.evaluate(test_iter))
+            if self.use_hidden:
+                log_probs, _ = self.model(*var_feature_arr)
+            else:
+                log_probs = self.model(*var_feature_arr)
+            print(log_probs.size())
+            # predictions = [TEXT.vocab.itos[i] for i, c in count.most_common(20)]
+            # with open("sample.txt", "w") as fout: 
+            #     print("id,word", file=fout)
+            #     for i, l in enumerate(open("input.txt"), 1):
+            #         print("%d,%s"%(i, " ".join(predictions)), file=fout)
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
             return self.val_perfs[-1]
