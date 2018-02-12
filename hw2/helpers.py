@@ -199,8 +199,7 @@ class LangTrainer(LangModelUser):
                 if self.clip_norm > 0:
                     # Norm clipping: returns a float
                     norm = nn.utils.clip_grad_norm(
-                        filter(lambda p : p.requires_grad,
-                               self.model.parameters()), self.clip_norm)
+                        self.model.parameters(), self.clip_norm)
                     self.training_norms.append(norm)
                 else:
                     self.training_norms.append(-1)
