@@ -183,11 +183,11 @@ class LSTMLM2(EmbeddingsLM):
     def forward(self, x, hidden):
         # sent_len = x.size(1)
         # btch_sz = x.size(0)
+
         x = self.embeddings(x) # [btch_sz, sent_len, D]
 
         # Put dropout before the LSTM as in the paper
         x = self.dropout(x)
-
         # hidden_out is ([batch_sz, num_layers, hidden_dim]) * 2
         lstm_out, hidden_out = self.lstm(x, hidden)
 
@@ -195,6 +195,7 @@ class LSTMLM2(EmbeddingsLM):
         lstm_out = self.dropout(lstm_out)
         # pred is [batch_sz, sent_len, V]
         pred = self.linear(lstm_out)
+
         return F.log_softmax(pred, dim=2), hidden_out
     
 

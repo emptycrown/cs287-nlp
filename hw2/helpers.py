@@ -45,12 +45,13 @@ class LangModelUser(object):
         # [batch_size * sent_len, size_vocab]
         vocab_len = output.size()[-1]
         output = output.view(-1, vocab_len)
+        sent_len = batch.size(1)
         # [batch_size * sent_len]
         batch = batch.view(-1, 1)
         batch_probs = -1 * torch.gather(output, 1, 
                                         batch) #.type(torch.LongTensor))
         if mode == 'mean':
-            return torch.mean(batch_probs)
+            return torch.mean(batch_probs) * sent_len
         else:
             return torch.sum(batch_probs)
         return
@@ -111,8 +112,8 @@ class LangModelUser(object):
             return ([var_feature], var_label)
 
     def process_model_output(self, log_probs):
-        print(log_probs.data)
-        print(log_probs.data.size())
+        # print(log_probs.data)
+        # print(log_probs.data.size())
         return "<>"
 
         
@@ -148,10 +149,9 @@ class LangEvaluator(LangModelUser):
             predictions.append(self.process_model_output(log_probs))
                 
             # This is the true feature (might have hidden at 1)            
-            var_feature = var_feature_arr[0] 
-            cnt_nll += var_feature.data.size()[0] * \
-                       var_feature.data.size()[1]
-            sum_nll += self.loss_nll(var_feature,
+            cnt_nll += var_label.data.size()[0] * \
+                       var_label.data.size()[1]
+            sum_nll += self.loss_nll(var_label,
                                      log_probs, mode='sum').data[0]
             if not num_iter is None and i > num_iter:
                 break
@@ -220,6 +220,8 @@ class LangTrainer(LangModelUser):
               **kwargs):
         start_time = time.time()
         retain_graph = kwargs.get('retain_graph', False)
+        for p in self.model.parameters():
+            p.data.uniform_(-0.1, 0.1)
         for epoch in range(kwargs.get('num_iter', 100)):
             self.model.train()
             # Learning rate decay, if any
@@ -255,7 +257,7 @@ class LangTrainer(LangModelUser):
 
                 # Logging
                 print('Epoch %d, loss: %f, norm: %f, elapsed: %f, lrn_rate: %f' \
-                      % (epoch, self.training_losses[-1],
+                      % (epoch, np.mean(self.training_losses[-10:]),
                          self.training_norms[-1],
                          time.time() - start_time,
                          self.base_lrn_rate * self.lambda_lr(epoch)))
@@ -264,9 +266,10 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    if len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2] - 100: #TODO: Change back to 0.1
-                        break
+                    # if len(self.val_perfs) > 2 and \
+                    #    self.val_perfs[-1] > self.val_perfs[-2] - 1: #TODO: Change back to 0.1
+                    #     break
+
         if kwargs.get('produce_predictions',False):
             if (not le is None) and (not test_iter is None):
                 print('Writing test predictions to predictions.txt...')
