@@ -219,7 +219,7 @@ class LangEvaluator(LangModelUser):
             predictions += self.process_model_output(log_probs)
                 
         print('Writing test predictions to predictions.txt...')
-        with open("predictions.txt", "w") as fout: 
+        with open("predictions3.txt", "w") as fout: 
             print("id,word", file=fout)
             for i,l in enumerate(predictions, 1):
                 print("%d,%s"%(i, " ".join(l)), file=fout)
@@ -247,7 +247,7 @@ class LangTrainer(LangModelUser):
             self.lambda_lr = lambda i : 1
         elif lr_decay_opt == 'invlin':
             decay_rate = kwargs.get('lrn_decay_rate', 0.1)
-            self.lambda_lr = lambda i : 1 / (1 + i * decay_rate)
+            self.lambda_lr = lambda i : 1 / (1 + i * decay_rate) if i > 6 else 1
         else:
             raise ValueError('Invalid learning rate decay option: %s' \
                              % lr_decay_opt)
@@ -334,7 +334,7 @@ class LangTrainer(LangModelUser):
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
                     if len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2] - 1: #TODO: Change back to 0.1
+                       self.val_perfs[-1] > self.val_perfs[-2] - 0.5: #TODO: Change back to 0.1
                         break
 
         if kwargs.get('produce_predictions',False):
