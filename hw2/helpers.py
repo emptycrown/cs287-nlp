@@ -170,7 +170,6 @@ class LangEvaluator(LangModelUser):
     def evaluate(self, test_iter, num_iter=None):
         start_time = time.time()
         self.model.eval() # In case we have dropout
-        self.init_epoch()
         sum_nll = 0
         cnt_nll = 0
 
@@ -288,7 +287,7 @@ class LangTrainer(LangModelUser):
         start_time = time.time()
         retain_graph = kwargs.get('retain_graph', False)
         for p in self.model.parameters():
-            p.data.uniform_(-0.1, 0.1)
+            p.data.uniform_(-0.05, 0.05)
         for epoch in range(kwargs.get('num_iter', 100)):
             self.init_epoch()
             self.model.train()
@@ -334,14 +333,14 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    if len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2] - 0.5: #TODO: Change back to 0.1
-                        break
+                    # if len(self.val_perfs) > 2 and \
+                    #   self.val_perfs[-1] > self.val_perfs[-2] - 0.5: #TODO: Change back to 0.1
+                    #    break
 
-            if kwargs.get('produce_predictions',False):
-                if (not le is None) and (not test_set is None):
-                    print('Predicting test set...')
-                    print('Produced %d predictions!' % len(le.predict(test_set)))
+        if kwargs.get('produce_predictions',False):
+            if (not le is None) and (not test_set is None):
+                print('Predicting test set...')
+                print('Produced %d predictions!' % len(le.predict(test_set)))
 
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
