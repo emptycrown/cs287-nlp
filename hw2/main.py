@@ -91,12 +91,15 @@ def train_network(net_name, args, TEXT, train_val_test):
     train_iter, val_iter, _ = torchtext.data.BPTTIterator.splits(
         train_val_test, batch_size=args.batch_sz, device=-1,
         bptt_len=args.bptt_len, repeat=False)
-    _, _, test_iter = torchtext.data.BPTTIterator.splits(
-        train_val_test, batch_size=args.batch_sz, device=-1,
-        bptt_len=10, repeat=False) #length 10 for kaggle
+    
+    test_set = []
+    for i, line in enumerate(open("input.txt"), 1):
+        words = line.split()[:-1]
+        test_set.append([TEXT.vocab.stoi[s] for s in words])
+    
     if args.early_stop:
         le = LangEvaluator(model, TEXT, use_hidden=(net_name in RNN_NAMES))
-        return trainer.train(train_iter, le=le, val_iter=val_iter, test_iter=test_iter,
+        return trainer.train(train_iter, le=le, val_iter=val_iter, test_set=test_set,
                       retain_graph=(args.t_retain_graph),
                       **prepare_kwargs(args, 'tt'))
     else:

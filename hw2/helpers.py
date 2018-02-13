@@ -104,18 +104,18 @@ class LangModelUser(object):
         return batch_transpose[:, self.shift_label:].contiguous()
     '''
 
-    def zeros_hidden(self, batch):
-        return torch.zeros(self.model.num_layers, batch.text.size(1),
+    def zeros_hidden(self, batch_sz):
+        return torch.zeros(self.model.num_layers, batch_sz,
                            self.model.hidden_dim)
     
     # We haven't yet transposed batch, so this should work (and
     # batch_first does not apply to hidden layers in lstm, for some
     # reason)
-    def prepare_hidden(self, batch):
-        if not self.prev_hidden is None:
+    def prepare_hidden(self, batch_sz, from_scratch=False):
+        if (not self.prev_hidden is None) and not from_scratch:
             pre_hidden= self.prev_hidden
         else:
-            pre_hidden = (self.zeros_hidden(batch), self.zeros_hidden(batch))
+            pre_hidden = (self.zeros_hidden(batch_sz), self.zeros_hidden(batch_sz))
         if self.cuda:
             pre_hidden = tuple(t.cuda() for t in pre_hidden)
         return tuple(autograd.Variable(t) for t in pre_hidden)
@@ -130,7 +130,7 @@ class LangModelUser(object):
 
         if self.use_hidden:
             # [num_layers, batch-sz, hidden_dim]
-            var_hidden = self.prepare_hidden(batch)
+            var_hidden = self.prepare_hidden(batch.text.size(1))
 
         # print('FEATURE BATCH')
         # inspect_batch(feature, self._TEXT)
@@ -167,13 +167,12 @@ class LangEvaluator(LangModelUser):
                                             **kwargs)
         self.eval_metric = kwargs.get('evalmetric', 'perplexity')
         
-    def evaluate(self, test_iter, num_iter=None, produce_predictions=False):
+    def evaluate(self, test_iter, num_iter=None):
         start_time = time.time()
         self.model.eval() # In case we have dropout
         sum_nll = 0
         cnt_nll = 0
 
-        predictions = []
         for i,batch in enumerate(test_iter):
             # Model output: [batch_size, sent_len, size_vocab]; these
             # aren't actually probabilities if the model is a Trigram,
@@ -186,10 +185,6 @@ class LangEvaluator(LangModelUser):
                 self.detach_hidden()
             else:
                 log_probs = self.model(*var_feature_arr)
-
-            # Get predictions for test data
-            if produce_predictions:
-                predictions += self.process_model_output(log_probs)
                 
             # This is the true feature (might have hidden at 1)            
             cnt_nll += var_label.data.size()[0] * \
@@ -199,16 +194,39 @@ class LangEvaluator(LangModelUser):
             if not num_iter is None and i > num_iter:
                 break
 
-        if produce_predictions:
-            print('Writing test predictions to predictions.txt...')
-            with open("predictions.txt", "w") as fout: 
-                print("id,word", file=fout)
-                for i,l in enumerate(predictions, 1):
-                    print("%d,%s"%(i, " ".join(l)), file=fout)
-
         self.model.train() # Wrap model.eval()
         print('Validation time: %f seconds' % (time.time() - start_time))
         return np.exp(sum_nll / cnt_nll)
+    
+    def predict(self, test_set):
+        start_time = time.time()
+        self.model.eval() # In case we have dropout
+
+        predictions = []
+        for i,sent in enumerate(test_set):
+            # Model output: [1, sent_len, size_vocab]; 
+            var_feature = autograd.Variable(torch.LongTensor(sent).cuda()).view(1,-1)
+            var_hidden = self.prepare_hidden(1, from_scratch=True)
+            var_feature_arr = [var_feature, var_hidden]
+            
+            if self.use_hidden:
+                # keeping track of hidden state does not matter in test set
+                log_probs, _ = self.model(*var_feature_arr)
+            else:
+                log_probs = self.model(*var_feature_arr)
+
+            # Get predictions for test data
+            predictions += self.process_model_output(log_probs)
+                
+        print('Writing test predictions to predictions.txt...')
+        with open("predictions.txt", "w") as fout: 
+            print("id,word", file=fout)
+            for i,l in enumerate(predictions, 1):
+                print("%d,%s"%(i, " ".join(l)), file=fout)
+
+        self.model.train() # Wrap model.eval()
+        print('Validation time: %f seconds' % (time.time() - start_time))
+        return predictions
 
 # Option use_hidden is special: only intended for LSTM/RNN usage!
 class LangTrainer(LangModelUser):
@@ -264,7 +282,7 @@ class LangTrainer(LangModelUser):
 
     # le is a LangEvaluator, and if supplied must have a val_iter
     # along with it
-    def train(self, torch_train_iter, le=None, val_iter=None, test_iter=None,
+    def train(self, torch_train_iter, le=None, val_iter=None, test_set=None,
               **kwargs):
         start_time = time.time()
         retain_graph = kwargs.get('retain_graph', False)
@@ -315,15 +333,14 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    if len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2] - 1: #TODO: Change back to 0.1
+                    if True or (len(self.val_perfs) > 2 and \
+                       self.val_perfs[-1] > self.val_perfs[-2] - 1): #TODO: Change back to 0.1
                         break
 
         if kwargs.get('produce_predictions',False):
-            if (not le is None) and (not test_iter is None):
-                print('Writing test predictions to predictions.txt...')
-                print('Test set metric: %f' % \
-                    le.evaluate(test_iter, produce_predictions=kwargs.get('produce_predictions',False)))
+            if (not le is None) and (not test_set is None):
+                print('Predicting test set...')
+                print('Produced %d predictions!' % len(le.predict(test_set)))
 
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
