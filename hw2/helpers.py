@@ -149,11 +149,12 @@ class LangModelUser(object):
         # log_probs is [batch_sz, sent_len, vocab_sz]        
         target_probs = log_probs[:,-1,:]
         # pred_idx is [batch_sz, 20]
-        _, pred_idx = torch.topk(target_probs, 20, dim=1)
+        _, pred_idx = torch.topk(target_probs, 25, dim=1)
         
         batch_pred = []
         for sent_pred in pred_idx.data:
-            batch_pred.append([self._TEXT.vocab.itos[i] for i in sent_pred])
+            filtered_pred = [self._TEXT.vocab.itos[i] for i in sent_pred if self._TEXT.vocab.itos[i] != "<eos>"]
+            batch_pred.append(filtered_pred[:20])
         return batch_pred
 
         
@@ -219,7 +220,7 @@ class LangEvaluator(LangModelUser):
             predictions += self.process_model_output(log_probs)
                 
         print('Writing test predictions to predictions.txt...')
-        with open("predictions3.txt", "w") as fout: 
+        with open("predictions_eos.txt", "w") as fout: 
             print("id,word", file=fout)
             for i,l in enumerate(predictions, 1):
                 print("%d,%s"%(i, " ".join(l)), file=fout)
