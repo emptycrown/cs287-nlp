@@ -170,6 +170,7 @@ class LangEvaluator(LangModelUser):
     def evaluate(self, test_iter, num_iter=None):
         start_time = time.time()
         self.model.eval() # In case we have dropout
+        self.init_epoch()
         sum_nll = 0
         cnt_nll = 0
 
@@ -219,7 +220,7 @@ class LangEvaluator(LangModelUser):
             predictions += self.process_model_output(log_probs)
                 
         print('Writing test predictions to predictions.txt...')
-        with open("predictions2.txt", "w") as fout: 
+        with open("predictions-noah.txt", "w") as fout: 
             print("id,word", file=fout)
             for i,l in enumerate(predictions, 1):
                 print("%d,%s"%(i, " ".join(l)), file=fout)
@@ -337,10 +338,10 @@ class LangTrainer(LangModelUser):
                        self.val_perfs[-1] > self.val_perfs[-2] - 0.5: #TODO: Change back to 0.1
                         break
 
-        if kwargs.get('produce_predictions',False):
-            if (not le is None) and (not test_set is None):
-                print('Predicting test set...')
-                print('Produced %d predictions!' % len(le.predict(test_set)))
+            if kwargs.get('produce_predictions',False):
+                if (not le is None) and (not test_set is None):
+                    print('Predicting test set...')
+                    print('Produced %d predictions!' % len(le.predict(test_set)))
 
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
