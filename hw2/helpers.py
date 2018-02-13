@@ -333,8 +333,8 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    if True or (len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2] - 1): #TODO: Change back to 0.1
+                    if len(self.val_perfs) > 2 and \
+                       self.val_perfs[-1] > self.val_perfs[-2] - 1: #TODO: Change back to 0.1
                         break
 
         if kwargs.get('produce_predictions',False):
