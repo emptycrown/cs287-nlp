@@ -144,10 +144,17 @@ class LangModelUser(object):
         else:
             return ([var_feature], var_label)
 
+    # returns list of lists, each containing top 20 predictions
     def process_model_output(self, log_probs):
-        # print(log_probs.data)
-        # print(log_probs.data.size())
-        return "<>"
+        # log_probs is [batch_sz, sent_len, vocab_sz]        
+        target_probs = log_probs[:,-1,:]
+        # pred_idx is [batch_sz, 20]
+        _, pred_idx = torch.topk(target_probs, 20, dim=1)
+        
+        batch_pred = []
+        for sent_pred in pred_idx.data:
+            batch_pred.append([TEXT.vocab.itos[i] for i in sent_pred])
+        return batch_pred
 
         
             
@@ -180,7 +187,9 @@ class LangEvaluator(LangModelUser):
             else:
                 log_probs = self.model(*var_feature_arr)
 
-            predictions.append(self.process_model_output(log_probs))
+            # Get predictions for test data
+            if produce_predictions:
+                predictions += self.process_model_output(log_probs)
                 
             # This is the true feature (might have hidden at 1)            
             cnt_nll += var_label.data.size()[0] * \
@@ -191,9 +200,10 @@ class LangEvaluator(LangModelUser):
                 break
 
         if produce_predictions:
+            print('Writing test predictions to predictions.txt...')
             with open("predictions.txt", "w") as fout: 
                 print("id,word", file=fout)
-                for i, l in enumerate(predictions, 1):
+                for i,l in enumerate(predictions, 1):
                     print("%d,%s"%(i, " ".join(l)), file=fout)
 
         self.model.train() # Wrap model.eval()
@@ -305,9 +315,9 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    # if len(self.val_perfs) > 2 and \
-                    #    self.val_perfs[-1] > self.val_perfs[-2] - 1: #TODO: Change back to 0.1
-                    #     break
+                    if len(self.val_perfs) > 2 and \
+                       self.val_perfs[-1] > self.val_perfs[-2] - 1: #TODO: Change back to 0.1
+                        break
 
         if kwargs.get('produce_predictions',False):
             if (not le is None) and (not test_iter is None):
