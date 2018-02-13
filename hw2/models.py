@@ -166,7 +166,7 @@ class LSTMLM2(EmbeddingsLM):
         
         # Save parameters:
         self.hidden_dim = kwargs.get('hidden_size', 650)
-        self.num_layers = kwargs.get('num_layers', 1)
+        self.num_layers = kwargs.get('num_layers', 2)
         
         # The LSTM takes word embeddings as inputs, and outputs hidden states
         # with dimensionality hidden_dim.
@@ -184,6 +184,9 @@ class LSTMLM2(EmbeddingsLM):
         # sent_len = x.size(1)
         # btch_sz = x.size(0)
         x = self.embeddings(x) # [btch_sz, sent_len, D]
+
+        # Put dropout before the LSTM as in the paper
+        x = self.dropout(x)
 
         # hidden_out is ([batch_sz, num_layers, hidden_dim]) * 2
         lstm_out, hidden_out = self.lstm(x, hidden)

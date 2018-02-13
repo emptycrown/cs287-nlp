@@ -57,6 +57,9 @@ def parse_input():
     # Process of training args:
     parser.add_argument('--tt_num_iter', type=int, default=100)
     parser.add_argument('--tt_skip_iter', type=int, default=1)
+    parser.add_argument('--tt_produce_predictions', action='store_true', 
+                        default=False)
+
     args = parser.parse_args()
     return args
 
@@ -93,7 +96,7 @@ def train_network(net_name, args, TEXT, train_val_test):
         bptt_len=args.bptt_len, repeat=False, shuffle=True)
     if args.early_stop:
         le = LangEvaluator(model, TEXT, use_hidden=(net_name in RNN_NAMES))
-        return trainer.train(train_iter, le=le, val_iter=val_iter,
+        return trainer.train(train_iter, le=le, val_iter=val_iter, test_iter=test_iter,
                       retain_graph=(args.t_retain_graph),
                       **prepare_kwargs(args, 'tt'))
     else:
@@ -108,14 +111,14 @@ def main(args):
     # Data distributed with the assignment
     train, val, test = torchtext.datasets.LanguageModelingDataset.splits(
         path=".", 
-        train="train.txt", validation="valid.txt", test="valid.txt", text_field=TEXT)
+        train="train.txt", validation="valid.txt", test="input.txt", text_field=TEXT)
 
     TEXT.build_vocab(train)
     if args.debug:
         TEXT.build_vocab(train, max_size=1000)
 
-    train_iter, val_iter, test_iter = torchtext.data.BPTTIterator.splits(
-        (train, val, test), batch_size=10, device=-1, bptt_len=32, repeat=False)
+    # train_iter, val_iter, test_iter = torchtext.data.BPTTIterator.splits(
+    #     (train, val, test), batch_size=10, device=-1, bptt_len=32, repeat=False)
 
     # Build the vocabulary with word embeddings
     url = 'https://s3-us-west-1.amazonaws.com/fasttext-vectors/wiki.simple.vec'

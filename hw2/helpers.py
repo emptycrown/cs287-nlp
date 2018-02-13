@@ -109,6 +109,12 @@ class LangModelUser(object):
             return ([var_feature, var_hidden], var_label)
         else:
             return ([var_feature], var_label)
+
+    def process_model_output(self, log_probs):
+        print(log_probs.data)
+        print(log_probs.data.size())
+        return "<>"
+
         
             
 
@@ -120,21 +126,26 @@ class LangEvaluator(LangModelUser):
                                             **kwargs)
         self.eval_metric = kwargs.get('evalmetric', 'perplexity')
         
-    def evaluate(self, test_iter, num_iter=None):
+    def evaluate(self, test_iter, num_iter=None, produce_predictions=False):
         start_time = time.time()
         self.model.eval() # In case we have dropout
         sum_nll = 0
         cnt_nll = 0
+
+        predictions = []
         for i,batch in enumerate(test_iter):
             # Model output: [batch_size, sent_len, size_vocab]; these
             # aren't actually probabilities if the model is a Trigram,
             # but this doesn't matter.
             
             var_feature_arr, var_label = self.prepare_model_inputs(batch)
+            
             if self.use_hidden:
                 log_probs, _ = self.model(*var_feature_arr)
             else:
                 log_probs = self.model(*var_feature_arr)
+
+            predictions.append(self.process_model_output(log_probs))
                 
             # This is the true feature (might have hidden at 1)            
             var_feature = var_feature_arr[0] 
@@ -144,6 +155,12 @@ class LangEvaluator(LangModelUser):
                                      log_probs, mode='sum').data[0]
             if not num_iter is None and i > num_iter:
                 break
+
+        if produce_predictions:
+            with open("predictions.txt", "w") as fout: 
+                print("id,word", file=fout)
+                for i, l in enumerate(predictions, 1):
+                    print("%d,%s"%(i, " ".join(l)), file=fout)
 
         self.model.train() # Wrap model.eval()
         print('Validation time: %f seconds' % (time.time() - start_time))
@@ -199,7 +216,7 @@ class LangTrainer(LangModelUser):
 
     # le is a LangEvaluator, and if supplied must have a val_iter
     # along with it
-    def train(self, torch_train_iter, le=None, val_iter=None,
+    def train(self, torch_train_iter, le=None, val_iter=None, test_iter=None,
               **kwargs):
         start_time = time.time()
         retain_graph = kwargs.get('retain_graph', False)
@@ -213,7 +230,11 @@ class LangTrainer(LangModelUser):
             for batch in train_iter:
                 self.model.zero_grad()
                 loss = self.make_loss(batch)
+                    
+                # Do gradient updates
+                loss.backward(retain_graph=retain_graph)
 
+                # Clip grad norm after backward but before step
                 if self.clip_norm > 0:
                     # Norm clipping: returns a float
                     norm = nn.utils.clip_grad_norm(
@@ -221,9 +242,7 @@ class LangTrainer(LangModelUser):
                     self.training_norms.append(norm)
                 else:
                     self.training_norms.append(-1)
-                    
-                # Do gradient updates
-                loss.backward(retain_graph=retain_graph)
+
                 self._optimizer.step()
 
             # Logging, early stopping
@@ -245,9 +264,15 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    # if len(self.val_perfs) > 2 and \
-                    #    self.val_perfs[-1] > self.val_perfs[-2] - 0.1:
-                    #     break
+                    if len(self.val_perfs) > 2 and \
+                       self.val_perfs[-1] > self.val_perfs[-2] - 100: #TODO: Change back to 0.1
+                        break
+        if kwargs.get('produce_predictions',False):
+            if (not le is None) and (not test_iter is None):
+                print('Writing test predictions to predictions.txt...')
+                print('Test set metric: %f' % \
+                    le.evaluate(test_iter, produce_predictions=kwargs.get('produce_predictions',False)))
+
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
             return self.val_perfs[-1]
