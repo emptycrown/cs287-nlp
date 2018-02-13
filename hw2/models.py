@@ -171,7 +171,7 @@ class LSTMLM2(EmbeddingsLM):
         # The LSTM takes word embeddings as inputs, and outputs hidden states
         # with dimensionality hidden_dim.
         # TODO: Make sure LSTM does dropout the right way on the inner parameters
-        self.lstm = nn.LSTM(self.D, self.hidden_dim,
+        self.lstm = nn.LSTM(input_size=self.D, hidden_size=self.hidden_dim,
                             num_layers=self.num_layers,
                             dropout=kwargs.get('dropout', 0.5),
                             batch_first=True)
@@ -181,11 +181,11 @@ class LSTMLM2(EmbeddingsLM):
 
     # hidden should be [batch_sz, num_layers, hidden_dim]
     def forward(self, x, hidden):
-        sent_len = x.size(1)
-        btch_sz = x.size(0)
+        # sent_len = x.size(1)
+        # btch_sz = x.size(0)
         x = self.embeddings(x) # [btch_sz, sent_len, D]
 
-        # hidden_out is [batch_sz, num_layers, hidden_dim]
+        # hidden_out is ([batch_sz, num_layers, hidden_dim]) * 2
         lstm_out, hidden_out = self.lstm(x, hidden)
 
         # lstm_out is [batch_sz, sent_len, hidden]
