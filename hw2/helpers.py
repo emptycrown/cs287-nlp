@@ -12,7 +12,8 @@ import time
 # Debugging functions
 
 # batch is [batch_size, sent_len], is a tensor
-def inspect_batch(batch, TEXT):
+def inspect_batch(batch, TEXT, s=''):
+    print(s)
     for i in range(batch.size(0)):
         print(' '.join([TEXT.vocab.itos[j] for j in batch[i,:]]))
 
@@ -37,6 +38,14 @@ class LangModelUser(object):
             print('Using CUDA for evaluation...')
         else:
             print('CUDA is unavailable...')
+        self.init_epoch()
+            
+    def init_epoch(self):
+        self.prev_feature = None
+        self.prev_hidden = None
+
+    def detach_hidden(self):
+        self.prev_hidden = tuple(t.data for t in self.prev_hidden)
             
     # Here batch is output from a RNN/NNLM/Trigram model:
     # [..., size_vocab], and output are the real words: [...]
@@ -60,11 +69,32 @@ class LangModelUser(object):
     def loss_perplexity(*args):
         return torch.exp(self.loss_nll(*args))
 
+    def get_feature_and_label(self, batch):
+        batch_transpose = torch.t(batch.text.data)
+        if self.shift_label > 0:
+            if self.prev_feature is None:
+                feat = batch_transpose[:,:-self.shift_label]
+                lab = batch_transpose[:, self.shift_label:]
+            else:
+                feat = torch.cat((self.prev_feature,
+                                  batch_transpose[:,:-self.shift_label]),
+                                 dim=1)
+                lab = batch_transpose
+            self.prev_feature = batch_transpose[:,-self.shift_label:]
+            return (feat.contiguous(), lab.contiguous())
+        else:
+            return (batch_transpose.contiguous(),
+                    batch_transpose.contiguous())
+
+    '''
     # Ignore the last self.shift_label words in each sentence
     def get_feature(self, batch):
         batch_transpose = torch.t(batch.text.data)
         if self.shift_label > 0:
-            return batch_transpose[:, :-self.shift_label].contiguous()
+            self.prev_feature = batch_transpose[:,-self.shift_label:]
+            return torch.cat(
+                (self.prev_feature,
+                 batch_transpose[:, :-self.shift_label])).contiguous()
         else:
             return batch_transpose.contiguous()
 
@@ -72,30 +102,35 @@ class LangModelUser(object):
     def get_label(self, batch):
         batch_transpose = torch.t(batch.text.data)
         return batch_transpose[:, self.shift_label:].contiguous()
+    '''
 
+    def zeros_hidden(self, batch):
+        return torch.zeros(self.model.num_layers, batch.text.size(1),
+                           self.model.hidden_dim)
+    
     # We haven't yet transposed batch, so this should work (and
     # batch_first does not apply to hidden layers in lstm, for some
     # reason)
     def prepare_hidden(self, batch):
-        return torch.zeros(self.model.num_layers, batch.text.size(1),
-                           self.model.hidden_dim)
-
+        if not self.prev_hidden is None:
+            pre_hidden= self.prev_hidden
+        else:
+            pre_hidden = (self.zeros_hidden(batch), self.zeros_hidden(batch))
+        if self.cuda:
+            pre_hidden = tuple(t.cuda() for t in pre_hidden)
+        return tuple(autograd.Variable(t) for t in pre_hidden)
+            
     def prepare_model_inputs(self, batch):
         # TODO: this might break trigram stuff (easy to fix)...
         if self.cuda:
             # [batch_size, sent_len]                
-            feature, label = self.get_feature(batch).cuda(), \
-                             self.get_label(batch).cuda()
-            if self.use_hidden:
-                # [batch_sz, num_layers, hidden_dim]
-                hidden = (self.prepare_hidden(batch).cuda(),
-                          self.prepare_hidden(batch).cuda())
+            feature, label = tuple(t.cuda() for t in self.get_feature_and_label(batch))
         else:
-            feature, label = self.get_feature(batch), \
-                             self.get_label(batch)
-            if self.use_hidden:
-                hidden = (self.prepare_hidden(batch),
-                          self.prepare_hidden(batch))
+            feature, label = self.get_feature_and_label(batch)
+
+        if self.use_hidden:
+            # [num_layers, batch-sz, hidden_dim]
+            var_hidden = self.prepare_hidden(batch)
 
         # print('FEATURE BATCH')
         # inspect_batch(feature, self._TEXT)
@@ -105,8 +140,6 @@ class LangModelUser(object):
         var_feature = autograd.Variable(feature)
         var_label = autograd.Variable(label)
         if self.use_hidden:
-            var_hidden = (autograd.Variable(hidden[0]),
-                          autograd.Variable(hidden[1]))
             return ([var_feature, var_hidden], var_label)
         else:
             return ([var_feature], var_label)
@@ -138,11 +171,12 @@ class LangEvaluator(LangModelUser):
             # Model output: [batch_size, sent_len, size_vocab]; these
             # aren't actually probabilities if the model is a Trigram,
             # but this doesn't matter.
-            
+            # If self.prev_hidden is None, hidden will be 0
             var_feature_arr, var_label = self.prepare_model_inputs(batch)
             
             if self.use_hidden:
-                log_probs, _ = self.model(*var_feature_arr)
+                log_probs, self.prev_hidden = self.model(*var_feature_arr)
+                self.detach_hidden()
             else:
                 log_probs = self.model(*var_feature_arr)
 
@@ -206,9 +240,13 @@ class LangTrainer(LangModelUser):
     # variable's data and then making a new 
     # variable...this is kinda unnecessary and ugly
     def make_loss(self, batch):
+        # If self.prev_hidden does not exist, hidden will be 0
         var_feature_arr, var_label = self.prepare_model_inputs(batch)
+        # inspect_batch(var_feature_arr[0].data, self._TEXT, 'FEATURE')
+        # inspect_batch(var_label.data, self._TEXT, 'LABEL')
         if self.use_hidden:
-            log_probs, _ = self.model(*var_feature_arr)
+            log_probs, self.prev_hidden = self.model(*var_feature_arr)
+            self.detach_hidden()
         else:
             log_probs = self.model(*var_feature_arr)
         loss = self.loss_nll(var_label, log_probs)
@@ -223,6 +261,7 @@ class LangTrainer(LangModelUser):
         for p in self.model.parameters():
             p.data.uniform_(-0.1, 0.1)
         for epoch in range(kwargs.get('num_iter', 100)):
+            self.init_epoch()
             self.model.train()
             # Learning rate decay, if any
             self.scheduler.step()
