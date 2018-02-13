@@ -105,31 +105,32 @@ class LangModelUser(object):
     '''
 
     def zeros_hidden(self, batch):
-        return autograd.Variable(
-            torch.zeros(self.model.num_layers, batch.text.size(1),
-                        self.model.hidden_dim))
+        return torch.zeros(self.model.num_layers, batch.text.size(1),
+                           self.model.hidden_dim)
     
     # We haven't yet transposed batch, so this should work (and
     # batch_first does not apply to hidden layers in lstm, for some
     # reason)
     def prepare_hidden(self, batch):
         if not self.prev_hidden is None:
-            return (autograd.Variable(t) for t in self.prev_hidden)
-        return (self.zeros_hidden(batch),
-                self.zeros_hidden(batch))
-    
+            pre_hidden= self.prev_hidden
+        else:
+            pre_hidden = (self.zeros_hidden(batch), self.zeros_hidden(batch))
+        if self.cuda:
+            pre_hidden = tuple(t.cuda() for t in pre_hidden)
+        return tuple(autograd.Variable(t) for t in pre_hidden)
+            
     def prepare_model_inputs(self, batch):
         # TODO: this might break trigram stuff (easy to fix)...
         if self.cuda:
             # [batch_size, sent_len]                
-            feature, label = (t.cuda() for t in self.get_feature_and_label(batch))
-            if self.use_hidden:
-                # [batch_sz, num_layers, hidden_dim]
-                var_hidden = self.prepare_hidden(batch).cuda()
+            feature, label = tuple(t.cuda() for t in self.get_feature_and_label(batch))
         else:
             feature, label = self.get_feature_and_label(batch)
-            if self.use_hidden:
-                var_hidden = self.prepare_hidden(batch)
+
+        if self.use_hidden:
+            # [num_layers, batch-sz, hidden_dim]
+            var_hidden = self.prepare_hidden(batch)
 
         # print('FEATURE BATCH')
         # inspect_batch(feature, self._TEXT)
