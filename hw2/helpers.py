@@ -153,7 +153,7 @@ class LangModelUser(object):
         
         batch_pred = []
         for sent_pred in pred_idx.data:
-            batch_pred.append([TEXT.vocab.itos[i] for i in sent_pred])
+            batch_pred.append([self._TEXT.vocab.itos[i] for i in sent_pred])
         return batch_pred
 
         
