@@ -149,11 +149,12 @@ class LangModelUser(object):
         # log_probs is [batch_sz, sent_len, vocab_sz]        
         target_probs = log_probs[:,-1,:]
         # pred_idx is [batch_sz, 20]
-        _, pred_idx = torch.topk(target_probs, 20, dim=1)
+        _, pred_idx = torch.topk(target_probs, 25, dim=1)
         
         batch_pred = []
         for sent_pred in pred_idx.data:
-            batch_pred.append([self._TEXT.vocab.itos[i] for i in sent_pred])
+            filtered_pred = [self._TEXT.vocab.itos[i] for i in sent_pred if self._TEXT.vocab.itos[i] != "<eos>"]
+            batch_pred.append(filtered_pred[:20])
         return batch_pred
 
         
@@ -170,7 +171,6 @@ class LangEvaluator(LangModelUser):
     def evaluate(self, test_iter, num_iter=None):
         start_time = time.time()
         self.model.eval() # In case we have dropout
-        self.init_epoch()
         sum_nll = 0
         cnt_nll = 0
 
@@ -220,7 +220,7 @@ class LangEvaluator(LangModelUser):
             predictions += self.process_model_output(log_probs)
                 
         print('Writing test predictions to predictions.txt...')
-        with open("predictions-noah.txt", "w") as fout: 
+        with open("predictions_eos.txt", "w") as fout: 
             print("id,word", file=fout)
             for i,l in enumerate(predictions, 1):
                 print("%d,%s"%(i, " ".join(l)), file=fout)
@@ -296,7 +296,7 @@ class LangTrainer(LangModelUser):
         start_time = time.time()
         retain_graph = kwargs.get('retain_graph', False)
         for p in self.model.parameters():
-            p.data.uniform_(-0.1, 0.1)
+            p.data.uniform_(-0.05, 0.05)
         for epoch in range(kwargs.get('num_iter', 100)):
             self.init_epoch()
             self.model.train()
@@ -355,10 +355,10 @@ class LangTrainer(LangModelUser):
                     #    self.val_perfs[-1] > self.val_perfs[-2] - 0.5: #TODO: Change back to 0.1
                     #     break
 
-            if kwargs.get('produce_predictions',False):
-                if (not le is None) and (not test_set is None):
-                    print('Predicting test set...')
-                    print('Produced %d predictions!' % len(le.predict(test_set)))
+        if kwargs.get('produce_predictions',False):
+            if (not le is None) and (not test_set is None):
+                print('Predicting test set...')
+                print('Produced %d predictions!' % len(le.predict(test_set)))
 
         if len(self.val_perfs) > 1:
             print('FINAL VALID PERF', self.val_perfs[-1])
