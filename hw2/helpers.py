@@ -237,34 +237,34 @@ class LangTrainer(LangModelUser):
                                           **kwargs)
         # Settings:
         self.base_lrn_rate = kwargs.get('lrn_rate', 0.1)
-        optimizer = kwargs.get('optimizer', optim.SGD)
-        self._optimizer = optimizer(filter(lambda p : p.requires_grad,
-                                           model.parameters()),
-                                    lr=self.base_lrn_rate)
+        self.optimizer_type = kwargs.get('optimizer', optim.SGD)
+        self._optimizer = self.optimizer_type(filter(lambda p : p.requires_grad,
+                                                     model.parameters()),
+                                              lr=self.base_lrn_rate)
 
         # Do learning rate decay:
-        lr_decay_opt = kwargs.get('lrn_decay', 'none')
-        if lr_decay_opt == 'none':
+        self.lr_decay_opt = kwargs.get('lrn_decay', 'none')
+        if self.lr_decay_opt == 'none' or self.lr_decay_opt == 'adaptive':
             self.lambda_lr = lambda i : 1
-        elif lr_decay_opt == 'invlin':
+        elif self.lr_decay_opt == 'invlin':
             decay_rate = kwargs.get('lrn_decay_rate', 0.1)
             self.lambda_lr = lambda i : 1 / (1 + (i-6) * decay_rate) if i > 6 else 1
         else:
             raise ValueError('Invalid learning rate decay option: %s' \
-                             % lr_decay_opt)
+                             % self.lr_decay_opt)
         self.scheduler = optim.lr_scheduler.LambdaLR(self._optimizer,
                                                      self.lambda_lr)
             
         self.clip_norm = kwargs.get('clip_norm', 5)
-            
-        # TODO: implement validation thing for early stopping
-        self.training_losses = list()
-        self.training_norms = list()
-        self.val_perfs = list()
+        self.init_lists()
         if self.cuda:
             self.model.cuda()
     
-    
+    def init_lists(self):
+        self.training_losses = list()
+        self.training_norms = list()
+        self.val_perfs = list()
+            
     # We are doing a slightly funky thing of taking a 
     # variable's data and then making a new 
     # variable...this is kinda unnecessary and ugly
@@ -281,10 +281,18 @@ class LangTrainer(LangModelUser):
         loss = self.loss_nll(var_label, log_probs)
         return loss
 
+    def make_recordings(self, loss, norm):
+        if self.cuda:
+            self.training_losses.append(loss.data.cpu().numpy()[0])
+        else:
+            self.training_losses.append(loss.data.numpy()[0])
+        self.training_norms.append(norm)
+    
     # le is a LangEvaluator, and if supplied must have a val_iter
     # along with it
     def train(self, torch_train_iter, le=None, val_iter=None, test_set=None,
               **kwargs):
+        self.init_lists()
         start_time = time.time()
         retain_graph = kwargs.get('retain_graph', False)
         for p in self.model.parameters():
@@ -293,7 +301,16 @@ class LangTrainer(LangModelUser):
             self.init_epoch()
             self.model.train()
             # Learning rate decay, if any
-            self.scheduler.step()
+            if self.lr_decay_opt == 'adaptive':
+                if epoch > 15 and self.val_perfs[-1] > self.val_perfs[-2] - 1:
+                    self.base_lrn_rate = self.base_lrn_rate / 2
+                    self._optimizer = self.optimizer_type(filter(lambda p : p.requires_grad,
+                                                                 self.model.parameters()),
+                                                          lr=self.base_lrn_rate)
+                    print('Decaying LR to %f' % self.base_lrn_rate)
+            else:
+                self.scheduler.step()
+                
             torch_train_iter.init_epoch()
             train_iter = iter(torch_train_iter)
 
@@ -311,18 +328,18 @@ class LangTrainer(LangModelUser):
                         self.model.parameters(), self.clip_norm)
                     self.training_norms.append(norm)
                 else:
+                    norm = -1
                     self.training_norms.append(-1)
 
+                if kwargs.get('verbose', False):
+                    self.make_recordings(loss, norm)
                 self._optimizer.step()
 
             # Logging, early stopping
             if epoch % kwargs.get('skip_iter', 1) == 0:
                 # Update training_losses
-                if self.cuda:
-                    self.training_losses.append(loss.data.cpu().numpy()[0])
-                else:
-                    self.training_losses.append(loss.data.numpy()[0])
-
+                if not kwargs.get('verbose', False):
+                    self.make_recordings(loss, norm)
                 # Logging
                 print('Epoch %d, loss: %f, norm: %f, elapsed: %f, lrn_rate: %f' \
                       % (epoch, np.mean(self.training_losses[-10:]),
@@ -334,9 +351,9 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    if len(self.val_perfs) > 2 and \
-                       self.val_perfs[-1] > self.val_perfs[-2] - 0.5: #TODO: Change back to 0.1
-                        break
+                    # if len(self.val_perfs) > 2 and \
+                    #    self.val_perfs[-1] > self.val_perfs[-2] - 0.5: #TODO: Change back to 0.1
+                    #     break
 
             if kwargs.get('produce_predictions',False):
                 if (not le is None) and (not test_set is None):

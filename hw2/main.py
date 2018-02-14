@@ -27,7 +27,7 @@ ACT_NAMES = {'tanh' : F.tanh,
              'relu' : F.relu,
              'hardtanh' : F.hardtanh}
 
-def parse_input():
+def parse_input(input_str = None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true', default=False)
     parser.add_argument('--network', default='nnlm')
@@ -53,6 +53,7 @@ def parse_input():
     parser.add_argument('--m_kern_size_direct', type=int, default=-1)
     parser.add_argument('--m_dropout', type=float, default=0.5)
     parser.add_argument('--m_num_layers', type=int, default=1)
+    parser.add_argument('--m_tie_weights', action='store_true', default=False)
     
     # Process of training args:
     parser.add_argument('--tt_num_iter', type=int, default=100)
@@ -60,7 +61,7 @@ def parse_input():
     parser.add_argument('--tt_produce_predictions', action='store_true', 
                         default=False)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args=input_str)
     return args
 
 def prepare_special_args(args_dict, key_full, key_match):

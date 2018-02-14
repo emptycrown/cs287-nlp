@@ -179,6 +179,11 @@ class LSTMLM2(EmbeddingsLM):
         # The linear layer that maps from hidden state space to label space
         self.linear = nn.Linear(self.hidden_dim, self.V)
 
+        if kwargs.get('tie_weights', False):
+            if self.hidden_dim != self.D:
+                raise ValueError('For tied weights, hidden dim must be equal to num embeddings!')
+            self.linear.weight = self.embeddings.weight
+
     # hidden should be [batch_sz, num_layers, hidden_dim]
     def forward(self, x, hidden):
         # sent_len = x.size(1)
