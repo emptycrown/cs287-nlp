@@ -220,7 +220,7 @@ class LangEvaluator(LangModelUser):
             predictions += self.process_model_output(log_probs)
                 
         print('Writing test predictions to predictions.txt...')
-        with open("predictions_eos.txt", "w") as fout: 
+        with open("predictions_jesse.txt", "w") as fout: 
             print("id,word", file=fout)
             for i,l in enumerate(predictions, 1):
                 print("%d,%s"%(i, " ".join(l)), file=fout)
@@ -351,9 +351,9 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    # if len(self.val_perfs) > 2 and \
-                    #    self.val_perfs[-1] > self.val_perfs[-2] - 0.5: #TODO: Change back to 0.1
-                    #     break
+                    if len(self.val_perfs) > 2 and \
+                        self.val_perfs[-1] > self.val_perfs[-2] - 0.1: #TODO: Change back to 0.1
+                        break
 
         if kwargs.get('produce_predictions',False):
             if (not le is None) and (not test_set is None):
