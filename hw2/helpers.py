@@ -149,14 +149,14 @@ class LangModelUser(object):
         # log_probs is [batch_sz, sent_len, vocab_sz]        
         target_probs = log_probs[:,-1,:]
         # pred_idx is [batch_sz, 20]
-        _, pred_idx = torch.topk(target_probs, 25, dim=1)
+        _, pred_idx = torch.topk(target_probs, 20, dim=1)
         
         batch_pred = []
         for sent_pred in pred_idx.data:
-            filtered_pred = [self._TEXT.vocab.itos[i] for i in sent_pred if self._TEXT.vocab.itos[i] != "<eos>"]
+            #filtered_pred = [self._TEXT.vocab.itos[i] for i in sent_pred if self._TEXT.vocab.itos[i] != "<eos>"]
+            filtered_pred = [self._TEXT.vocab.itos[i] for i in sent_pred]
             batch_pred.append(filtered_pred[:20])
         return batch_pred
-
         
             
 
@@ -220,7 +220,7 @@ class LangEvaluator(LangModelUser):
             predictions += self.process_model_output(log_probs)
                 
         print('Writing test predictions to predictions.txt...')
-        with open("predictions_jesse.txt", "w") as fout: 
+        with open("predictions_jesse2.txt", "w") as fout: 
             print("id,word", file=fout)
             for i,l in enumerate(predictions, 1):
                 print("%d,%s"%(i, " ".join(l)), file=fout)
@@ -351,9 +351,9 @@ class LangTrainer(LangModelUser):
                     print('Validation set metric: %f' % \
                           self.val_perfs[-1])
                     # We've stopped improving (basically), so stop training
-                    if len(self.val_perfs) > 2 and \
-                        self.val_perfs[-1] > self.val_perfs[-2] - 0.1: #TODO: Change back to 0.1
-                        break
+                    #if len(self.val_perfs) > 2 and \
+                    #    self.val_perfs[-1] > self.val_perfs[-2] - 0.1: #TODO: Change back to 0.1
+                    #    break
 
         if kwargs.get('produce_predictions',False):
             if (not le is None) and (not test_set is None):
