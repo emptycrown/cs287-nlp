@@ -61,6 +61,9 @@ class NMTModelUser(object):
 
         return (var_src, var_trg, var_hidden)
 
+    def init_epoch(self):
+        self.prev_hidden = None
+
     # Assume log_probs is [batch_sz, sent_len, V], output is
     # [batch_sz, sent_len]
     @staticmethod
@@ -74,9 +77,47 @@ class NMTTrainer(NMTModelUser):
         super(NMTTrainer, self).__init__(models, TEXT_SRC, TEXT_TRG, **kwargs)
 
         self.use_attention = kwargs.get('attention', False)
+        self.base_lrn_rate = kwargs.get('lrn_rate', 0.1)
+        self.optimizer_type = kwargs.get('optimizer', optim.SGD)
+        self.optimizers = [self.optimizer_type(filter(lambda p : p.requires_grad,
+                                                      model.parameters()),
+                                               lr = self.base_lrn_rate) for \
+                           model in self.models]
 
-        # TODO: other setup
+        self.lr_decay_opt = kwargs.get('lrn_decay', 'none')
+        # TODO: setup for lr decay
 
+        self.clip_norm = kwargs.get('clip_norm', 5)
+        self.init_lists()
+        if self.cuda:
+            for model in self.models:
+                model.cuda()
+
+    def init_lists(self):
+        self.training_losses = list()
+        self.training_norms = list()
+        self.val_prefs = list()
+
+    def make_recordings(self, loss, norm):
+        if self.cuda:
+            self.training_losses.append(loss.data.cpu().numpy()[0])
+        else:
+            self.training_losses.append(loss.data.numpy()[0])
+        self.training_norms.append(norm)
+
+    def clip_norms(self):
+        # Clip grad norm after backward but before step
+        if self.clip_norm > 0:
+            parameters = tuple()
+            for model in self.models:
+                parameters += model.parameters()
+                
+            # Norm clipping: returns a float
+            norm = nn.utils.clip_grad_norm(
+                parameters, self.clip_norm)
+        else:
+            norm = -1
+        return norm
 
     def train_batch(self, batch):
         for model in self.models:
@@ -102,5 +143,38 @@ class NMTTrainer(NMTModelUser):
             loss = self.nll_loss(dec_output, var_trg)
 
         loss.backward()
+
+        # norms must be clipped after backward but before step
+        norm = self.clip_norms()
+
+        if kwargs.get('verbose', False):
+            self.make_recordings(loss, norm)
+
+        for optimizer in self.optimizers:
+            optimizer.step()
+
+    def init_parameters(self):
+        for model in self.models:
+            for p in model.parameters():
+                p.data.uniform_(-0.05, 0.05)
+
+    def train(torch_train_iter, le=None, val_iter=None, **kwargs):
+        self.init_lists()
+        start_time = time.time()
+        self.init_parameters()
+        torch_train_iter.init_epoch()
+        for epoch in range(kwargs.get('num_iter', 100)):
+            self.init_epoch()
+            for model in self.models:
+                model.train()
+
+            # TODO: LR decay
+            train_iter = iter(torch_train_iter)
+
+            for batch in train_iter:
+                self.train_batch(batch)
+
+            if epoch % kwargs.get('skip_iter', 1) == 0:
+                # TODO: make recordings
             
         
