@@ -70,8 +70,28 @@ class NMTModelUser(object):
     def nll_loss(log_probs, output, **kwargs):
         log_probs_rshp = log_probs.view(-1, log_probs.size(2))
         output_rshp = output.view(-1, output.size(2))
-        return F.nll_loss(log_probs_rshp, output_rshp, **kwargs)
+        sent_len = batch.size(1)
+        return F.nll_loss(log_probs_rshp, output_rshp, **kwargs) * \
+            sent_len
 
+class NMTEvaluator(NMTModelUser):
+    def __init__(self, models, TEXT_SRC, TEXT_TRG, **kwargs):
+        super(NMTEvaluator, self).__init__(models, TEXT_SRC, TEXT_TRG,
+                                           **kwargs)
+
+    def evaluate(self, test_iter, num_iter=None):
+        start_time = time.time()
+        for model in self.models:
+            model.eval()
+
+        for i,batch in enumerate(test_iter):
+            # var_src, var_trg are [batch_sz, sent_len]
+            var_src, var_trg, var_hidden = self.prepare_model_inputs(batch, zero_out=True,
+                                                                     model_num=0)
+
+            # TODO: implement beam search!
+
+    
 class NMTTrainer(NMTModelUser):
     def __init__(self, models, TEXT_SRC, TEXT_TRG, **kwargs):
         super(NMTTrainer, self).__init__(models, TEXT_SRC, TEXT_TRG, **kwargs)
@@ -98,12 +118,15 @@ class NMTTrainer(NMTModelUser):
         self.training_norms = list()
         self.val_prefs = list()
 
-    def make_recordings(self, loss, norm):
+    def get_loss_data(self, loss):
         if self.cuda:
-            self.training_losses.append(loss.data.cpu().numpy()[0])
+            return loss.data.cpu().numpy()[0]
         else:
-            self.training_losses.append(loss.data.numpy()[0])
+            return loss.data.numpy()[0]
+
+    def make_recordings(self, loss, norm):
         self.training_norms.append(norm)
+        self.training_losses.append(loss)
 
     def clip_norms(self):
         # Clip grad norm after backward but before step
@@ -147,11 +170,15 @@ class NMTTrainer(NMTModelUser):
         # norms must be clipped after backward but before step
         norm = self.clip_norms()
 
+        loss_data = self.get_loss_data(loss)
         if kwargs.get('verbose', False):
-            self.make_recordings(loss, norm)
+            self.make_recordings(loss_data, norm)
 
         for optimizer in self.optimizers:
             optimizer.step()
+
+        # Return loss and norm (before gradient step)
+        return loss_data, norm
 
     def init_parameters(self):
         for model in self.models:
@@ -168,13 +195,29 @@ class NMTTrainer(NMTModelUser):
             for model in self.models:
                 model.train()
 
-            # TODO: LR decay
+            # TODO: LR decay3
             train_iter = iter(torch_train_iter)
 
             for batch in train_iter:
-                self.train_batch(batch)
+                res_loss, res_norm = self.train_batch(batch)
 
             if epoch % kwargs.get('skip_iter', 1) == 0:
-                # TODO: make recordings
+                if not kwargs.get('verbose', False):
+                    self.make_recordings(res_loss, res_norm)
+
+            print('Epoch %d, loss: %f, norm: %f, elapsed: %f, lrn_rate: %f' \
+                  % (epoch, np.mean(self.training_losses[-10:]),
+                     np.mean(self.training_norms[-10:]),
+                     time.time() - start_time,
+                     self.base_lrn_rate)) #  * self.lambda_lr(epoch)))
+                    
             
-        
+            if (not le is None) and (not val_iter is None):
+                self.val_perfs.append(le.evaluate(val_iter))
+                print('Validation set metric: %f' % \
+                      self.val_perfs[-1])
+
+        if len(self.val_perfs) >= 1:
+            print('FINAL VAL PERF', self.val_perfs[-1])
+            return self.val_perfs[-1]
+        return -1
