@@ -9,76 +9,111 @@ import numpy as np
 import itertools as it
 
 class EmbeddingsLM(nn.Module):
-    def __init__(self, TEXT, **kwargs):
+    def __init__(self, TEXT, dropout=0.0, max_embed_norm=None, word_features=1000):
         super(EmbeddingsLM, self).__init__()
         # Initialize dropout
-        self.dropout_prob = kwargs.get('dropout', 0.0)
+        self.dropout_prob = dropout
         self.dropout = nn.Dropout(self.dropout_prob)
         
         # V is size of vocab, D is dim of embedding
-        self.V = TEXT.vocab.vectors.size()[0]
-        max_embed_norm = kwargs.get('max_embed_norm', None)
-        self.D = kwargs.get('word_features', 1000)
+        self.V = len(TEXT.vocab)
+        self.D = word_features
         self.embeddings = nn.Embedding(self.V, self.D, max_norm=max_embed_norm)
 
 class BaseEncoder(EmbeddingsLM):
-    def __init__(self, TEXT, **kwargs):
+    def __init__(self, TEXT, hidden_size=1000, num_layers=4,
+                 bidirectional=False, **kwargs):
         super(BaseEncoder, self).__init__(TEXT, **kwargs)
-        self.hidden_size = kwargs.get('hidden_size', 1000)
-        self.num_layers = kwargs.get('num_layers', 4)
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.bidirectional = bidirectional
         self.lstm = nn.LSTM(input_size=self.D, hidden_size=self.hidden_size,
                             num_layers=self.num_layers,
-                            dropout=self.dropout_prob, batch_first=True)
+                            dropout=self.dropout_prob, batch_first=True,
+                            bidirectional=self.bidirectional)
         
     def forward(self, input_tsr, hidden):
         # [batch_sz, sent_len, D]:
-        embedded_tsr = self.embedding(input_vec)
+        embedded_tsr = self.embeddings(input_tsr)
 
-        # output is [batch, sent_len, hidden_size]
+        # output is [batch, sent_len, hidden_size * num_directions]
         output, hidden = self.lstm(embedded_tsr, hidden)
         
         # TODO: perhaps add dropout to output
         return output, hidden
 
-    def initHidden(self):
-        result = Variable(torch.zeros(1, 1, self.hidden_size))
-        if use_cuda:
-            return result.cuda()
-        else:
-            return result
-
 class BaseDecoder(BaseEncoder):
-    def __init__(self, TEXT, **kwargs):
+    def __init__(self, TEXT, num_context=1, enc_bidirectional=False, **kwargs):
         super(BaseDecoder, self).__init__(TEXT, **kwargs)
         # V is the size of the vocab, which is what we're predicting
         # (it's also used as input through the embedding)
-        self.use_cell = kwargs.get('use_cell', False)
+        self.num_context = num_context
+        self.enc_directions = 2 if enc_bidirectional else 1
         # For now assume that encoder and decoder have same hidden size
-        blowup = 3 if self.use_cell else 2
-        self.out_linear = nn.Linear(blowup * self.hidden_size, self.V)
+        blowup = self.num_context * self.num_layers * self.enc_directions + 1
+        self.out_linear = nn.Linear(
+            blowup * self.hidden_size, self.V)
 
     # Context is a tuple (h_T, c_T) of hidden and cell states from
     # last time step of encoder
     def forward(self, input_tsr, hidden, context):
         # [batch_sz, sent_len, D] : note that sent_len may be 1 if we
         # feed in each word at a time!
-        embedding = self.embedding(input_tsr)
+        embedding = self.embeddings(input_tsr)
         embedding = F.relu(embedding)
         output, hidden = self.lstm(embedding, hidden)
 
-        if self.use_cell:
-            output = torch.cat(context + (output,), dim=2)
-        else:
-            output = torch.cat((context[0], output), dim=2)
+        if self.num_context:
+            # We get lucky that hidden is stored as (h,c), 
+            # so hidden (not cell) first
+            context_tsr = torch.cat(context[:self.num_context])
+            batch_sz = context_tsr.size(1)
+            sent_len = output.size(1)
+            # [batch_sz, 1, hidden_size * num_context]
+            context_tsr = context_tsr.permute(1,0,2).contiguous().view(batch_sz, 1, -1)
+            context_tsr = context_tsr.expand(-1, sent_len, -1)
+            # [batch_sz, sent_len, hidden_sz * (num_context + 1)]
+            output = torch.cat((output, context_tsr), dim=2)
 
         # output is now [batch, sent_len, V]:
         output = self.out_linear(output)
         output = F.log_softmax(output, dim=2)
         return output, hidden
 
-    def initHidden(self):
-        result = Variable(torch.zeros(1, 1, self.hidden_size))
-        if use_cuda:
-            return result.cuda()
-        else:
-            return result
+class AttnDecoder(BaseEncoder):
+    def __init__(self, TEXT, enc_bidirectional=False, **kwargs):
+        super(AttnDecoder, self).__init__(TEXT, **kwargs)
+        self.enc_directions = 2 if enc_bidirectional else 1
+        blowup = self.enc_directions + 1 # one for our output, one or two for context
+        self.out_linear = nn.Linear(blowup * self.hidden_size, self.V)
+        
+    def forward(self, input_tsr, hidden, enc_output):
+        # [batch_sz, sent_len, D]:
+        embedding = self.embeddings(input_tsr)
+        embedding = F.relu(embedding)
+        dec_output, hidden = self.lstm(embedding, hidden)
+        
+        # Now do attention: enc_output is [batch_sz, sent_len_src, hidden_sz],
+        # and dec_output is [batch_sz, sent_len_trg, hidden_sz]
+        
+        # enc_output_perm is [batch_sz, hidden_sz, sent_len_src]
+        enc_output_perm = enc_output.permute(0, 2, 1)
+        
+        # should be [batch_sz, sent_len_trg, sent_len_src]
+        # Note that decoder hidden state for output pos t is compouted 
+        # using hidden state of the last layer (i.e. enc_output) at pos t
+        # as opposed to t-1, as in Bahdanau
+        dot_products = torch.bmm(dec_output, enc_output_perm)
+        
+        # This is the attn distribution
+        dot_products_sftmx = F.softmax(dot_products, dim=2)
+        
+        # [batch_sz, sent_len_trg, hidden_sz]
+        context = torch.bmm(dot_products_sftmx, enc_output)
+        
+        # [batch_sz, sent_len_trg, hidden_sz * 2]
+        output = torch.cat((dec_output, context), dim=2)
+        output = self.dropout(output)
+        output = self.out_linear(output)
+        output = F.log_softmax(output, dim=2)
+        return output, hidden, dot_products_sftmx      
