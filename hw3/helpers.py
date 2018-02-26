@@ -226,9 +226,6 @@ class NMTEvaluator(NMTModelUser):
         for i in range(pred_len):
             cur_sent = self.cur_beams[:, i:i+1]
             if self.use_attention:
-                print(cur_sent.size())
-                print(self.prev_hidden[0].size())
-                print(enc_output.size())
                 dec_output, dec_hidden, dec_attn = self.models[1](
                     cur_sent, self.prev_hidden, enc_output)
                 if self.record_attention:
