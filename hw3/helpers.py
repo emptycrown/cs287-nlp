@@ -9,6 +9,19 @@ import numpy as np
 import itertools as it
 import time
 
+# Functions to save/load models
+def save_checkpoint(mod_enc, mod_dec, filename='checkpoint.pth.tar'):
+    state_dict = {'model_encoder' : mod_enc.state_dict(),
+                  'model_decoder' : mod_dec.state_dict()}
+    torch.save(state_dict, filename)
+def load_checkpoint(filename='checkpoint.pth.tar'):
+    state_dict = torch.load(filename)
+    return state_dict['model_encoder'], state_dict['model_decoder']
+def set_parameters(model, sv_model, cuda=True):
+    for i,p in enumerate(model.parameters()):
+        p.data = sv_model[list(sv_model)[i]]
+    model.cuda()
+
 # Class that NMT{Trainer/Evaluator} extends
 class NMTModelUser(object):
     # Models is a list [Encoder, Decoder]
@@ -215,7 +228,8 @@ class NMTEvaluator(NMTModelUser):
     
     # Performs beam search
     def run_model_predict(self, sent, ref_beam, ref_voc,
-                          beam_size=100, pred_len=3, pred_num=None):
+                          beam_size=100, pred_len=3, pred_num=None,
+                          ignore_eos=False):
         if pred_num is None:
             pred_num = beam_size
         
@@ -246,9 +260,6 @@ class NMTEvaluator(NMTModelUser):
         for i in range(pred_len):
             cur_sent = self.cur_beams[:, i:i+1]
             if self.use_attention:
-                print(cur_sent.size())
-                print(self.prev_hidden[0].size())
-                print(enc_output.size())
                 dec_output, dec_hidden, dec_attn = self.models[1](
                     cur_sent, self.prev_hidden, enc_output)
                 if self.record_attention:
@@ -265,7 +276,14 @@ class NMTEvaluator(NMTModelUser):
             # dec_output is [batch_sz, sent_len=1, V]
             # print(dec_output.size())
             # Using broadcasting:
-            dec_output = dec_output.squeeze() + self.cur_beam_vals
+            dec_output = dec_output.squeeze()
+
+            # Deal with EOS tokens:
+            if ignore_eos:
+                eos_token = self._TEXT_TRG.vocab.stoi['</s>']
+                dec_output[:, eos_token] = -np.inf
+
+            dec_output = dec_output + self.cur_beam_vals
             if i == 0:
                 # All start words were the same, so need to restrict 
                 # to the first row
@@ -295,6 +313,62 @@ class NMTEvaluator(NMTModelUser):
             # print('cur_beams', self.cur_beams)
             
         return self.cur_beams
+    
+    @staticmethod
+    def escape(l):
+        return l.replace("\"", "<quote>").replace(",", "<comma>")
+    
+    def predict(self, test_set, fn='predictions.txt', num_cands=100, pred_len=3,
+                beam_size=100, ignore_eos=False):
+        start_time = time.time()
+        for model in self.models:
+            model.eval()
+            
+        # Create reference idx for expanding beams and vocab
+        trg_vocab_sz = len(self._TEXT_TRG.vocab)
+        ref_beam = torch.LongTensor(np.arange(beam_size)).view(-1, 1).expand(-1, trg_vocab_sz)
+        ref_beam = ref_beam.contiguous().view(-1)
+        ref_beam = ref_beam.cuda() if self.cuda else ref_beam
+        ref_beam = autograd.Variable(ref_beam)
+        print(ref_beam.size())
+        
+        ref_voc = torch.LongTensor(np.arange(trg_vocab_sz)).view(1, -1).expand(beam_size, -1)
+        ref_voc = ref_voc.contiguous().view(-1)
+        ref_voc = ref_voc.cuda() if self.cuda else ref_voc
+        ref_voc = autograd.Variable(ref_voc)
+        print(ref_voc.size())
+            
+        self.init_epoch()
+        predictions = list()
+        for i,sent in enumerate(test_set):
+            # [pred_num, pred_len] tensor
+            best_translations = self.run_model_predict(sent, ref_beam=ref_beam,
+                                                       ref_voc=ref_voc,
+                                                       pred_len=pred_len,
+                                                       beam_size=beam_size,
+                                                       ignore_eos=ignore_eos)
+            predictions.append(best_translations)
+            # if i > 10:
+            #     break
+            
+        print('Writing predictions to %s...' % fn)
+        with open(fn, 'w') as fout:
+            print('id,word', file=fout)
+            for i,preds in enumerate(predictions):
+                # We can traverse the beam in order since topk 
+                # sorts its output
+                cands = list()
+                for j in range(num_cands):
+                    # Ignore SOS
+                    words = [self._TEXT_TRG.vocab.itos[preds[j,k].data[0]] for k in range(1, pred_len + 1)]
+                    sent = '|'.join(self.escape(l) for l in words)
+                    cands.append(sent)
+                print('%d,%s' % (i+1, ' '.join(cands)), file=fout)
+        print('Computing predictions took %f seconds' % (time.time() - start_time))
+        
+        # Wrap model.eavl
+        for model in self.models:
+            model.train()
             
 
     
@@ -385,7 +459,8 @@ class NMTTrainer(NMTModelUser):
             for p in model.parameters():
                 p.data.uniform_(-0.05, 0.05)
 
-    def train(self, torch_train_iter, le=None, val_iter=None, **kwargs):
+    def train(self, torch_train_iter, le=None, val_iter=None,
+              save_model_fn=None, **kwargs):
         self.init_lists()
         start_time = time.time()
         self.init_parameters()
@@ -397,7 +472,8 @@ class NMTTrainer(NMTModelUser):
                 
             # Learning rate decay, if any
             if self.lr_decay_opt == 'adaptive':
-                if epoch > 2 and self.val_perfs[-1] > self.val_perfs[-2]:
+                if (epoch > 2 and self.val_perfs[-1] > self.val_perfs[-2]) or \
+                   (epoch >= 10):
                     self.base_lrn_rate = self.base_lrn_rate / 2
                     self.init_optimizers() # Looks at self.base_lrn_rate
                     print('Decaying LR to %f' % self.base_lrn_rate)
@@ -426,6 +502,13 @@ class NMTTrainer(NMTModelUser):
                 self.val_perfs.append(le.evaluate(val_iter))
                 print('Validation set metric: %f' % \
                       self.val_perfs[-1])
+
+            if not save_model_fn is None:
+                pathname = 'saved_models/' + save_model_fn + \
+                           '.epoch_%d.ckpt.tar' % epoch
+                print('Saving model to %s' % pathname)
+                save_checkpoint(self.models[0], self.models[1],
+                           pathname)
 
         if len(self.val_perfs) >= 1:
             print('FINAL VAL PERF', self.val_perfs[-1])
