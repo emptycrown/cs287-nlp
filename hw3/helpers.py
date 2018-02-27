@@ -8,6 +8,8 @@ import torch.optim as optim
 import numpy as np
 import itertools as it
 import time
+import matplotlib.pyplot as plt
+
 
 # Functions to save/load models
 def save_checkpoint(mod_enc, mod_dec, filename='checkpoint.pth.tar'):
