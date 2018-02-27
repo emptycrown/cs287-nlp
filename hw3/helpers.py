@@ -195,7 +195,8 @@ class NMTEvaluator(NMTModelUser):
     
     # Performs beam search
     def run_model_predict(self, sent, ref_beam, ref_voc,
-                          beam_size=100, pred_len=3, pred_num=None):
+                          beam_size=100, pred_len=3, pred_num=None,
+                          ignore_eos=False):
         if pred_num is None:
             pred_num = beam_size
         
@@ -241,7 +242,14 @@ class NMTEvaluator(NMTModelUser):
             # dec_output is [batch_sz, sent_len=1, V]
             # print(dec_output.size())
             # Using broadcasting:
-            dec_output = dec_output.squeeze() + self.cur_beam_vals
+            dec_output = dec_output.squeeze()
+
+            # Deal with EOS tokens:
+            if ignore_eos:
+                eos_token = self._TEXT_TRG.vocab.stoi['</s>']
+                dec_output[:, eos_token] = -np.inf
+
+            dec_output = dec_output + self.cur_beam_vals
             if i == 0:
                 # All start words were the same, so need to restrict 
                 # to the first row
