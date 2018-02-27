@@ -186,9 +186,9 @@ class NMTEvaluator(NMTModelUser):
         # dec_attn_smpl is [src_len, pred_len], var_src_smpl is [src_len],
         # pred_smpl is [pred_len]
         attn = dec_attn_smpl.cpu().data.numpy()
-        src_words = np.array(list(map(lambda x: DE.vocab.itos[x], 
+        src_words = np.array(list(map(lambda x: self._TEXT_SRC.vocab.itos[x], 
                                       var_src_smpl.cpu().data.numpy())))
-        pred_words = np.array(list(map(lambda x: EN.vocab.itos[x], 
+        pred_words = np.array(list(map(lambda x: self._TEXT_TRG.vocab.itos[x], 
                                        pred_smpl.cpu().data.numpy())))
         
         fig, ax = plt.subplots()
@@ -214,7 +214,7 @@ class NMTEvaluator(NMTModelUser):
             nll_sum += loss.data[0]
             
             if self.visualize_freq and i % self.visualize_freq == 0:
-                sample = evaluator.attns_log[-1]
+                sample = self.attns_log[-1]
                 self.visualize_attn(sample[0][0], sample[1][0], sample[2][0])
             if not num_iter is None and i > num_iter:
                 break
