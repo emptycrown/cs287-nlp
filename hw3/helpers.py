@@ -122,7 +122,8 @@ class NMTModelUser(object):
             dec_output, dec_hidden, dec_attn = self.models[1](
                 var_trg_feat, self.prev_hidden, enc_output)
             if self.record_attention:
-                self.attns_log.append(dec_attn)
+                _, pred = torch.topk(dec_output, k=1, dim=2)
+                self.attns_log.append((dec_attn, var_src, pred.squeeze()))
         else:
             # Using real words as input. Use prev_hidden both to
             # initialize hidden state (the first time) and as context
@@ -155,18 +156,34 @@ class NMTModelUser(object):
                               size_average=False)
         else:
             raise ValueError('Invalid mode field: %s' % mode)
-                
-
+            
 class NMTEvaluator(NMTModelUser):
     def __init__(self, models, TEXT_SRC, TEXT_TRG, **kwargs):
         super(NMTEvaluator, self).__init__(models, TEXT_SRC, TEXT_TRG,
                                            **kwargs)
         # Perhaps overwrite record_attention
         self.record_attention = kwargs.get('record_attention', False)
+        self.visualize_freq = kwargs.get('visualize_freq', None)
         
     def init_epoch(self):
         super(NMTEvaluator, self).init_epoch()
         self.attns_log = list()
+        
+    def visualize_attn(self, dec_attn_smpl, var_src_smpl, pred_smpl):
+        # dec_attn_smpl is [src_len, pred_len], var_src_smpl is [src_len],
+        # pred_smpl is [pred_len]
+        attn = dec_attn_smpl.cpu().data.numpy()
+        src_words = np.array(list(map(lambda x: DE.vocab.itos[x], 
+                                      var_src_smpl.cpu().data.numpy())))
+        pred_words = np.array(list(map(lambda x: EN.vocab.itos[x], 
+                                       pred_smpl.cpu().data.numpy())))
+        
+        fig, ax = plt.subplots()
+        ax.imshow(attn, cmap='gray')
+        plt.xticks(range(len(src_words)),src_words, rotation='vertical')
+        plt.yticks(range(len(pred_words)),pred_words)
+        ax.xaxis.tick_top()
+        plt.show()
 
     def evaluate(self, test_iter, num_iter=None):
         start_time = time.time()
@@ -183,6 +200,9 @@ class NMTEvaluator(NMTModelUser):
             # TODO: make sure loss just has 1 element!
             nll_sum += loss.data[0]
             
+            if self.visualize_freq and i % self.visualize_freq == 0:
+                sample = evaluator.attns_log[-1]
+                self.visualize_attn(sample[0][0], sample[1][0], sample[2][0])
             if not num_iter is None and i > num_iter:
                 break
                         
@@ -232,7 +252,8 @@ class NMTEvaluator(NMTModelUser):
                 dec_output, dec_hidden, dec_attn = self.models[1](
                     cur_sent, self.prev_hidden, enc_output)
                 if self.record_attention:
-                    self.attns_log.append(dec_attn)
+                    _, pred = torch.topk(dec_output, k=1, dim=2)
+                    self.attns_log.append((dec_attn, var_src, pred.squeeze()))
             else:
                 # Using real words as input. Use prev_hidden both to
                 # initialize hidden state (the first time) and as context
@@ -274,62 +295,6 @@ class NMTEvaluator(NMTModelUser):
             # print('cur_beams', self.cur_beams)
             
         return self.cur_beams
-        
-    
-    @staticmethod
-    def escape(l):
-        return l.replace("\"", "<quote>").replace(",", "<comma>")
-    
-    def predict(self, test_set, fn='predictions.txt', num_cands=100, pred_len=3,
-                beam_size=100):
-        start_time = time.time()
-        for model in self.models:
-            model.eval()
-            
-        # Create reference idx for expanding beams and vocab
-        trg_vocab_sz = len(self._TEXT_TRG.vocab)
-        ref_beam = torch.LongTensor(np.arange(beam_size)).view(-1, 1).expand(-1, trg_vocab_sz)
-        ref_beam = ref_beam.contiguous().view(-1)
-        ref_beam = ref_beam.cuda() if self.cuda else ref_beam
-        ref_beam = autograd.Variable(ref_beam)
-        print(ref_beam.size())
-        
-        ref_voc = torch.LongTensor(np.arange(trg_vocab_sz)).view(1, -1).expand(beam_size, -1)
-        ref_voc = ref_voc.contiguous().view(-1)
-        ref_voc = ref_voc.cuda() if self.cuda else ref_voc
-        ref_voc = autograd.Variable(ref_voc)
-        print(ref_voc.size())
-            
-        self.init_epoch()
-        predictions = list()
-        for i,sent in enumerate(test_set):
-            # [pred_num, pred_len] tensor
-            best_translations = self.run_model_predict(sent, ref_beam=ref_beam,
-                                                       ref_voc=ref_voc,
-                                                       pred_len=pred_len,
-                                                       beam_size=beam_size)
-            predictions.append(best_translations)
-            # if i > 10:
-            #     break
-            
-        print('Writing predictions to %s...' % fn)
-        with open(fn, 'w') as fout:
-            print('id,word', file=fout)
-            for i,preds in enumerate(predictions):
-                # We can traverse the beam in order since topk 
-                # sorts its output
-                cands = list()
-                for j in range(num_cands):
-                    # Ignore SOS
-                    words = [self._TEXT_TRG.vocab.itos[preds[j,k].data[0]] for k in range(1, pred_len + 1)]
-                    sent = '|'.join(self.escape(l) for l in words)
-                    cands.append(sent)
-                print('%d,%s' % (i+1, ' '.join(cands)), file=fout)
-        print('Computing predictions took %f seconds' % (time.time() - start_time))
-        
-        # Wrap model.eavl
-        for model in self.models:
-            model.train()
             
 
     
