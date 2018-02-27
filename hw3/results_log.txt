@@ -270,3 +270,66 @@ Epoch 62, loss: 27.690781, norm: 8.940691, elapsed: 32707.182029, lrn_rate: 0.00
 Validation time: 0.868084 seconds
 Validation set metric: 5.119931
 Decaying LR to 0.000000
+
+=== ANOTHER ATTN RUN ===
+Target padding token: 1
+Using CUDA...
+Target padding token: 1
+Using CUDA...
+Epoch 0, loss: 74.447678, norm: 4.323705, elapsed: 540.722497, lrn_rate: 1.000000
+Validation time: 1.054063 seconds
+Validation set metric: 26.014990
+Epoch 1, loss: 63.033104, norm: 4.913937, elapsed: 1085.895758, lrn_rate: 1.000000
+Validation time: 0.867175 seconds
+Validation set metric: 11.078131
+Epoch 2, loss: 61.974842, norm: 5.519036, elapsed: 1626.097885, lrn_rate: 1.000000
+Validation time: 0.935742 seconds
+Validation set metric: 7.667555
+Epoch 3, loss: 45.707653, norm: 5.045727, elapsed: 2164.118364, lrn_rate: 1.000000
+Validation time: 0.951134 seconds
+Validation set metric: 6.637843
+Epoch 4, loss: 39.838863, norm: 5.510409, elapsed: 2707.005018, lrn_rate: 1.000000
+Validation time: 0.947607 seconds
+Validation set metric: 6.117144
+Epoch 5, loss: 48.402901, norm: 5.603142, elapsed: 3246.396275, lrn_rate: 1.000000
+Validation time: 0.943356 seconds
+Validation set metric: 5.751743
+Epoch 6, loss: 44.464031, norm: 6.889078, elapsed: 3790.113114, lrn_rate: 1.000000
+Validation time: 0.862508 seconds
+Validation set metric: 5.527463
+Epoch 7, loss: 45.894772, norm: 7.042506, elapsed: 4326.867793, lrn_rate: 1.000000
+Validation time: 0.931661 seconds
+Validation set metric: 5.405625
+Epoch 8, loss: 43.811329, norm: 6.324491, elapsed: 4867.575296, lrn_rate: 1.000000
+Validation time: 0.946792 seconds
+Validation set metric: 5.395534
+Epoch 9, loss: 37.985748, norm: 7.297110, elapsed: 5406.630132, lrn_rate: 1.000000
+Validation time: 0.808646 seconds
+Validation set metric: 5.312457
+Epoch 10, loss: 38.659294, norm: 6.352155, elapsed: 5947.663281, lrn_rate: 1.000000
+Validation time: 1.006784 seconds
+Validation set metric: 5.275308
+Epoch 11, loss: 46.025539, norm: 8.441181, elapsed: 6489.309039, lrn_rate: 1.000000
+Validation time: 1.039704 seconds
+Validation set metric: 5.236406
+Epoch 12, loss: 39.458515, norm: 6.940957, elapsed: 7029.367565, lrn_rate: 1.000000
+Validation time: 1.000365 seconds
+Validation set metric: 5.292374
+Decaying LR to 0.500000
+Epoch 13, loss: 31.296558, norm: 6.371438, elapsed: 7569.893920, lrn_rate: 0.500000
+Validation time: 0.714151 seconds
+Validation set metric: 5.113330
+Epoch 14, loss: 30.013723, norm: 6.594206, elapsed: 8106.723609, lrn_rate: 0.500000
+Validation time: 0.884465 seconds
+Validation set metric: 5.085152
+Epoch 15, loss: 31.031687, norm: 8.124546, elapsed: 8644.692552, lrn_rate: 0.500000
+Validation time: 0.926231 seconds
+Validation set metric: 5.166627
+Decaying LR to 0.250000
+Epoch 16, loss: 27.022732, norm: 6.915482, elapsed: 9183.632927, lrn_rate: 0.250000
+Validation time: 0.949923 seconds
+Validation set metric: 5.184296
+Decaying LR to 0.125000
+Epoch 17, loss: 25.021229, norm: 6.698111, elapsed: 9724.979861, lrn_rate: 0.125000
+Validation time: 0.852118 seconds
+Validation set metric: 5.165478
