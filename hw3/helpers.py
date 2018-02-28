@@ -31,7 +31,9 @@ class NMTModelUser(object):
         self._TEXT_SRC = TEXT_SRC
         self._TEXT_TRG = TEXT_TRG
         self.trg_pad = TEXT_TRG.vocab.stoi['<pad>']
+        self.src_pad = TEXT_SRC.vocab.stoi['<pad>']
         print('Target padding token: %d' % self.trg_pad)
+        print('Source padding token: %d' % self.src_pad)
         self.models = models
         self.use_attention = kwargs.get('attention', False)
         self.record_attention = False
@@ -122,6 +124,18 @@ class NMTModelUser(object):
             print('-- PRED TRG --')
             print(' '.join(self._TEXT_TRG.vocab.itos[pred[i,j]] \
                                            for j in range(pred.size(1))))
+
+
+    def set_enc_prev_hidden(self, enc_hidden):
+        # Each element of hidden is [F(x_T), B(x_1)]; we want to use
+        # the first
+        if self.models[1].enc_directions == 2:
+            assert self.use_attention
+            # This is the first hidden B(x_1) of the backwards layer
+            self.prev_hidden = tuple(h[self.models[0].num_layers:,:,:] for \
+                                     h in enc_hidden)
+        else:
+            self.prev_hidden = enc_hidden
         
         
     def run_model(self, batch, mode='mean'):
@@ -132,10 +146,13 @@ class NMTModelUser(object):
 
         # For attention, will use enc_output (not otherwise)
         enc_output, enc_hidden = self.models[0](var_src, var_hidden)
-        self.prev_hidden = enc_hidden
+        self.set_enc_prev_hidden(enc_hidden)
+            
         if self.use_attention:
+            # Using broadcasting 
+            pad_mask = torch.equal(var_src, self.src_pad)
             dec_output, dec_hidden, dec_attn = self.models[1](
-                var_trg_feat, self.prev_hidden, enc_output)
+                var_trg_feat, self.prev_hidden, enc_output, pad_mask)
             if self.record_attention:
                 _, pred = torch.topk(dec_output, k=1, dim=2)
                 self.attns_log.append((dec_attn, var_src, pred.squeeze()))
@@ -248,7 +265,7 @@ class NMTEvaluator(NMTModelUser):
         
         # For attention, will use enc_output (not otherwise)
         enc_output, enc_hidden = self.models[0](var_src, var_hidden)
-        self.prev_hidden = enc_hidden
+        self.set_enc_prev_hidden(enc_hidden)
         
         # Make sure to start with SOS token
         sos_token = self._TEXT_TRG.vocab.stoi['<s>']
@@ -262,8 +279,11 @@ class NMTEvaluator(NMTModelUser):
         for i in range(pred_len):
             cur_sent = self.cur_beams[:, i:i+1]
             if self.use_attention:
+                # Using broadcasting 
+                pad_mask = torch.equal(var_src, self.src_pad)
+
                 dec_output, dec_hidden, dec_attn = self.models[1](
-                    cur_sent, self.prev_hidden, enc_output)
+                    cur_sent, self.prev_hidden, enc_output, pad_mask)
                 if self.record_attention:
                     _, pred = torch.topk(dec_output, k=1, dim=2)
                     self.attns_log.append((dec_attn, var_src, pred.squeeze()))

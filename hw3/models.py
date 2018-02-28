@@ -107,12 +107,11 @@ class AttnDecoder(BaseEncoder):
 
         
         if tie_weights:
-            # NOTE: for 
             if self.hidden_size != self.D or self.enc_directions != 1:
                 raise ValueError('For tied weights, hidden_size must equal num embeddings!')
             self.out_linear_dec.weight = self.embeddings.weight
         
-    def forward(self, input_tsr, hidden, enc_output):
+    def forward(self, input_tsr, hidden, enc_output, mask_inds=None):
         # [batch_sz, sent_len, D]:
         embedding = self.embeddings(input_tsr)
 
@@ -139,6 +138,12 @@ class AttnDecoder(BaseEncoder):
         # using hidden state of the last layer (i.e. enc_output) at pos t
         # as opposed to t-1, as in Bahdanau
         dot_products = torch.bmm(dec_output, enc_output_perm)
+
+        # mask_inds is [batch_sz, sent_len_src]
+        if not mask_inds is None:
+            # np.inf gives nans...
+            # Using braodcasting
+            dot_products = dot_products - 100000 * torch.unsqueeze(mask_inds, 1)
         
         # This is the attn distribution, [batch_sz, sent_len_trg, sent_len_src]
         dot_products_sftmx = F.softmax(dot_products, dim=2)
