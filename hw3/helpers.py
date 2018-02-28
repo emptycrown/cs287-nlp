@@ -150,7 +150,7 @@ class NMTModelUser(object):
             
         if self.use_attention:
             # Using broadcasting 
-            pad_mask = torch.equal(var_src, self.src_pad)
+            pad_mask = torch.eq(var_src, self.src_pad).type(torch.FloatTensor)
             dec_output, dec_hidden, dec_attn = self.models[1](
                 var_trg_feat, self.prev_hidden, enc_output, pad_mask)
             if self.record_attention:
@@ -280,7 +280,7 @@ class NMTEvaluator(NMTModelUser):
             cur_sent = self.cur_beams[:, i:i+1]
             if self.use_attention:
                 # Using broadcasting 
-                pad_mask = torch.equal(var_src, self.src_pad)
+                pad_mask = torch.eq(var_src, self.src_pad).type(torch.FloatTensor)
 
                 dec_output, dec_hidden, dec_attn = self.models[1](
                     cur_sent, self.prev_hidden, enc_output, pad_mask)

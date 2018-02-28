@@ -143,7 +143,10 @@ class AttnDecoder(BaseEncoder):
         if not mask_inds is None:
             # np.inf gives nans...
             # Using braodcasting
-            dot_products = dot_products - 100000 * torch.unsqueeze(mask_inds, 1)
+            mask_inds = autograd.Variable(torch.Tensor([np.inf])) * mask_inds
+            # remove nans
+            mask_inds[mask_inds != mask_inds] = 0
+            dot_products = dot_products - torch.unsqueeze(mask_inds, 1)
         
         # This is the attn distribution, [batch_sz, sent_len_trg, sent_len_src]
         dot_products_sftmx = F.softmax(dot_products, dim=2)
