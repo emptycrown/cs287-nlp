@@ -27,7 +27,8 @@ def set_parameters(model, sv_model, cuda=True):
 # Class that NMT{Trainer/Evaluator} extends
 class NMTModelUser(object):
     # Models is a list [Encoder, Decoder]
-    def __init__(self, models, TEXT_SRC, TEXT_TRG, **kwargs):
+    def __init__(self, models, TEXT_SRC, TEXT_TRG, mask_src=False,
+                 attention=False, reverse_enc_input=False, cuda=True):
         self._TEXT_SRC = TEXT_SRC
         self._TEXT_TRG = TEXT_TRG
         self.trg_pad = TEXT_TRG.vocab.stoi['<pad>']
@@ -35,11 +36,11 @@ class NMTModelUser(object):
         print('Target padding token: %d' % self.trg_pad)
         print('Source padding token: %d' % self.src_pad)
         self.models = models
-        self.use_attention = kwargs.get('attention', False)
+        self.mask_src = mask_src
+        self.use_attention = attention
         self.record_attention = False
-        self.reverse_enc_input = kwargs.get('reverse_enc_input', False)
-        self.cuda = kwargs.get('cuda', True) and \
-                    torch.cuda.is_available()
+        self.reverse_enc_input = reverse_enc_input
+        self.cuda = cuda and torch.cuda.is_available()
         if self.cuda:
             print('Using CUDA...')
         else:
@@ -136,7 +137,14 @@ class NMTModelUser(object):
                                      h in enc_hidden)
         else:
             self.prev_hidden = enc_hidden
-        
+
+    def generate_attn_mask(var_src):
+        if not self.mask_src:
+            return None
+        # Using broadcasting 
+        pad_mask = torch.eq(var_src, self.src_pad).type(torch.FloatTensor)
+        pad_mask = pad_mask.cuda() if self.cuda else pad_mask
+        return pad_mask
         
     def run_model(self, batch, mode='mean'):
         # var_src, var_trg are [batch_sz, sent_len]
@@ -149,8 +157,7 @@ class NMTModelUser(object):
         self.set_enc_prev_hidden(enc_hidden)
             
         if self.use_attention:
-            # Using broadcasting 
-            pad_mask = torch.eq(var_src, self.src_pad).type(torch.FloatTensor)
+            pad_mask = self.generate_attn_mask(var_src)
             dec_output, dec_hidden, dec_attn = self.models[1](
                 var_trg_feat, self.prev_hidden, enc_output, pad_mask)
             if self.record_attention:
@@ -279,8 +286,7 @@ class NMTEvaluator(NMTModelUser):
         for i in range(pred_len):
             cur_sent = self.cur_beams[:, i:i+1]
             if self.use_attention:
-                # Using broadcasting 
-                pad_mask = torch.eq(var_src, self.src_pad).type(torch.FloatTensor)
+                pad_mask = self.generate_attn_mask(var_src)
 
                 dec_output, dec_hidden, dec_attn = self.models[1](
                     cur_sent, self.prev_hidden, enc_output, pad_mask)
