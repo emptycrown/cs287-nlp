@@ -382,6 +382,7 @@ class NMTTrainer(NMTModelUser):
 
         # Do learning rate decay:
         self.lr_decay_opt = kwargs.get('lrn_decay', 'none')
+        self.lr_decay_force = kwargs.get('lrn_decay_force', np.inf)
         if self.lr_decay_opt == 'none' or self.lr_decay_opt == 'adaptive':
             self.lambda_lr = lambda i : 1
         elif self.lr_decay_opt == 'invlin':
@@ -473,7 +474,7 @@ class NMTTrainer(NMTModelUser):
             # Learning rate decay, if any
             if self.lr_decay_opt == 'adaptive':
                 if (epoch > 2 and self.val_perfs[-1] > self.val_perfs[-2]) or \
-                   (epoch >= 10):
+                   (epoch >= self.lr_decay_force):
                     self.base_lrn_rate = self.base_lrn_rate / 2
                     self.init_optimizers() # Looks at self.base_lrn_rate
                     print('Decaying LR to %f' % self.base_lrn_rate)
