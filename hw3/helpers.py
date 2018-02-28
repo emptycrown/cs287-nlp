@@ -197,12 +197,13 @@ class NMTModelUser(object):
             raise ValueError('Invalid mode field: %s' % mode)
             
 class NMTEvaluator(NMTModelUser):
-    def __init__(self, models, TEXT_SRC, TEXT_TRG, **kwargs):
+    def __init__(self, models, TEXT_SRC, TEXT_TRG, record_attention=False,
+                 visualize_freq=None, **kwargs):
         super(NMTEvaluator, self).__init__(models, TEXT_SRC, TEXT_TRG,
                                            **kwargs)
         # Perhaps overwrite record_attention
-        self.record_attention = kwargs.get('record_attention', False)
-        self.visualize_freq = kwargs.get('visualize_freq', None)
+        self.record_attention = record_attention
+        self.visualize_freq = visualize_freq
         
     def init_epoch(self):
         super(NMTEvaluator, self).init_epoch()
