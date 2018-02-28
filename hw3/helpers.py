@@ -135,7 +135,8 @@ class NMTModelUser(object):
             dec_output, dec_hidden, dec_attn = self.models[1](
                 var_trg_feat, self.prev_hidden, enc_output)
             if self.record_attention:
-                self.attns_log.append(dec_attn)
+                _, pred = torch.topk(dec_output, k=1, dim=2)
+                self.attns_log.append((dec_attn, var_src, pred.squeeze()))
         else:
             # Using real words as input. Use prev_hidden both to
             # initialize hidden state (the first time) and as context
@@ -168,18 +169,34 @@ class NMTModelUser(object):
                               size_average=False)
         else:
             raise ValueError('Invalid mode field: %s' % mode)
-                
-
+            
 class NMTEvaluator(NMTModelUser):
     def __init__(self, models, TEXT_SRC, TEXT_TRG, **kwargs):
         super(NMTEvaluator, self).__init__(models, TEXT_SRC, TEXT_TRG,
                                            **kwargs)
         # Perhaps overwrite record_attention
         self.record_attention = kwargs.get('record_attention', False)
+        self.visualize_freq = kwargs.get('visualize_freq', None)
         
     def init_epoch(self):
         super(NMTEvaluator, self).init_epoch()
         self.attns_log = list()
+        
+    def visualize_attn(self, dec_attn_smpl, var_src_smpl, pred_smpl):
+        # dec_attn_smpl is [src_len, pred_len], var_src_smpl is [src_len],
+        # pred_smpl is [pred_len]
+        attn = dec_attn_smpl.cpu().data.numpy()
+        src_words = np.array(list(map(lambda x: self._TEXT_SRC.vocab.itos[x], 
+                                      var_src_smpl.cpu().data.numpy())))
+        pred_words = np.array(list(map(lambda x: self._TEXT_TRG.vocab.itos[x], 
+                                       pred_smpl.cpu().data.numpy())))
+        
+        fig, ax = plt.subplots()
+        ax.imshow(attn, cmap='gray')
+        plt.xticks(range(len(src_words)),src_words, rotation='vertical')
+        plt.yticks(range(len(pred_words)),pred_words)
+        ax.xaxis.tick_top()
+        plt.show()
 
     def evaluate(self, test_iter, num_iter=None):
         start_time = time.time()
@@ -196,6 +213,9 @@ class NMTEvaluator(NMTModelUser):
             # TODO: make sure loss just has 1 element!
             nll_sum += loss.data[0]
             
+            if self.visualize_freq and i % self.visualize_freq == 0:
+                sample = self.attns_log[-1]
+                self.visualize_attn(sample[0][0], sample[1][0], sample[2][0])
             if not num_iter is None and i > num_iter:
                 break
                         
@@ -243,7 +263,8 @@ class NMTEvaluator(NMTModelUser):
                 dec_output, dec_hidden, dec_attn = self.models[1](
                     cur_sent, self.prev_hidden, enc_output)
                 if self.record_attention:
-                    self.attns_log.append(dec_attn)
+                    _, pred = torch.topk(dec_output, k=1, dim=2)
+                    self.attns_log.append((dec_attn, var_src, pred.squeeze()))
             else:
                 # Using real words as input. Use prev_hidden both to
                 # initialize hidden state (the first time) and as context
@@ -292,7 +313,6 @@ class NMTEvaluator(NMTModelUser):
             # print('cur_beams', self.cur_beams)
             
         return self.cur_beams
-        
     
     @staticmethod
     def escape(l):

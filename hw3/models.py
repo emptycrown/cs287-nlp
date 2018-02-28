@@ -105,7 +105,7 @@ class AttnDecoder(BaseEncoder):
         # as opposed to t-1, as in Bahdanau
         dot_products = torch.bmm(dec_output, enc_output_perm)
         
-        # This is the attn distribution
+        # This is the attn distribution, [batch_sz, sent_len_trg, sent_len_src]
         dot_products_sftmx = F.softmax(dot_products, dim=2)
         
         # [batch_sz, sent_len_trg, hidden_sz]
