@@ -138,7 +138,7 @@ class NMTModelUser(object):
         else:
             self.prev_hidden = enc_hidden
 
-    def generate_attn_mask(var_src):
+    def generate_attn_mask(self, var_src):
         if not self.mask_src:
             return None
         # Using broadcasting 
