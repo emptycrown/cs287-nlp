@@ -31,13 +31,23 @@ class BaseEncoder(EmbeddingsLM):
                             num_layers=self.num_layers,
                             dropout=self.dropout_prob, batch_first=True,
                             bidirectional=self.bidirectional)
+
         
     def forward(self, input_tsr, hidden):
         # [batch_sz, sent_len, D]:
         embedded_tsr = self.embeddings(input_tsr)
 
+        # XXX
+        embedded_tsr = self.dropout(embedded_tsr)
+
         # output is [batch, sent_len, hidden_size * num_directions]
         output, hidden = self.lstm(embedded_tsr, hidden)
+
+        # TODO: this is experimental XXX: should be careful here since
+        # the weighted sum of outputs (i.e. context) is already being
+        # dropout'ed in the context part of the decoder (but not for
+        # attn right now)
+        # output = self.dropout(output)
         
         # TODO: perhaps add dropout to output
         return output, hidden
@@ -81,23 +91,48 @@ class BaseDecoder(BaseEncoder):
         return output, hidden
 
 class AttnDecoder(BaseEncoder):
-    def __init__(self, TEXT, enc_bidirectional=False, **kwargs):
+    def __init__(self, TEXT, enc_bidirectional=False, tie_weights=False,
+                 enc_linear=0, **kwargs):
         super(AttnDecoder, self).__init__(TEXT, **kwargs)
         self.enc_directions = 2 if enc_bidirectional else 1
-        blowup = self.enc_directions + 1 # one for our output, one or two for context
-        self.out_linear = nn.Linear(blowup * self.hidden_size, self.V)
+        # XXX
+        blowup = self.enc_directions # one for our output, one or two for context
+        self.out_linear_dec = nn.Linear(blowup * self.hidden_size, self.V)
+        self.out_linear_contxt = nn.Linear(self.hidden_size, self.V)
+
+        self.enc_linear = enc_linear
+        if self.enc_linear > 0:
+            self.attn_linear = nn.Linear(self.enc_directions * self.enc_linear,
+                                         self.hidden_size)
+
+        
+        if tie_weights:
+            # NOTE: for 
+            if self.hidden_size != self.D or self.enc_directions != 1:
+                raise ValueError('For tied weights, hidden_size must equal num embeddings!')
+            self.out_linear_dec.weight = self.embeddings.weight
         
     def forward(self, input_tsr, hidden, enc_output):
         # [batch_sz, sent_len, D]:
         embedding = self.embeddings(input_tsr)
-        embedding = F.relu(embedding)
+
+        # XXX
+        # embedding = F.relu(embedding)
+        embedding = self.dropout(embedding)
+        
         dec_output, hidden = self.lstm(embedding, hidden)
         
         # Now do attention: enc_output is [batch_sz, sent_len_src, hidden_sz],
         # and dec_output is [batch_sz, sent_len_trg, hidden_sz]
         
+        # Normally do linear layer after dropout
+        if self.enc_linear > 0:
+            enc_output_lin = self.attn_linear(enc_output)
+        else:
+            enc_output_lin = enc_output
+
         # enc_output_perm is [batch_sz, hidden_sz, sent_len_src]
-        enc_output_perm = enc_output.permute(0, 2, 1)
+        enc_output_perm = enc_output_lin.permute(0, 2, 1)
         
         # should be [batch_sz, sent_len_trg, sent_len_src]
         # Note that decoder hidden state for output pos t is compouted 
@@ -107,13 +142,19 @@ class AttnDecoder(BaseEncoder):
         
         # This is the attn distribution, [batch_sz, sent_len_trg, sent_len_src]
         dot_products_sftmx = F.softmax(dot_products, dim=2)
+
         
         # [batch_sz, sent_len_trg, hidden_sz]
         context = torch.bmm(dot_products_sftmx, enc_output)
+
+        # XXX
+        output_1 = self.out_linear_dec(self.dropout(dec_output))
+        output_2 = self.out_linear_contxt(self.dropout(context))
+        output = F.log_softmax(output_1 + output_2, dim=2)
         
         # [batch_sz, sent_len_trg, hidden_sz * 2]
-        output = torch.cat((dec_output, context), dim=2)
-        output = self.dropout(output)
-        output = self.out_linear(output)
-        output = F.log_softmax(output, dim=2)
+        # output = torch.cat((dec_output, context), dim=2)
+        # output = self.dropout(output)
+        # output = self.out_linear(output)
+        # output = F.log_softmax(output, dim=2)
         return output, hidden, dot_products_sftmx      

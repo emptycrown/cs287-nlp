@@ -463,10 +463,13 @@ class NMTTrainer(NMTModelUser):
                 p.data.uniform_(-0.05, 0.05)
 
     def train(self, torch_train_iter, le=None, val_iter=None,
-              save_model_fn=None, **kwargs):
+              save_model_fn=None, init_parameters=True, **kwargs):
         self.init_lists()
         start_time = time.time()
-        self.init_parameters()
+        print("Innitializing parameters status: ", init_parameters)
+        if init_parameters:
+            self.init_parameters()
+
         torch_train_iter.init_epoch()
         for epoch in range(kwargs.get('num_iter', 100)):
             self.init_epoch()
