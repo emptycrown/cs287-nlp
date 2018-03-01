@@ -94,11 +94,13 @@ class AttnDecoder(BaseEncoder):
     def __init__(self, TEXT, enc_bidirectional=False, tie_weights=False,
                  enc_linear=0, **kwargs):
         super(AttnDecoder, self).__init__(TEXT, **kwargs)
+        print('Using final MLP')
         self.enc_directions = 2 if enc_bidirectional else 1
         # XXX
         blowup = self.enc_directions # one for our output, one or two for context
-        self.out_linear_dec = nn.Linear(blowup * self.hidden_size, self.V)
-        self.out_linear_contxt = nn.Linear(self.hidden_size, self.V)
+        self.out_linear_dec = nn.Linear(self.hidden_size, self.hidden_size)
+        self.out_linear_contxt = nn.Linear(blowup * self.hidden_size, self.hidden_size)
+        # self.mlp_linear = nn.Linear(self.hidden_size, self.hidden_size)
 
         self.enc_linear = enc_linear
         if self.enc_linear > 0:
@@ -158,7 +160,9 @@ class AttnDecoder(BaseEncoder):
         # XXX
         output_1 = self.out_linear_dec(self.dropout(dec_output))
         output_2 = self.out_linear_contxt(self.dropout(context))
-        output = F.log_softmax(output_1 + output_2, dim=2)
+        output = output_1 + output_2
+        # output = self.mlp_linear(self.dropout(F.tanh(output)))
+        output = F.log_softmax(output, dim=2)
         
         # [batch_sz, sent_len_trg, hidden_sz * 2]
         # output = torch.cat((dec_output, context), dim=2)

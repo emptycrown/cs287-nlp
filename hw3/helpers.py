@@ -64,7 +64,9 @@ class NMTModelUser(object):
         return (src, trg_feat, trg_lab)
 
     def zeros_hidden(self, batch_sz, model_num):
-        return torch.zeros(self.models[model_num].num_layers, batch_sz,
+        num_directions = 2 if self.models[model_num].bidirectional else 1
+        return torch.zeros(self.models[model_num].num_layers * num_directions, 
+                           batch_sz,
                            self.models[model_num].hidden_size)
 
     # Ok to have self.prev_hidden apply to encoder then decoder since
@@ -162,7 +164,8 @@ class NMTModelUser(object):
                 var_trg_feat, self.prev_hidden, enc_output, pad_mask)
             if self.record_attention:
                 _, pred = torch.topk(dec_output, k=1, dim=2)
-                self.attns_log.append((dec_attn, var_src, pred.squeeze()))
+                self.attns_log.append((dec_attn, var_src, pred.squeeze(),
+                                       var_trg_lab))
         else:
             # Using real words as input. Use prev_hidden both to
             # initialize hidden state (the first time) and as context
@@ -179,7 +182,13 @@ class NMTModelUser(object):
     # Assume log_probs is [batch_sz, sent_len, V], output is
     # [batch_sz, sent_len]
     def nll_loss(self, log_probs, output, mode='mean', **kwargs):
+        batch_sz = log_probs.size(0)
+        # sl_type = torch.cuda.FloatTensor if self.cuda else \
+        #     torch.FloatTensor
+        # sent_len = torch.sum((output != self.trg_pad).type(torch.FloatTensor)) / batch_sz
+        # sent_len = sent_len.data[0]
         sent_len = log_probs.size(1)
+        # print(sent_len, log_probs.size())
         log_probs_rshp = log_probs.view(-1, log_probs.size(2))
         output_rshp = output.view(-1)
         if mode == 'mean':
@@ -209,7 +218,8 @@ class NMTEvaluator(NMTModelUser):
         super(NMTEvaluator, self).init_epoch()
         self.attns_log = list()
         
-    def visualize_attn(self, dec_attn_smpl, var_src_smpl, pred_smpl):
+    def visualize_attn(self, dec_attn_smpl, var_src_smpl, pred_smpl,
+                       var_trg_lab=None):
         # dec_attn_smpl is [src_len, pred_len], var_src_smpl is [src_len],
         # pred_smpl is [pred_len]
         attn = dec_attn_smpl.cpu().data.numpy()
@@ -217,6 +227,12 @@ class NMTEvaluator(NMTModelUser):
                                       var_src_smpl.cpu().data.numpy())))
         pred_words = np.array(list(map(lambda x: self._TEXT_TRG.vocab.itos[x], 
                                        pred_smpl.cpu().data.numpy())))
+        if not var_trg_lab is None:
+            trg_cpu = var_trg_lab.cpu().data.numpy()
+            trg_words = np.array(list(map(lambda x : self._TEXT_TRG.vocab.itos[x],
+                                         trg_cpu)))
+            pred_words = np.array(['%s (%s)' % (pred_words[i], trg_words[i]) for \
+                                   i in range(pred_words.shape[0])])
         
         fig, ax = plt.subplots()
         ax.imshow(attn, cmap='gray')
@@ -293,7 +309,8 @@ class NMTEvaluator(NMTModelUser):
                     cur_sent, self.prev_hidden, enc_output, pad_mask)
                 if self.record_attention:
                     _, pred = torch.topk(dec_output, k=1, dim=2)
-                    self.attns_log.append((dec_attn, var_src, pred.squeeze()))
+                    self.attns_log.append((dec_attn, var_src, pred.squeeze(),
+                                           None))
             else:
                 # Using real words as input. Use prev_hidden both to
                 # initialize hidden state (the first time) and as context
@@ -402,20 +419,24 @@ class NMTEvaluator(NMTModelUser):
 
     
 class NMTTrainer(NMTModelUser):
-    def __init__(self, models, TEXT_SRC, TEXT_TRG, **kwargs):
+    def __init__(self, models, TEXT_SRC, TEXT_TRG, lrn_rate=0.1,
+                 optimizer=optim.SGD, lrn_decay='none',
+                 lrn_decay_force=np.inf,
+                 lrn_decay_rate=0.1,
+                 clip_norm=10, **kwargs):
         super(NMTTrainer, self).__init__(models, TEXT_SRC, TEXT_TRG, **kwargs)
 
-        self.base_lrn_rate = kwargs.get('lrn_rate', 0.1)
-        self.optimizer_type = kwargs.get('optimizer', optim.SGD)
+        self.base_lrn_rate = lrn_rate
+        self.optimizer_type = optimizer
         self.init_optimizers()
 
         # Do learning rate decay:
-        self.lr_decay_opt = kwargs.get('lrn_decay', 'none')
-        self.lr_decay_force = kwargs.get('lrn_decay_force', np.inf)
+        self.lr_decay_opt = lrn_decay
+        self.lr_decay_force = lrn_decay_force
         if self.lr_decay_opt == 'none' or self.lr_decay_opt == 'adaptive':
             self.lambda_lr = lambda i : 1
         elif self.lr_decay_opt == 'invlin':
-            decay_rate = kwargs.get('lrn_decay_rate', 0.1)
+            decay_rate = lrn_decay_rate
             self.lambda_lr = lambda i : 1 / (1 + (i-6) * decay_rate) if i > 6 else 1
         else:
             raise ValueError('Invalid learning rate decay option: %s' \
@@ -423,7 +444,7 @@ class NMTTrainer(NMTModelUser):
         self.schedulers = [optim.lr_scheduler.LambdaLR(optimizer,
             self.lambda_lr) for optimizer in self.optimizers]
 
-        self.clip_norm = kwargs.get('clip_norm', 10)
+        self.clip_norm = clip_norm
         self.init_lists()
         if self.cuda:
             for model in self.models:
