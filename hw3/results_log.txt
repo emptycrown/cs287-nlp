@@ -1235,3 +1235,106 @@ Validation time: 1.359818 seconds
 Validation time: 2.044841 seconds
 5.957652872396875
 
+=== best results
+Using final MLP
+Target padding token: 1
+Source padding token: 1
+Using CUDA...
+Target padding token: 1
+Source padding token: 1
+Using CUDA...
+Innitializing parameters status:  True
+Epoch 0, loss: 46.713978, norm: 5.329768, elapsed: 1063.894383, lrn_rate: 1.200000
+Validation time: 1.941442 seconds
+Validation set metric: 10.928670
+Saving model to saved_models/attn_med_5.epoch_0.ckpt.tar
+Epoch 1, loss: 42.267780, norm: 7.347247, elapsed: 2163.232243, lrn_rate: 1.200000
+Validation time: 1.904391 seconds
+Validation set metric: 6.930205
+Saving model to saved_models/attn_med_5.epoch_1.ckpt.tar
+Epoch 2, loss: 36.884426, norm: 7.626665, elapsed: 3208.078403, lrn_rate: 1.200000
+Validation time: 1.817674 seconds
+Validation set metric: 5.795428
+Saving model to saved_models/attn_med_5.epoch_2.ckpt.tar
+Epoch 3, loss: 31.893240, norm: 6.090264, elapsed: 4255.479510, lrn_rate: 1.200000
+Validation time: 1.843599 seconds
+Validation set metric: 5.251451
+Saving model to saved_models/attn_med_5.epoch_3.ckpt.tar
+Epoch 4, loss: 34.269463, norm: 6.271408, elapsed: 5301.015239, lrn_rate: 1.200000
+Validation time: 1.878317 seconds
+Validation set metric: 4.977437
+Saving model to saved_models/attn_med_5.epoch_4.ckpt.tar
+Epoch 5, loss: 30.130325, norm: 6.102463, elapsed: 6348.086979, lrn_rate: 1.200000
+Validation time: 1.914788 seconds
+Validation set metric: 4.806715
+Saving model to saved_models/attn_med_5.epoch_5.ckpt.tar
+Epoch 6, loss: 30.701176, norm: 8.403505, elapsed: 7394.851094, lrn_rate: 1.200000
+Validation time: 1.970458 seconds
+Validation set metric: 4.643665
+Saving model to saved_models/attn_med_5.epoch_6.ckpt.tar
+Epoch 7, loss: 30.256733, norm: 7.704153, elapsed: 8446.352725, lrn_rate: 1.200000
+Validation time: 1.945064 seconds
+Validation set metric: 4.613053
+Saving model to saved_models/attn_med_5.epoch_7.ckpt.tar
+Decaying LR to 0.600000
+Epoch 8, loss: 26.882694, norm: 6.951996, elapsed: 9498.123146, lrn_rate: 0.600000
+Validation time: 1.780255 seconds
+Validation set metric: 4.367376
+Saving model to saved_models/attn_med_5.epoch_8.ckpt.tar
+Decaying LR to 0.300000
+Epoch 9, loss: 23.544054, norm: 7.642145, elapsed: 10547.934266, lrn_rate: 0.300000
+Validation time: 1.908327 seconds
+Validation set metric: 4.295395
+Saving model to saved_models/attn_med_5.epoch_9.ckpt.tar
+Decaying LR to 0.150000
+Epoch 10, loss: 21.876459, norm: 9.498790, elapsed: 11595.942855, lrn_rate: 0.150000
+Validation time: 1.931998 seconds
+Validation set metric: 4.293765
+Saving model to saved_models/attn_med_5.epoch_10.ckpt.tar
+Decaying LR to 0.075000
+Epoch 11, loss: 19.729061, norm: 6.939862, elapsed: 12646.532219, lrn_rate: 0.075000
+Validation time: 2.039602 seconds
+Validation set metric: 4.319367
+Saving model to saved_models/attn_med_5.epoch_11.ckpt.tar
+Decaying LR to 0.037500
+Epoch 12, loss: 19.253206, norm: 7.081698, elapsed: 13692.962103, lrn_rate: 0.037500
+Validation time: 1.980938 seconds
+Validation set metric: 4.336978
+Saving model to saved_models/attn_med_5.epoch_12.ckpt.tar
+Decaying LR to 0.018750
+Epoch 13, loss: 19.956722, norm: 9.532681, elapsed: 14742.002679, lrn_rate: 0.018750
+Validation time: 1.929855 seconds
+Validation set metric: 4.334616
+Saving model to saved_models/attn_med_5.epoch_13.ckpt.tar
+Decaying LR to 0.009375
+Epoch 14, loss: 19.673527, norm: 7.187007, elapsed: 15789.994987, lrn_rate: 0.009375
+Validation time: 1.889208 seconds
+Validation set metric: 4.336221
+Saving model to saved_models/attn_med_5.epoch_14.ckpt.tar
+Decaying LR to 0.004687
+Epoch 15, loss: 24.756987, norm: 9.835148, elapsed: 16837.432251, lrn_rate: 0.004687
+Validation time: 1.879341 seconds
+Validation set metric: 4.338009
+Saving model to saved_models/attn_med_5.epoch_15.ckpt.tar
+Decaying LR to 0.002344
+Epoch 16, loss: 19.212957, norm: 6.744505, elapsed: 17883.628807, lrn_rate: 0.002344
+Validation time: 1.859986 seconds
+Validation set metric: 4.337942
+Saving model to saved_models/attn_med_5.epoch_16.ckpt.tar
+Decaying LR to 0.001172
+Epoch 17, loss: 20.900364, norm: 11.724198, elapsed: 18928.885718, lrn_rate: 0.001172
+Validation time: 1.909735 seconds
+Validation set metric: 4.337952
+Saving model to saved_models/attn_med_5.epoch_17.ckpt.tar
+Decaying LR to 0.000586
+Epoch 18, loss: 23.690250, norm: 8.814668, elapsed: 19976.985049, lrn_rate: 0.000586
+Validation time: 1.840697 seconds
+Validation set metric: 4.338313
+Saving model to saved_models/attn_med_5.epoch_18.ckpt.tar
+Decaying LR to 0.000293
+Epoch 19, loss: 18.161837, norm: 7.431848, elapsed: 21027.056560, lrn_rate: 0.000293
+Validation time: 1.870655 seconds
+Validation set metric: 4.338334
+Saving model to saved_models/attn_med_5.epoch_19.ckpt.tar
+FINAL VAL PERF 4.338333858249031
+4.338333858249031
