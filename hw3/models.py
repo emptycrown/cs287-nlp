@@ -98,9 +98,9 @@ class AttnDecoder(BaseEncoder):
         self.enc_directions = 2 if enc_bidirectional else 1
         # XXX
         blowup = self.enc_directions # one for our output, one or two for context
-        self.out_linear_dec = nn.Linear(self.hidden_size, self.hidden_size)
-        self.out_linear_contxt = nn.Linear(blowup * self.hidden_size, self.hidden_size)
-        # self.mlp_linear = nn.Linear(self.hidden_size, self.hidden_size)
+        self.out_linear_dec = nn.Linear(self.hidden_size, self.V)
+        self.out_linear_contxt = nn.Linear(blowup * self.hidden_size, self.V)
+        # self.mlp_linear = nn.Linear(self.hidden_size, self.V)
 
         self.enc_linear = enc_linear
         if self.enc_linear > 0:
@@ -109,7 +109,7 @@ class AttnDecoder(BaseEncoder):
 
         
         if tie_weights:
-            if self.hidden_size != self.D or self.enc_directions != 1:
+            if self.hidden_size != self.D:
                 raise ValueError('For tied weights, hidden_size must equal num embeddings!')
             self.out_linear_dec.weight = self.embeddings.weight
         
@@ -128,6 +128,9 @@ class AttnDecoder(BaseEncoder):
         
         # Normally do linear layer after dropout
         if self.enc_linear > 0:
+            # print(enc_output.size())
+            # print(self.enc_directions * self.enc_linear,
+            #                              self.hidden_size)
             enc_output_lin = self.attn_linear(enc_output)
         else:
             enc_output_lin = enc_output

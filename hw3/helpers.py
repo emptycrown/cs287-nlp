@@ -183,11 +183,11 @@ class NMTModelUser(object):
     # [batch_sz, sent_len]
     def nll_loss(self, log_probs, output, mode='mean', **kwargs):
         batch_sz = log_probs.size(0)
-        # sl_type = torch.cuda.FloatTensor if self.cuda else \
-        #     torch.FloatTensor
-        # sent_len = torch.sum((output != self.trg_pad).type(torch.FloatTensor)) / batch_sz
+        sl_type = torch.cuda.FloatTensor if self.cuda else \
+            torch.FloatTensor
+        sent_len = torch.sum((output != self.trg_pad).type(sl_type)) / batch_sz
         # sent_len = sent_len.data[0]
-        sent_len = log_probs.size(1)
+        # sent_len = log_probs.size(1)
         # print(sent_len, log_probs.size())
         log_probs_rshp = log_probs.view(-1, log_probs.size(2))
         output_rshp = output.view(-1)
