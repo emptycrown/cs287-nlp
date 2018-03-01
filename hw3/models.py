@@ -100,7 +100,7 @@ class AttnDecoder(BaseEncoder):
         blowup = self.enc_directions # one for our output, one or two for context
         self.out_linear_dec = nn.Linear(self.hidden_size, self.hidden_size)
         self.out_linear_contxt = nn.Linear(blowup * self.hidden_size, self.hidden_size)
-        # self.mlp_linear = nn.Linear(self.hidden_size, self.hidden_size)
+        self.mlp_linear = nn.Linear(self.hidden_size, self.V)
 
         self.enc_linear = enc_linear
         if self.enc_linear > 0:
@@ -161,7 +161,7 @@ class AttnDecoder(BaseEncoder):
         output_1 = self.out_linear_dec(self.dropout(dec_output))
         output_2 = self.out_linear_contxt(self.dropout(context))
         output = output_1 + output_2
-        # output = self.mlp_linear(self.dropout(F.tanh(output)))
+        output = self.mlp_linear(self.dropout(F.tanh(output)))
         output = F.log_softmax(output, dim=2)
         
         # [batch_sz, sent_len_trg, hidden_sz * 2]
