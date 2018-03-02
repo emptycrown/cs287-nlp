@@ -385,12 +385,12 @@ class NMTEvaluator(NMTModelUser):
                     keep_idx = keep_idx.cuda() if self.cuda else keep_idx
 
                     # Now reselect
-                    self.cur_beams = torch.index_select(self.cur_beams, dim=0,
+                    self.cur_beams = torch.index_select(self.cur_beams, 0,
                                                         keep_idx)
-                    self.cur_beam_vals = torch.index_select(self.cur_beam_vals, dim=0,
+                    self.cur_beam_vals = torch.index_select(self.cur_beam_vals, 0,
                                                             keep_idx)
                     self.prev_hidden = tuple(torch.index_select(
-                        self.prev_hidden[j], dim=1, keep_idx) \
+                        self.prev_hidden[j], 1, keep_idx) \
                                              for j in range(len(self.prev_hidden)))
                     print(self.cur_beams)
                     print(self.cur_beam_vals)
