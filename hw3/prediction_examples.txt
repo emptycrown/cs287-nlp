@@ -1,0 +1,568 @@
+>>> ist ein Bauplan für Länder wie China und den Iran . 
+ <<< This is a blueprint for countries like China and Iran . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+<unk> for countries like China and Iran . </s>
+That 's a <unk> for countries like China and Iran . </s>
+This is a <unk> for countries like China and Iran . </s>
+That 's a stereotype for countries like China and Iran . </s>
+It 's a <unk> for countries like China and Iran . </s>
+This is a stereotype for countries like China and Iran . </s>
+That is a <unk> for countries like China and Iran . </s>
+That 's a sensor for countries like China and Iran . </s>
+This is a sensor for countries like China and Iran . </s>
+That 's a bonus for countries like China and Iran . </s>
+That 's a recipe for countries like China and Iran . </s>
+That 's a <unk> of countries like China and Iran . </s>
+That 's a marker for countries like China and Iran . </s>
+That 's a sofa for countries like China and Iran . </s>
+That 's a revenge for countries like China and Iran . </s>
+It 's a stereotype for countries like China and Iran . </s>
+This is a <unk> of countries like China and Iran . </s>
+It 's a <unk> of countries like China and Iran . </s>
+That 's a <unk> for countries like China and freedom . </s>
+That 's a <unk> for countries like China and the Iran . </s>
+This is a <unk> for countries like China and the Iran . </s>
+That 's a <unk> for countries like China and the Iran . " </s>
+This is a <unk> for countries like China and the Iran . " </s>
+That 's a <unk> for countries like China and the Iran . <unk> . </s>
+That 's a <unk> for countries like China and the Iran . Yeah . </s>
+That 's a <unk> for countries like China and the Iran . I think </s>
+This is a <unk> for countries like China and the Iran . Yeah . </s>
+This is a <unk> for countries like China and the Iran . <unk> . </s>
+That 's a <unk> for countries like China and the Iran . Okay . </s>
+That 's a <unk> for countries like China and the Iran . Now , </s>
+This is a <unk> for countries like China and the Iran . I think </s>
+>>> kann <unk> und <unk> , man kann <unk> und <unk> . 
+ <<< You can zoom in and zoom out , you can wind back and fast forward . </s> <pad> <pad> <pad> <pad> 
+ ===
+You can <unk> and <unk> , you can <unk> and <unk> . </s>
+You can spray and <unk> , you can <unk> and <unk> . </s>
+You can <unk> and <unk> ; you can <unk> and <unk> . </s>
+You can <unk> and <unk> , you can <unk> and play . </s>
+You can <unk> and <unk> , you can <unk> and tear . </s>
+You can <unk> and <unk> , you can be <unk> and <unk> . </s>
+You can be <unk> and <unk> , you can <unk> and <unk> . </s>
+You can <unk> and <unk> , you can <unk> <unk> and <unk> . </s>
+You can take <unk> and <unk> , you can <unk> and <unk> . </s>
+You can <unk> and <unk> , you can <unk> and <unk> it . </s>
+You can <unk> and <unk> , you can play <unk> and <unk> . </s>
+You can <unk> and <unk> it , you can <unk> and <unk> . </s>
+You can go <unk> and <unk> , you can <unk> and <unk> . </s>
+You can do <unk> and <unk> , you can <unk> and <unk> . </s>
+You can <unk> and <unk> , you can <unk> and <unk> them . </s>
+You can <unk> and buy <unk> , you can <unk> and <unk> . </s>
+You can <unk> and <unk> , and you can <unk> and <unk> . </s>
+You can <unk> and you can <unk> , you can <unk> and <unk> . </s>
+You can <unk> and <unk> and <unk> , you can <unk> and <unk> . </s>
+You can <unk> and <unk> , you can <unk> , you can <unk> . </s>
+>>> manche sagten sogar , dies könnte zur <unk> 2.0 werden . 
+ <<< And some even said , this would be <unk> 2.0 . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+And some people said , this could be a <unk> . </s>
+And some people said , this could be used to <unk> . </s>
+And some people said , this could be <unk> to the <unk> . </s>
+And some people said , this could be used to the <unk> . </s>
+And some people said , this could be used for the <unk> . </s>
+And some people said , this could be <unk> for the <unk> . </s>
+And some people said , this could be a <unk> - <unk> . </s>
+And some people said , this could be the end of the <unk> . </s>
+And some people said , this could be used to the <unk> collapse . </s>
+And some people said , this could be <unk> to the <unk> collapse . </s>
+And some people said , this could be used for the <unk> collapse . </s>
+And some of them said , this could be <unk> to the <unk> . </s>
+And some of them said , this could be used to the <unk> . </s>
+And some of them said , this could be used for the <unk> . </s>
+And some people said , this could be used to be a <unk> . </s>
+>>> Handy kann ein Leben verändern und einem persönliche Freiheit geben . 
+ <<< A mobile phone can change your life , and gives you individual freedom . </s> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+A cell can change a life and give a happy freedom . </s>
+A phone can change a life and give a happy freedom . </s>
+A telephone can change a life and give a happy freedom . </s>
+A cell can change a life and give a personal freedom . </s>
+A cell can change a life and give your own freedom . </s>
+A phone can change a life and give a personal freedom . </s>
+A phone can change a life and give your own freedom . </s>
+A telephone can change a life and give a personal freedom . </s>
+A cellphone can change a life and give a happy freedom . </s>
+A telephone can change a life and give your own freedom . </s>
+A mobile phone can change a life and give a happy freedom . </s>
+A cell can change a life and give you a happy freedom . </s>
+A phone can change a life and give you a happy freedom . </s>
+A telephone can change a life and give you a happy freedom . </s>
+A mobile phone can change a life and give your own freedom . </s>
+A mobile cell can change a life and give a happy freedom . </s>
+A mobile phone can change a life and give a personal freedom . </s>
+A mobile phone can change a life and give you a happy freedom . </s>
+A mobile phone can change a life and give you a happy freedom , </s>
+>>> müssen Sie ihnen die absolute Wahrheit über das Unternehmertum verraten . 
+ <<< And then you have to tell them the truth about entrepreneurship . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+Then you have to tell them the latest truth of the primate . </s>
+Then you have to tell them the latest truth about the primate . </s>
+Then you have to tell them the absolute truth about the primate . </s>
+Then you have to tell them the latest truth about the receptor . </s>
+Then you have to tell them the absolute truth of the primate . </s>
+Then you have to tell them the absolute truth about the receptor . </s>
+And then you have to tell them the latest truth of the primate . </s>
+And then you have to tell them the latest truth about the primate . </s>
+And then you have to tell them the absolute truth about the primate . </s>
+And then you have to tell them the latest truth about the receptor . </s>
+And then you have to tell them the latest truth about the wolves . </s>
+And then you have to tell them the absolute truth of the primate . </s>
+And then you have to tell them the absolute truth about the wolves . </s>
+And then you have to tell them the absolute truth about the receptor . </s>
+And then you have to tell them the latest truth about the <unk> . </s>
+And then you have to tell them the latest truth about the obesity . </s>
+>>> werden Unternehmer sein . Und sie machen es schon jetzt . 
+ <<< It will be entrepreneurs , and they 're doing it now . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+It will be entrepreneurs . And they do it now . </s>
+It will be entrepreneurs . And you do it now . </s>
+It will be entrepreneurs . And they 're doing it now . </s>
+It will be entrepreneurs . And they are doing it now . </s>
+It will be entrepreneurs . And you 're doing it now . </s>
+It will be entrepreneurs , and they 're doing it now . </s>
+It will be entrepreneurs . And they 're making it now . </s>
+It will be snow . And they 're doing it now . </s>
+It 'll be entrepreneurs . And they 're doing it now . </s>
+It will be entrepreneurs . And you 're making it now . </s>
+It will be entrepreneurs . And they do it right now . </s>
+It will be entrepreneurs . And you are doing it now . </s>
+It will be entrepreneurs . And they 're doing it right now . </s>
+It will be entrepreneurs . And they 're already doing it now . </s>
+It will be entrepreneurs . And they 're making it right now . </s>
+It will be entrepreneurs . And you 're making it right now . </s>
+It will be entrepreneurs . And they are doing it right now . </s>
+It 's going to be entrepreneurs . And they 're doing it . </s>
+It 's going to be entrepreneurs . And they 're doing it now . </s>
+It will be entrepreneurs . And they 're already doing it right now . </s>
+It will be entrepreneurs . And they 're already making it right now . </s>
+It 's going to be entrepreneurs . And they 're doing it now , </s>
+It will be entrepreneurs . And they 're already doing it right now , </s>
+It will be entrepreneurs . And they 're already making it right now , </s>
+>>> möchte damit sagen , dass Unternehmertum der richtige Weg ist . 
+ <<< So what I 'm saying is that entrepreneurship is where it 's at . </s> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+I want to say that projections are the right path . </s>
+I want to say that regret is the right path . </s>
+I want to say that projections is the right path . </s>
+I want to say that regret is the right way . </s>
+I want to say that predictions are the right path . </s>
+I want to say that projections is the right way . </s>
+I want to say that projections are the right way . </s>
+I want to say that predictions is the right path . </s>
+I want to tell you that regret is the right path . </s>
+I want to say that the projections are the right path . </s>
+I want to tell you that projections are the right path . </s>
+So I want to say that projections are the right path . </s>
+So I want to say that regret is the right path . </s>
+And I want to say that projections are the right path . </s>
+And I want to say that regret is the right path . </s>
+I want to tell you that projections is the right path . </s>
+I want to tell you that regret is the right way . </s>
+So I want to say that projections is the right path . </s>
+I want to tell you that the projections are the right path . </s>
+>>> einer Gemeinde von 10 000 Menschen bekommen wir 200 Kunden . 
+ <<< In a community of 10,000 people , we get 200 clients . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+In a community of 10 people , we get 200 customers . </s>
+In a range of 10 people , we get 200 customers . </s>
+In a <unk> of 10 people , we get 200 customers . </s>
+In a community of 10 people , we get 200 glasses . </s>
+In a range of 10 thousand people , we get 200 customers . </s>
+In a community of 10 thousand people , we get 200 customers . </s>
+In a community of 10 people , we 'll get 200 customers . </s>
+In a community of 10 people , we get 200 pairs of customers . </s>
+In a range of 10 people , we get 200 pairs of people . </s>
+In a range of 10 thousand people , we 'll get 200 customers . </s>
+>>> <unk> für das eigene Wachsen ist das Wichtigste der Menschheit . 
+ <<< The passion that that man has for his own personal growth is the most important thing . </s> <pad> <pad> <pad> 
+ ===
+<unk> for the <unk> is the most important of humanity . </s>
+<unk> to the <unk> is the most important of humanity . </s>
+<unk> for the <unk> is the most important of mankind . </s>
+<unk> to the <unk> is the most important of mankind . </s>
+The <unk> for the <unk> is the most important person . </s>
+The <unk> for the <unk> is the most important of humanity . </s>
+The <unk> for your state is the most important of humanity . </s>
+The <unk> to the <unk> is the most important of humanity . </s>
+The applications for the <unk> is the most important of humanity . </s>
+The <unk> for the <unk> is the most important of mankind . </s>
+<unk> for the <unk> is the most important one of humanity . </s>
+The <unk> for that is the most important thing to do . </s>
+<unk> for the most expensive state is the most important of humanity . </s>
+<unk> for the most expensive person is the most important of humanity . </s>
+The <unk> for the <unk> is the most important one of humanity . </s>
+The <unk> for the <unk> is the most important of the mankind . </s>
+<unk> for the <unk> is the most important of the human race . </s>
+The <unk> for the <unk> is the most important of the human . </s>
+The <unk> for your state is the most important of the human . </s>
+The <unk> for the <unk> is the most important of the human race . </s>
+The <unk> for your state is the most important of the human race . </s>
+<unk> for the most expensive state is the most important of the mankind . </s>
+The <unk> for the <unk> is the most important of the human mankind . </s>
+<unk> for the most expensive state is the most important of the humanity . </s>
+<unk> for the most expensive state is the most important of the human . </s>
+<unk> for the most expensive state is the most important of humanity . " </s>
+>>> <unk> für das eigene Wachstum der Person ist das Wichtigste . 
+ <<< The passion that the person has for her own growth is the most important thing . </s> <pad> <pad> <pad> <pad> 
+ ===
+<unk> to the public growth is the most important . </s>
+The <unk> to the public growth is the most important . </s>
+<unk> to the public growth of person is the most important . </s>
+The <unk> for most of the growth is the most important . </s>
+The <unk> for the most growth of person is the most important . </s>
+The <unk> to the human growth of person is the most important . </s>
+The <unk> for the human growth of person is the most important . </s>
+<unk> for the most powerful growth of person is the most important . </s>
+The <unk> to the public growth of person is the most important . </s>
+The <unk> for the most powerful growth of person is the most important . </s>
+The <unk> for the most growth of the person is the most important . </s>
+The <unk> to the most powerful growth of person is the most important . </s>
+The <unk> to the human growth of the person is the most important . </s>
+The <unk> for this is the most important growth of person 's growth . </s>
+The <unk> for the human growth of the person is the most important . </s>
+And the <unk> for the most growth of person is the most important . </s>
+The <unk> to this is the most important growth of person 's growth . </s>
+The <unk> to the human growth of person is the most important thing . </s>
+The <unk> for this is the most important growth of person 's growth , </s>
+>>> diese Person diese nicht mag , was soll man tun ? 
+ <<< If that person does n't want to do it , what are you going to do ? </s> <pad> <pad> <pad> 
+ ===
+If these person are n't , what do you want to do ? </s>
+If these person do n't like that , what do you do ? </s>
+If these person do n't like this , what do you do ? </s>
+If these person do n't like these , what do you do ? </s>
+If these person do n't , what do you want to do ? </s>
+If these person do n't like that , what are you doing ? </s>
+
+>>> neue Schule engagiert sich und hilft durch <unk> und Aufklärung . 
+ <<< My new school now is coming in and helping by fundraising and creating an awareness . </s> <pad> <pad> <pad> <pad> 
+ ===
+My new school is <unk> and <unk> and <unk> . </s>
+My new school spreads and demand through <unk> and <unk> . </s>
+My new school <unk> and <unk> through <unk> and <unk> . </s>
+My new school <unk> and helps through <unk> and <unk> . </s>
+My new school spreads and helps through <unk> and <unk> . </s>
+My new school spreads and <unk> through <unk> and <unk> . </s>
+My new school spread and helps through <unk> and <unk> . </s>
+My new school spreads and demand through <unk> and practice . </s>
+My new school spreads and helps through <unk> and practice . </s>
+My new school is <unk> and <unk> through <unk> and <unk> . </s>
+My new school is <unk> and helps through <unk> and <unk> . </s>
+My new school spreads , and helps through <unk> and <unk> . </s>
+My new school is spread and demand through <unk> and <unk> . </s>
+My new school <unk> , and helps through <unk> and <unk> . </s>
+My new school is increasing and <unk> through <unk> and <unk> . </s>
+My new school is different and <unk> through <unk> and <unk> . </s>
+My new school spread , and helps through <unk> and <unk> . </s>
+And my new school <unk> and helps through <unk> and <unk> . </s>
+My new school <unk> and <unk> and <unk> through <unk> and <unk> </s>
+My new school <unk> and <unk> and <unk> through <unk> and <unk> . </s>
+My new school <unk> and helps through <unk> and <unk> and <unk> . </s>
+My new school <unk> and <unk> and <unk> through <unk> and <unk> , </s>
+My new school spreads , and helps through <unk> and <unk> and <unk> </s>
+My new school spreads , and helps through <unk> and <unk> and <unk> . </s>
+My new school <unk> and <unk> and <unk> through <unk> and <unk> <unk> . </s>
+My new school spreads , and helps through <unk> and <unk> and training . </s>
+My new school spreads , and helps through <unk> and <unk> and medicine . </s>
+My new school spreads , and helps through <unk> and <unk> and practice . </s>
+My new school spreads , and helps through <unk> and <unk> and <unk> , </s>
+My new school <unk> and <unk> and <unk> through <unk> and <unk> and <unk> </s>
+>>> erste Idee war Feuer . Löwen fürchten sich vor Feuer . 
+ <<< And the first idea I got was to use fire , because I thought lions were scared of fire . </s> 
+ ===
+My first idea was fire . <unk> fear . </s>
+My first idea was fire . <unk> scared . </s>
+My first idea was fire . <unk> <unk> . </s>
+My first idea was fire , <unk> fear . </s>
+My first idea was fire . <unk> fear fire . </s>
+So my first idea was fire . <unk> fear . </s>
+My first idea was fire . <unk> of fire . </s>
+My first idea was fire . <unk> fear <unk> . </s>
+My first big idea was fire . <unk> fear . </s>
+My first idea was fire . <unk> fear from fire . </s>
+My first idea was fire . <unk> fear of fire . </s>
+My first idea was fire . <unk> fear in fire . </s>
+My first idea was fire . <unk> scared from fire . </s>
+My first idea was fire . <unk> fear on fire . </s>
+My first idea was fire . <unk> scared of fire . </s>
+My first idea was fire . <unk> scared in fire . </s>
+My first idea was fire . <unk> fear , himself . </s>
+Well , my first idea was fire . <unk> fear . </s>
+My first idea was fire . <unk> fear from fire , </s>
+My first idea was fire . <unk> fear of fire , </s>
+So my first idea was fire . <unk> fear from fire . </s>
+So my first idea was fire . <unk> fear of fire . </s>
+So my first idea was fire . <unk> fear of fire , </s>
+My first idea was fire . <unk> fear of fire in fire . </s>
+My first idea was fire . <unk> fear of fire from fire . </s>
+My first idea was fire . <unk> fear of fire , <unk> . </s>
+My first idea was fire . <unk> fear of fire , fire . </s>
+My first idea was fire . <unk> fear of fire in fire , </s>
+My first idea was fire . <unk> fear of fire from fire , </s>
+So my first idea was fire . <unk> fear of fire in fire . </s>
+My first idea was fire . <unk> fear of fire , in fire . </s>
+My first idea was fire . <unk> fear of fire , <unk> fire . </s>
+My first idea was fire . <unk> fear of fire in fire itself . </s>
+My first idea was fire . <unk> fear of fire , fire fire . </s>
+My first idea was fire . <unk> fear of fire from fire itself . </s>
+My first idea was fire . <unk> fear of fire , <unk> <unk> . </s>
+So my first idea was fire . <unk> fear of fire , <unk> . </s>
+So my first idea was fire . <unk> fear of fire in fire , </s>
+My first idea was fire . <unk> fear of fire in fire . " </s>
+>>> was wäre , wenn Patienten diesen Test zuhause machen könnten ? 
+ <<< But what if patients could do this test at home ? </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+But what if patients could do that home ? </s>
+But what if patients could do this test ? </s>
+But what if patients could do this home ? </s>
+But what if patients could do it home ? </s>
+But what if patient could do this home ? </s>
+But what if patients could do that test ? </s>
+But what if patients could do this at home ? </s>
+But what if patients could do this test home ? </s>
+But what if patients could do that at home ? </s>
+But what if patients could do this home home ? </s>
+But what if patients could do this test later ? </s>
+But what if patient could do this at home ? </s>
+But what if the patient could do this home ? </s>
+But what if patients could do this home later ? </s>
+But what if the patient could do that home ? </s>
+But what if patients could do this test at home ? </s>
+But what if patients could do this home at home ? </s>
+But what if the patient could do this at home ? </s>
+But what if patients could be able to do this home ? </s>
+But what if patients could be able to do this test ? </s>
+But what if patient could be able to do this home ? </s>
+But what if patient could be able to do this test ? </s>
+But what if patients could be able to do this test home ? </s>
+But what if patients could be able to do this home home ? </s>
+But what if patients could be able to do this at home ? </s>
+But what if patient could be able to do this test home ? </s>
+But what if patient could be able to do this at home ? </s>
+But what if patient could be able to do this home home ? </s>
+But what if patients could be able to do this test later ? </s>
+But what if patients could be able to do this home later ? </s>
+But what if patients could be able to do this home at home ? </s>
+But what if patients could be able to do this test at home ? </s>
+But what if patient could be able to do this test at home ? </s>
+But what if patient could be able to do this home at home ? </s>
+But what if patients could be able to do this test after home ? </s>
+But what if patients could be able to do this test after this ? </s>
+But what if patients could be able to do this home home ? " </s>
+But what if patients could be able to do this test home ? " </s>
+But what if patients could be able to do this at home ? " </s>
+>>> geht darum zu wissen , dass man nicht allein ist . 
+ <<< It 's about knowing you 're not alone . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+It 's about knowing you not alone . </s>
+You know , you 're not alone . </s>
+It 's about know you 're not alone . </s>
+It 's about knowing you 're not alone . </s>
+It 's about sure you 're not alone . </s>
+It 's to know you 're not alone . </s>
+It 's about know that you 're not alone . </s>
+It 's about knowing that you 're not alone . </s>
+It 's to know that you 're not alone . </s>
+It 's all about knowing you 're not alone . </s>
+It 's all about know you 're not alone . </s>
+It 's about to know you 're not alone . </s>
+It 's about to know that you 're not alone . </s>
+You know , it 's because you 're not alone . </s>
+You know , it 's because you 're not alone , </s>
+It 's about to know that you 're not alone , </s>
+You know , it 's about know you 're not alone . </s>
+You know , it 's about knowing you 're not alone . </s>
+It 's because you 're not alone you 're not alone . </s>
+You know , it 's about know you 're not alone , </s>
+You know , it 's about knowing you 're not alone , </s>
+You know , it 's about know that you 're not alone . </s>
+You know , it 's about knowing that you 're not alone . </s>
+You know , you 're not alone , you 're not alone . </s>
+You know , it 's about knowing that you are not alone . </s>
+You know , it 's about knowing that you are n't alone . </s>
+You know , it 's about knowing that you do n't alone . </s>
+You know , it 's because you 're not alone at all . </s>
+You know , it 's about knowing that you do n't alone , </s>
+You know , it 's about know that you 're not alone , </s>
+You know , it 's about knowing that you 're not alone , </s>
+You know , you 're not alone , you 're not alone , </s>
+You know , it 's about knowing that you do n't exist alone . </s>
+You know , it 's because you 're not alone , you know . </s>
+You know , it 's because you 're not alone , you know ? </s>
+You know , it 's about know that you 're not alone . " </s>
+>>> Bevor ich <unk> , möchte ich jemandes <unk> sein . " 
+ <<< " Before I die , I want to be someone 's <unk> . " </s> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+" Before I <unk> , let me be <unk> . " </s>
+" Before I <unk> , I want to be <unk> . " </s>
+" Before , I want to be a human <unk> . " </s>
+" Before I <unk> , I want to be a <unk> . " </s>
+" Before I got <unk> , I want to be <unk> . " </s>
+" Before I <unk> , I 'd like to be <unk> . " </s>
+" Before I get <unk> , I want to be <unk> . " </s>
+" Before I 'm <unk> , I want to be <unk> . " </s>
+" Before I <unk> , I 'd like to be a <unk> . " </s>
+" Before I <unk> , I want to be a human <unk> . " </s>
+" Before I <unk> , I would like to be a <unk> . " </s>
+" Before I got <unk> , I 'd like to be <unk> . " </s>
+" Before I <unk> , I 'd like to be a man . " </s>
+" Before I <unk> , I 'd like to be a human <unk> , </s>
+>>> Bevor ich <unk> , möchte ich einen Baum pflanzen . " 
+ <<< " Before I die , I want to plant a tree . " </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+" Before , I want to offer a tree . " </s>
+" Before , I 'd like to offer a tree . " </s>
+" Before <unk> , I want to offer a tree . " </s>
+" Before , I would like to offer a tree . " </s>
+" Before I <unk> , I want to offer a tree . " </s>
+" Before I <unk> , I wanted to offer a tree . " </s>
+" Before I run , I want to offer a tree . " </s>
+" Before I <unk> , I want to serve a tree . " </s>
+" before I <unk> , I want to offer a tree . " </s>
+" Before I <unk> , I want to put a tree . " </s>
+" Before I <unk> , I 'd like to offer a tree . </s>
+" Before I <unk> , I 'd like to offer a tree . " </s>
+" Before I <unk> , I would like to offer a tree . " </s>
+" Before I got <unk> , I want to offer a tree . " </s>
+" Before I <unk> <unk> , I want to offer a tree . " </s>
+" Before I was <unk> , I want to offer a tree . " </s>
+" Before I <unk> , I would want to offer a tree . " </s>
+" Before I run , I 'd like to offer a tree . " </s>
+" Before I 'm <unk> , I want to offer a tree . " </s>
+" Before I get <unk> , I want to offer a tree . " </s>
+" Before I go <unk> , I want to offer a tree . " </s>
+>>> es fällt mir schwer , diese Sichtweise jeden Tag <unk> . 
+ <<< But I struggle to maintain this perspective in my daily life . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+But it 's hard to me , this day , every day . </s>
+But it 's hard to me , and it <unk> me every day . </s>
+But it 's hard to me , and it <unk> me every day , </s>
+But it 's hard to me , and it <unk> me all day . </s>
+>>> Tag , eine Woche ? Nein , ein ganzes Jahr . 
+ <<< A day , a week ? Actually , a whole year . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+Someday , a week ? No , a year . </s>
+Day , a week ? No , a year . </s>
+One day , a week ? No , a year . </s>
+One day , one week ? No , a year . </s>
+One day , a week ? No , every year . </s>
+Day one day a week ? No , a year . </s>
+A day , a week ? No , a year . </s>
+One day , one week ? No , every year . </s>
+Day a day , a week ? No , a year . </s>
+Day one day , a week ? No , a year . </s>
+Day a day , a week ? No , every year . </s>
+Day a day , one week ? No , a year . </s>
+Day one day , one week ? No , a year . </s>
+One day , one week ? No , a whole year . </s>
+Day a day , a week ? No , a whole year . </s>
+One day , a week ? No , it 's a whole year . </s>
+One day , one week ? No , it 's a whole year . </s>
+Day one day a week ? No , it 's a whole year . </s>
+Day a day , a week ? No , it 's every year . </s>
+Day a day , a week ? No , it 's all year . </s>
+Day a day , a week ? No , it 's a year . </s>
+One day , a week ? No , it 's a whole home . </s>
+Day a day , a week ? No , it 's a total . </s>
+Day a day , a week ? No , it 's a <unk> . </s>
+One day , a week ? No , it 's a whole <unk> . </s>
+One day , a week ? No , it 's a whole year , </s>
+One day , a week ? No , it 's a whole year ? </s>
+>>> – sagen Sie mir nicht , dass ich normal bin . 
+ <<< Please -- do n't tell me I 'm normal . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+Please do you say I 'm normal . </s>
+Please do n't say I 'm normal . </s>
+Please do n't tell me I 'm normal . </s>
+Please -- do n't say I 'm normal . </s>
+Please do you tell me I 'm normal . </s>
+Please -- do n't tell me I 'm normal . </s>
+Please , do n't tell me I 'm normal . </s>
+Please do n't tell me that I 'm normal . </s>
+Please -- do n't tell me I am normal . </s>
+Please -- do n't say me I 'm normal . </s>
+Please -- do n't say that I 'm normal . </s>
+Please do you tell me that I 'm normal . </s>
+Please -- do n't tell me that I 'm normal . </s>
+Please , do n't tell me that I 'm normal . </s>
+Please -- do n't tell me that I am normal . </s>
+Please , do n't tell me that I am normal . </s>
+Please -- do n't say me , I 'm normal . </s>
+Please -- do n't say me that I 'm normal . </s>
+Please -- do n't tell me , I 'm normal . </s>
+Please -- do n't tell me that I 'm normal , </s>
+Please -- do n't say to me that I 'm normal . </s>
+Please -- do n't say to me that I am normal . </s>
+Please -- do n't tell me that I 'm normal enough . </s>
+Please -- do n't tell me that I 'm normal about . </s>
+Please -- do n't tell me that I 'm normal at all . </s>
+Please -- do n't tell me that I 'm normal at that . </s>
+Please -- do n't tell me that I 'm normal about that . </s>
+Please -- do n't tell me that I 'm normal at this . </s>
+Please -- do n't tell me that I 'm normal at this point . </s>
+Please -- do n't tell me that I 'm normal at the time . </s>
+Please -- do n't tell me that I 'm normal , you say . </s>
+Please -- do n't tell me that I 'm normal at that point . </s>
+Please -- do n't tell me that I 'm normal at the end . </s>
+Please -- do n't tell me that I 'm normal at the moment . </s>
+Please -- do n't tell me that I 'm normal , you know ? </s>
+Please -- do n't tell me that I 'm normal , you know . </s>
+Please -- do n't tell me that I 'm normal , you say , </s>
+Please -- do n't tell me that I 'm normal , you say ? </s>
+Please -- do n't tell me that I 'm normal , you know , </s>
+>>> ist nicht <unk> . Er <unk> nicht auf die Hautfarbe . 
+ <<< He 's not greedy . He does n't see skin color . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+He 's not <unk> . He does n't <unk> on the skin . </s>
+It 's not <unk> . He does n't <unk> on the skin . </s>
+He 's not <unk> . He 's not <unk> on the skin . </s>
+It 's not <unk> . It 's not <unk> on the skin . </s>
+He 's not <unk> . He did n't <unk> on the skin . </s>
+It 's not <unk> . He 's not <unk> on the skin . </s>
+It 's not <unk> . It does n't <unk> on the skin . </s>
+It 's not <unk> . It does n't stop on the skin . </s>
+It 's not <unk> . He did n't <unk> on the skin . </s>
+He 's not <unk> . He does n't interfere on the skin . </s>
+He 's not <unk> . He does n't <unk> on the winter . </s>
+He 's not <unk> . He does n't stop on the skin . </s>
+It 's not <unk> . It does n't interfere on the skin . </s>
+It 's not <unk> . He does n't interfere on the skin . </s>
+It 's not <unk> . He does n't stop on the skin . </s>
+He 's not <unk> . He does n't <unk> on the sand . </s>
+He 's not <unk> . It 's not <unk> on the skin . </s>
+It 's not <unk> . He does n't <unk> on the winter . </s>
+He 's not <unk> . He does n't wake up on the skin . </s>
+He 's not <unk> . He does n't do it on the skin . </s>
+>>> war völlig überrascht , dass sich ein <unk> darum kümmert . 
+ <<< I was so surprised that a total stranger cared enough to ask . </s> <pad> <pad> <pad> <pad> <pad> <pad> <pad> 
+ ===
+I was completely surprised to think about it . </s>
+I was totally surprised to think about it . </s>
+I was completely surprised to think about this . </s>
+And I was completely surprised to think about it . </s>
+I was completely surprised to think a <unk> about this . </s>
+I was totally surprised to think a <unk> about this . </s>
+I was completely surprised to think of it as a <unk> . </s>
+I was totally surprised to think of it as a <unk> . </s>
+I was completely surprised to think of this as a <unk> . </s>
+I was totally surprised to think of this as a <unk> . </s>
+I was completely surprised to think about it as a <unk> . </s>
+I was totally surprised to think about it as a <unk> . </s>
+I was completely surprised to think of it as a cartoonist . </s>
+I was totally surprised to think of it as a cartoonist . </s>
+I was completely surprised to think of this as a cartoonist . </s>
+I was completely surprised to think of it as an <unk> . </s>
+I was completely surprised to think of this as an <unk> . </s>
+I was totally surprised to think of it as an <unk> . </s>
+I was completely surprised to think of this as an opportunity . </s>
+I was completely surprised to think of it as an opportunity . </s>
+I was completely surprised to think of it as being a <unk> . </s>
+I was totally surprised to think of it as being a <unk> . </s>
+And I was completely surprised to think of it as a <unk> . </s>
+And I was completely surprised to think of it as a cartoonist . </s>
+I was completely surprised to think of it as being a <unk> <unk> </s>
+I was completely surprised to think of it as being a <unk> <unk> . </s>
+I was completely surprised to think of it as being a <unk> . " </s>

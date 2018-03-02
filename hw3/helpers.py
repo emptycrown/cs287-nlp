@@ -291,7 +291,7 @@ class NMTEvaluator(NMTModelUser):
             sent_tsr = torch.index_select(sent_tsr, dim=0,
                                           index=ind_rev)
         if self.cuda:
-            sent_tsr = sent_tsr.cuda()
+            sent_tsr = sent_tsr.cuda()        
         var_src = autograd.Variable(sent_tsr.view(1, -1).expand(beam_size, -1))
         var_hidden = self.prepare_hidden(beam_size, zero_out=True)
         
@@ -314,14 +314,14 @@ class NMTEvaluator(NMTModelUser):
 
         for i in range(pred_len):
             if translate_mode:
-                (ref_beam, ref_voc) = self.create_beam_arrays(self.cur_beams.size(0))
+                (ref_beam, ref_voc) = self.create_ref_arrays(self.cur_beams.size(0))
 
             cur_sent = self.cur_beams[:, i:i+1]
             if self.use_attention:
                 pad_mask = self.generate_attn_mask(var_src)
 
                 dec_output, dec_hidden, dec_attn = self.models[1](
-                    cur_sent, self.prev_hidden, enc_output, pad_mask)
+                    cur_sent, self.prev_hidden, enc_output[:self.cur_beams.size(0)], pad_mask)
                 if self.record_attention:
                     _, pred = torch.topk(dec_output, k=1, dim=2)
                     self.attns_log.append((dec_attn, var_src, pred.squeeze(),
@@ -376,32 +376,33 @@ class NMTEvaluator(NMTModelUser):
             if translate_mode:
                 keep_sents = list()
                 eos_token = self._TEXT_TRG.vocab.stoi['</s>']
-                for i in self.cur_beams.size(0):
+                for i in range(self.cur_beams.size(0)):
                     if self.cur_beams[i,-1].data[0] == eos_token:
                         final_preds.append(self.cur_beams[i,:])
                     else:
                         keep_sents.append(i)
-                    keep_idx = autograd.Variable(torch.LongTensor(keep_sents))
-                    keep_idx = keep_idx.cuda() if self.cuda else keep_idx
+                keep_idx = autograd.Variable(torch.LongTensor(keep_sents))
+                keep_idx = keep_idx.cuda() if self.cuda else keep_idx
 
-                    # Now reselect
-                    self.cur_beams = torch.index_select(self.cur_beams, 0,
+                # Now reselect
+                if len(keep_sents) > 100 or len(keep_idx) == 0:
+                    return final_preds           
+                self.cur_beams = torch.index_select(self.cur_beams, 0,
                                                         keep_idx)
-                    self.cur_beam_vals = torch.index_select(self.cur_beam_vals, 0,
+                self.cur_beam_vals = torch.index_select(self.cur_beam_vals, 0,
                                                             keep_idx)
-                    self.prev_hidden = tuple(torch.index_select(
-                        self.prev_hidden[j], 1, keep_idx) \
+                self.prev_hidden = tuple(torch.index_select(
+                    self.prev_hidden[j], 1, keep_idx) \
                                              for j in range(len(self.prev_hidden)))
-                    print(self.cur_beams)
-                    print(self.cur_beam_vals)
-                    print(self.prev_hidden[0].size())
+                # print('cur beams', self.cur_beams)
+                # print('cur beam vals', self.cur_beam_vals)
+                # print('prev hidden', self.prev_hidden[0].size())
 
-                if len(keep_sents) > 100:
-                    return keep_sents
+
             # print('cur_beams', self.cur_beams)
 
         if translate_mode:
-            return keep_sents, self.cur_beams
+            return final_preds
         return self.cur_beams
     
     @staticmethod
@@ -421,6 +422,30 @@ class NMTEvaluator(NMTModelUser):
         ref_voc = ref_voc.cuda() if self.cuda else ref_voc
         ref_voc = autograd.Variable(ref_voc)
         return (ref_beam, ref_voc)
+    
+    def create_text(self, word_ids, src_or_trg, is_variable=False):
+        TEXT = self._TEXT_SRC if src_or_trg == 'src' else self._TEXT_TRG
+        if is_variable:
+            words = [TEXT.vocab.itos[word_ids[k].data[0]] for k in range(1, len(word_ids))]
+        else:
+            words = [TEXT.vocab.itos[word_ids[k]] for k in range(1, len(word_ids))]
+        return ' '.join(words)
+        
+    
+    def view_predictions(self, batch_src, batch_trg, batch_preds):
+        for i,sent in enumerate(batch_src):
+            if i > 10:
+                break
+            words_src = self.create_text(sent, 'src')
+            words_trg = self.create_text(batch_trg[i], 'trg')
+            words_pred_list = list()
+            for j in range(len(batch_preds[i])):
+                words_pred_list.append(self.create_text(batch_preds[i][j], 'trg',
+                                                       is_variable=True))
+            print('>>> %s \n <<< %s \n ===' % (words_src, words_trg))
+            for w in words_pred_list:
+                print(w)
+            
         
     def predict(self, test_set, fn='predictions.txt', num_cands=100, pred_len=3,
                 beam_size=100, ignore_eos=False, translate_mode=False):
@@ -443,6 +468,9 @@ class NMTEvaluator(NMTModelUser):
             predictions.append(best_translations)
             # if i > 10:
             #     break
+            
+        if translate_mode:
+            return predictions
             
         print('Writing predictions to %s...' % fn)
         with open(fn, 'w') as fout:
@@ -615,3 +643,5 @@ class NMTTrainer(NMTModelUser):
             print('FINAL VAL PERF', self.val_perfs[-1])
             return self.val_perfs[-1]
         return -1
+
+    
