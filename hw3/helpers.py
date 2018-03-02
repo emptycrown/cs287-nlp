@@ -219,7 +219,7 @@ class NMTEvaluator(NMTModelUser):
         self.attns_log = list()
         
     def visualize_attn(self, dec_attn_smpl, var_src_smpl, pred_smpl,
-                       var_trg_lab=None):
+                       var_trg_lab=None, save_fn=None):
         # dec_attn_smpl is [src_len, pred_len], var_src_smpl is [src_len],
         # pred_smpl is [pred_len]
         attn = dec_attn_smpl.cpu().data.numpy()
@@ -245,6 +245,8 @@ class NMTEvaluator(NMTModelUser):
         plt.xticks(range(len(src_words)),src_words, rotation='vertical')
         plt.yticks(range(len(pred_words)),pred_words)
         ax.xaxis.tick_top()
+        if not save_fn is None:
+            plt.savefig(save_fn)
         plt.show()
 
     def evaluate(self, test_iter, num_iter=None):
@@ -278,7 +280,7 @@ class NMTEvaluator(NMTModelUser):
     # Performs beam search
     def run_model_predict(self, sent, ref_beam, ref_voc,
                           beam_size=100, pred_len=3, pred_num=None,
-                          ignore_eos=False):
+                          ignore_eos=False, translate_mode=False):
         if pred_num is None:
             pred_num = beam_size
         
@@ -306,7 +308,14 @@ class NMTEvaluator(NMTModelUser):
             self.cur_beam_vals = self.cur_beam_vals.cuda()
         self.cur_beams = autograd.Variable(self.cur_beams)
         self.cur_beam_vals = autograd.Variable(self.cur_beam_vals)
+
+        if translate_mode:
+            final_preds = list()
+
         for i in range(pred_len):
+            if translate_mode:
+                (ref_beam, ref_voc) = self.create_beam_arrays(self.cur_beams.size(0))
+
             cur_sent = self.cur_beams[:, i:i+1]
             if self.use_attention:
                 pad_mask = self.generate_attn_mask(var_src)
@@ -362,33 +371,64 @@ class NMTEvaluator(NMTModelUser):
             chosen_nexts = torch.index_select(ref_voc, dim=0, index=topk_inds).view(-1, 1)
             # print('chosen_nexts', chosen_nexts)
             self.cur_beams = torch.cat((chosen_prevs, chosen_nexts), dim=1)
+
+            # Hugely inefficient, but whatever
+            if translate_mode:
+                keep_sents = list()
+                eos_token = self._TEXT_TRG.vocab.stoi['</s>']
+                for i in self.cur_beams.size(0):
+                    if self.cur_beams[i,-1].data[0] == eos_token:
+                        final_preds.append(self.cur_beams[i,:])
+                    else:
+                        keep_sents.append(i)
+                    keep_idx = autograd.Variable(torch.LongTensor(keep_sents))
+                    keep_idx = keep_idx.cuda() if self.cuda else keep_idx
+
+                    # Now reselect
+                    self.cur_beams = torch.index_select(self.cur_beams, dim=0,
+                                                        keep_idx)
+                    self.cur_beam_vals = torch.index_select(self.cur_beam_vals, dim=0,
+                                                            keep_idx)
+                    self.prev_hidden = tuple(torch.index_select(
+                        self.prev_hidden[j], dim=1, keep_idx) \
+                                             for j in range(len(self.prev_hidden)))
+                    print(self.cur_beams)
+                    print(self.cur_beam_vals)
+                    print(self.prev_hidden[0].size())
+
+                if len(keep_sents) > 100:
+                    return keep_sents
             # print('cur_beams', self.cur_beams)
-            
+
+        if translate_mode:
+            return keep_sents, self.cur_beams
         return self.cur_beams
     
     @staticmethod
     def escape(l):
         return l.replace("\"", "<quote>").replace(",", "<comma>")
-    
-    def predict(self, test_set, fn='predictions.txt', num_cands=100, pred_len=3,
-                beam_size=100, ignore_eos=False):
-        start_time = time.time()
-        for model in self.models:
-            model.eval()
-            
+
+    def create_ref_arrays(self, beam_size):
         # Create reference idx for expanding beams and vocab
         trg_vocab_sz = len(self._TEXT_TRG.vocab)
         ref_beam = torch.LongTensor(np.arange(beam_size)).view(-1, 1).expand(-1, trg_vocab_sz)
         ref_beam = ref_beam.contiguous().view(-1)
         ref_beam = ref_beam.cuda() if self.cuda else ref_beam
         ref_beam = autograd.Variable(ref_beam)
-        print(ref_beam.size())
         
         ref_voc = torch.LongTensor(np.arange(trg_vocab_sz)).view(1, -1).expand(beam_size, -1)
         ref_voc = ref_voc.contiguous().view(-1)
         ref_voc = ref_voc.cuda() if self.cuda else ref_voc
         ref_voc = autograd.Variable(ref_voc)
-        print(ref_voc.size())
+        return (ref_beam, ref_voc)
+        
+    def predict(self, test_set, fn='predictions.txt', num_cands=100, pred_len=3,
+                beam_size=100, ignore_eos=False, translate_mode=False):
+        start_time = time.time()
+        for model in self.models:
+            model.eval()
+
+        (ref_beam, ref_voc) = self.create_ref_arrays(beam_size)
             
         self.init_epoch()
         predictions = list()
@@ -398,7 +438,8 @@ class NMTEvaluator(NMTModelUser):
                                                        ref_voc=ref_voc,
                                                        pred_len=pred_len,
                                                        beam_size=beam_size,
-                                                       ignore_eos=ignore_eos)
+                                                       ignore_eos=ignore_eos,
+                                                       translate_mode=translate_mode)
             predictions.append(best_translations)
             # if i > 10:
             #     break
