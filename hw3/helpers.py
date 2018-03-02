@@ -233,6 +233,12 @@ class NMTEvaluator(NMTModelUser):
                                          trg_cpu)))
             pred_words = np.array(['%s (%s)' % (pred_words[i], trg_words[i]) for \
                                    i in range(pred_words.shape[0])])
+            pad_idx = np.where(trg_words == '<pad>')[0]
+            if len(pad_idx):
+                clip_len = pad_idx[0]
+                trg_words = trg_words[:clip_len]
+                pred_words = pred_words[:clip_len]
+                attn = attn[:clip_len, :]
         
         fig, ax = plt.subplots()
         ax.imshow(attn, cmap='gray')
