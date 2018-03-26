@@ -4,6 +4,8 @@ from torch.autograd import Variable as V
 import torch.nn.functional as F
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+import time
+import numpy as np
 
 # New stuff
 from torch.distributions import Normal
@@ -13,26 +15,28 @@ from torch.distributions.kl import kl_divergence
 class MLPEncoder(nn.Module):
     def __init__(self, hidden_dim=200, latent_dim=10, img_width=28,
                  img_height=28):
-        super(Encoder, self).__init__()
+        super(MLPEncoder, self).__init__()
         self.img_size = img_width * img_height
+        self.latent_dim = latent_dim
         self.linear1 = nn.Linear(self.img_size, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, latent_dim)
         self.linear3 = nn.Linear(hidden_dim, latent_dim)
 
     def forward(self, x, view_as_img=True):
         if view_as_img:
-            x = x.view(-1, img_size)
+            x = x.view(-1, self.img_size)
         h = F.relu(self.linear1(x))
         return self.linear2(h), self.linear3(h)
 
 # Implement the generative model p(x | z)
 class MLPDecoder(nn.Module):
-    def __init__(self):
-        super(Decoder, self).__init__(hidden_dim=200, latent_dim=10, img_width=28,
-                                      img_height=28)
+    def __init__(self, hidden_dim=200, latent_dim=10, img_width=28,
+                 img_height=28):
+        super(MLPDecoder, self).__init__()
         self.img_size = img_width * img_height
         self.img_height = img_height
         self.img_width = img_width
+        self.latent_dim = latent_dim
         self.linear1 = nn.Linear(latent_dim, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, self.img_size)
 
@@ -64,3 +68,23 @@ class NormalVAE(nn.Module):
         z_sample = q_normal.rsample()
         #z_sample = mu
         return self.decoder(z_sample, view_as_img=dec_view_img), q_normal
+    
+class MLPGenerator(MLPDecoder):
+    def __init__(self, **kwargs)
+        super(MLPGenerator, self).__init__(**kwargs)
+
+# TODO: set things right here        
+class MLPDiscriminator(nn.Module):
+    def __init__(self, hidden_dim=200, latent_dim=10, img_width=28,
+                 img_height=28):
+        super(MLPDiscriminator, self).__init__()
+        self.img_size = img_width * img_height
+        self.latent_dim = latent_dim
+        self.linear1 = nn.Linear(self.img_size, hidden_dim)
+        self.linear2 = nn.Linear(hidden_dim, 1)
+
+    def forward(self, x, view_as_img=True):
+        if view_as_img:
+            x = x.view(-1, self.img_size)
+        h = F.relu(self.linear1(x))
+        return F.sigmoid(self.linear2(h))
