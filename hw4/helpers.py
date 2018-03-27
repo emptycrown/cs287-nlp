@@ -61,30 +61,47 @@ class LatentModelUser(object):
         loss = self.bce_loss(out, x_view)
         if batch_avg:
             loss = loss / self.batch_sz
-        # Important fact: kl divergence is additive for product
-        # distributions, so we can do the KL divergence batch by batch
-        # (and coordinate by coordinate within each data point)
+            # Important fact: kl divergence is additive for product
+            # distributions, so we can do the KL divergence batch by batch
+            # (and coordinate by coordinate within each data point)
         kl = kl_divergence(q, self.prior).sum()
         if batch_avg:
             kl = kl / self.batch_sz
         return loss, kl
 
-    def run_disc_gan(self,  batch, train=True, batch_avg=True):
+    def run_model_iaf_vae(self. batch, train=True, batch_avg=True):
+        if train:
+            for model in self.models:
+                model.zero_grad()
+
+        x = V(batch.type(torch.FloatTensor))
+        # TODO: FINISH (use eq (6) in Kingma paper)
+
+    def run_disc_gan(self,  batch, train=True, batch_avg=True,
+                     do_classf=False):
         if train:
             for opt in self.optimizers:
                 opt.zero_grad()
 
         # Disc: -E[log(D(x))]
         x_real = V(batch.type(torch.FloatTensor))
-        d_real = D(x_real)
-        loss_d_real = 0.5 * -d_real.log.sum()
+        d_real = self.models[0](x_real)
+        if do_classf:
+            # This is classf accuracy, not error
+            loss_d_real = 0.5 * (d_real > 0.5).type(torch.FloatTensor).sum()
+        else:
+            loss_d_real = -0.5 * (d_real + 1e-10).log().sum()
 
         # Disc: -E[log(1 - D(G(z)) )]
         seed = self.prior.sample()
-        x_fake = G(seed)
+        x_fake = self.models[1](seed)
         # Only backprop wrt disc parameters
-        d_fake = D(x_fake.detach())        
-        loss_d_fake = 0.5 * -(1 - d_fake + 1e-10).log().sum()
+        d_fake = self.models[0](x_fake.detach())
+        if do_classf:
+            # Classf accuracy
+            loss_d_fake = 0.5 * (d_fake <= 0.5).type(torch.FloatTensor).sum()
+        else:
+            loss_d_fake = -0.5 * (1 - d_fake + 1e-10).log().sum()
 
         if batch_avg:
             # TODO: confirm batch size is correct! (same in run_gen)
@@ -92,7 +109,7 @@ class LatentModelUser(object):
             loss_d_fake = loss_d_fake / self.batch_sz
         return loss_d_real, loss_d_fake, x_fake
 
-    def run_gen_gan(self, batch, x_fake=None, train=True, batch_avg=True)
+    def run_gen_gan(self, batch, x_fake=None, train=True, batch_avg=True):
         # Gen: E[log(1 - D(G(z)))]
         if train:
             # TODO: the sample code only zeros grad for disc (likely
@@ -101,12 +118,12 @@ class LatentModelUser(object):
                 opt.zero_grad()
 
         if x_fake is None:
-            x_fake = G(self.prior.sample())
-        # No detach here (we will not modify D parameters, but if we
-        # do detach, we lose the gradients from the generator)
-        d_fake = D(x_fake)
-        loss_g = (1 - d_fake + 1e-10).log().sum()
-        # loss_c = -(d + 1e-10).log().mean()
+            x_fake = self.models[1](self.prior.sample())
+            # No detach here (we will not modify D parameters, but if we
+            # do detach, we lose the gradients from the generator)
+        d_fake = self.models[0](x_fake)
+        # loss_g = (1 - d_fake + 1e-10).log().sum()
+        loss_g = -(d_fake + 1e-10).log().sum()
         if batch_avg:
             loss_g = loss_g / self.batch_sz
         return loss_g
@@ -118,9 +135,9 @@ class LatentModelEvaluator(LatentModelUser):
     def run_vae_generator(self, z_sample=None, fn=None, num_to_save=10):
         if z_sample is None:
             z_sample = V(self.prior.sample())
-        out = F.sigmoid(self.models[1](z_sample, view_as_img=True))
-        # Sample according to Bernoulli distribution for each pixel
-        # TODO: sample for Bernoulli??
+            out = F.sigmoid(self.models[1](z_sample, view_as_img=True))
+            # Sample according to Bernoulli distribution for each pixel
+            # TODO: sample for Bernoulli??
         x_gen = out.data # torch.bernoulli(out).data
 
         if not fn is None:
@@ -159,13 +176,13 @@ class LatentModelEvaluator(LatentModelUser):
             label_list += batch_lab.data.numpy()
             if not num_batch is None and i >= num_batch:
                 break
-        latent_all = np.concatenate(latent_list, axis=0)
-        label_all = np.concatenate(label_list, axis=0)
-        plt.clf()
-        plt.scatter(list(latent_all[:,0]), list(latent_all[:,1]),
-                    c=list(label_all))
-        plg.legend()
-        plt.savefig(fn)
+            latent_all = np.concatenate(latent_list, axis=0)
+            label_all = np.concatenate(label_list, axis=0)
+            plt.clf()
+            plt.scatter(list(latent_all[:,0]), list(latent_all[:,1]),
+                        c=list(label_all))
+            plg.legend()
+            plt.savefig(fn)
 
     def plt_image(self, x, base_fn='vis/', grid=False):
         if grid:
@@ -176,19 +193,19 @@ class LatentModelEvaluator(LatentModelUser):
             for ix in range(K):
                 for iy in range(K):
                     big_x[ix * K:(ix+1) * K,iy * K:(iy+1) * K] = \
-                            x[ix, iy, :, :]
-            plt.clf()
-            plt.imshow(1 - big_x, cmap='gray')
-            plt.axis('off')
+                                                                 x[ix, iy, :, :]
+                    plt.clf()
+                    plt.imshow(1 - big_x, cmap='gray')
+                    plt.axis('off')
             if base_fn == 'vis/':
                 base_fn += 'big_img.png'
-            plt.savefig(base_fn)
+                plt.savefig(base_fn)
         else:
             for i in range(x.shape[0]):
-               plt.clf()
-               plt.imshow(1 - x[i,:,:], cmap='gray')
-               plt.axis('off')
-               plt.savefig(base_fn + '%d.png' % i)
+                plt.clf()
+                plt.imshow(1 - x[i,:,:], cmap='gray')
+                plt.axis('off')
+                plt.savefig(base_fn + '%d.png' % i)
 
     def grid_vae(self, fn='vis/vae_grid.png'):
         assert self.models[0].latent_dim == 2
@@ -214,7 +231,7 @@ class LatentModelEvaluator(LatentModelUser):
         if self.models[0].latent_dim == 2:
             self.scatter_vae(test_loader, fn='vis/vae_scatter.png', num_batch=num_batch)
             self.grid_vae(fn='vis/vae_grid.png')
-        
+            
 
     def evaluate(self, val_loader, num_iter=None):
         start_time = time.time()
@@ -238,7 +255,8 @@ class LatentModelEvaluator(LatentModelUser):
                 loss_1_sum += kl.data.item()
             elif self.mode == 'gan':
                 loss_d_real, loss_d_fake, x_fake = \
-                    self.run_disc_gan(batch, train=False, batch_avg=False)
+                                                   self.run_disc_gan(batch, train=False, batch_avg=False,
+                                                                     do_classf=True)
                 loss_g = self.run_gen_gan(batch, x_fake, train=False,
                                           batch_avg=False)
                 loss_0_sum += loss_d_real.data.item() + loss_d_fake.data.item()
@@ -246,16 +264,16 @@ class LatentModelEvaluator(LatentModelUser):
             else:
                raise ValueError('Invalid mode %s' % self.mode)
            
-           data_cnt += batch.size(0)
+            data_cnt += batch.size(0)
 
-           if not num_iter is None and i >= num_iter:
-               break
+            if not num_iter is None and i >= num_iter:
+                break
 
         loss_0_avg = loss_0_sum / data_cnt
         loss_1_avg = loss_1_sum / data_cnt
 
         return loss_0_avg, loss_1_avg
-        
+    
             
 
 class LatentModelTrainer(LatentModelUser):
@@ -267,18 +285,18 @@ class LatentModelTrainer(LatentModelUser):
         if self.cuda:
             for model in self.models:
                 model.cuda()
-        
+                
     def init_parameters(self):
         for model in self.models:
             for p in model.parameters():
-                p.data.uniform_(-0.05, 0.05)
+                p.data.uniform_(-0.1, 0.1)
 
     def train_save_model(self, save_model_fn, epoch):
         pathname = 'saved_models/' + save_model_fn + \
                    '.epoch_%d.ckpt.tar' % epoch
         print('Saving model to %s' % pathname)
         save_checkpoint(self.models[0], self.models[1],
-                   pathname)
+                        pathname)
 
 class GANLatentModelTrainer(LatentModelTrainer):
     def __init__(self, *args, **kwargs):
@@ -307,7 +325,7 @@ class GANLatentModelTrainer(LatentModelTrainer):
             self.init_parameters()
 
         for epoch in range(num_epochs):
-            for model in self.model:
+            for model in self.models:
                 model.train()
 
             self.training_disc_losses.append(0)
@@ -317,7 +335,7 @@ class GANLatentModelTrainer(LatentModelTrainer):
 
                 for k in range(gan_k):
                     loss_d_real, loss_d_fake, x_fake = \
-                        self.run_disc_gan(batch, train=True, batch_avg=True)
+                                                       self.run_disc_gan(batch, train=True, batch_avg=True)
                     loss_d_real.backward()
                     loss_d_fake.backward()
                     self.optimizers[0].step()
@@ -328,6 +346,7 @@ class GANLatentModelTrainer(LatentModelTrainer):
                 loss_g.backward()
                 self.optimizers[1].step()
                 self.training_gen_losses[-1] += loss_g.data.item()
+
             self.training_disc_losses[-1] /= len(train_loader)
             self.training_gen_losses[-1] /= len(train_loader)
 
@@ -389,6 +408,7 @@ class VAELatentModelTrainer(LatentModelTrainer):
                 # print('kl', kl, kl.data)
                 self.training_losses[-1] += loss.data.item()
                 self.training_kls[-1] += kl.data.item()
+
             self.training_losses[-1] /= len(train_loader)
             self.training_kls[-1] /= len(train_loader)
 

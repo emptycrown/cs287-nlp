@@ -39,7 +39,8 @@ def parse_input(input_str=None):
     parser.add_argument('--tt_num_epochs', type=int, default=100)
     parser.add_argument('--tt_skip_epochs', type=int, default=1)
     parser.add_argument('--tt_save_model_fn', default=None)
-
+    parser.add_argument('--tt_gan_k', type=int, default=1)
+    
     args = parser.parse_args(args=input_str)
     return args
 
@@ -61,13 +62,17 @@ def prepare_kwargs(args, root):
                 args_dict, key, key[root_len:])
     return ret_dict
 
+def load_enc_dec(classes_models, svd_models, args):
+    cuda_status = args.cuda and torch.cuda.is_available()
+    for i in range(len(classes_models)):
+        set_parameters(classes_models[i], svd_models[i],
+                       cuda_status)
+
 def run_vae(args, train_loader, val_loader, test_loader, svd_models=None):
     encoder_mlp = MLPEncoder(**prepare_kwargs(args, 'm'))
     decoder_mlp = MLPDecoder(**prepare_kwargs(args, 'm'))
     if not svd_models is None:
-        cuda_status = args.cuda and torch.cuda.is_available()
-        set_parameters(encoder_mlp, svd_models[0], cuda_status)
-        set_parameters(decoder_mlp, svd_models[1], cuda_status)
+        load_enc_dec([encoder_mlp, decoder_mlp], svd_models, args)
         
     vae = NormalVAE(encoder_mlp, decoder_mlp)
     model_list = [encoder_mlp, decoder_mlp, vae]
@@ -86,8 +91,26 @@ def run_vae(args, train_loader, val_loader, test_loader, svd_models=None):
         # TODO: The num_batch=10 is temporary!
         lm_evaluator.make_vae_plots(test_loader, num_batch=10)
 
-def run_gan(args):
-    raise NotImplementedError('run_gan not implemented')
+def run_gan(args, train_loader, val_loader, test_loader, svd_models=None):
+    gen_mlp = MLPGenerator(**prepare_kwargs(args, 'm'))
+    disc_mlp = MLPDiscriminator(**prepare_kwargs(args, 'm'))
+    if not svd_models is None:
+        load_enc_dec([disc_mlp, gen_mlp], svd_models, args)
+
+    model_list = [disc_mlp, gen_mlp]
+    lm_evaluator = LatentModelEvaluator(model_list, batch_sz=args.batch_sz,
+                                        mode='gan', cuda=args.cuda)
+    if svd_models is None:
+        lm_trainer = GANLatentModelTrainer(model_list, **prepare_kwargs(args, 't'),
+                                           batch_sz=args.batch_sz, mode='gan',
+                                           cuda=args.cuda)
+        lm_trainer.train(train_loader, le=lm_evaluator, val_loader=val_loader,
+                         **prepare_kwargs(args, 'tt'))
+    test_loss_disc, test_loss_g = lm_evaluator.evaluate(test_loader)
+    print('Test results: Disc acc: %f, GAN obj: %f' % \
+          (test_loss_disc, test_loss_g))
+
+    # TODO: make plots
     
 def main(args):
     train_dataset = datasets.MNIST(root='./data/',
@@ -103,7 +126,7 @@ def main(args):
         test_img = torch.stack([torch.bernoulli(d[0]) for d in test_dataset])
     else:
         train_img = torch.stack([d[0] for d in train_dataset])
-        test_img = torch.stack([d[1] for d in test_dataset])
+        test_img = torch.stack([d[0] for d in test_dataset])
     train_img = torch.squeeze(train_img)
     test_img = torch.squeeze(test_img)
     train_label = torch.LongTensor([d[1] for d in train_dataset])
