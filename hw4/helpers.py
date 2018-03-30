@@ -31,7 +31,6 @@ def set_parameters(model, sv_model, cuda=True):
 GAN_MODES = {'gan'}
 
 VAE_MODES = {'vaestd', 'vaeiaf'}
-PLT_NUM_CLASSES = 10
 
 class LatentModelUser(object):
     # Model order: [encoder, decoder, [VAE]], i.e. [disc, gen]
@@ -232,12 +231,15 @@ class LatentModelEvaluator(LatentModelUser):
             latent_all = np.concatenate(latent_list, axis=0)
             label_all = np.concatenate(label_list, axis=0)
             plt.clf()
+            unique_labels = list(set(label_all))
+            colors = [plt.cm.jet(float(k)/max(unique_labels)) for k in unique_labels]
+
             # Specific to mnist (10 classes)
-            for k in range(PLT_NUM_CLASSES):
+            for i, k in enumerate(unique_labels):
                 k_inds = np.where(label_all == k)[0]
                 xk = [latent_all[ix, 0] for ix in k_inds]
                 yk = [latent_all[iy, 1] for iy in k_inds]
-                plt.scatter(xk, yk, c=k, label=k)
+                plt.scatter(xk, yk, c=colors[i], label=str(k))
                 
             plt.legend()
             plt.savefig(fn)
