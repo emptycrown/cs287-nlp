@@ -4,7 +4,7 @@
 python3 main.py --network=vaestd --batch_sz=100 --make_plots \
 	   --t_lrn_rate=0.005 --t_optimizer=sgd \
 	   --m_latent_dim=2 --m_hidden_dim=500 \
-	   --tt_num_epochs=20 --tt_save_model_fn=vae.0 --tt_skip_epochs=2
+	   --tt_num_epochs=2 --tt_save_model_fn=vae.0 --tt_skip_epochs=2
 
 : 'python main.py --network=gan --batch_sz=100 \
 	   --t_lrn_rate=0.1 --t_optimizer=sgd \

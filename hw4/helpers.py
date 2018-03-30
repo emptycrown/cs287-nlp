@@ -168,9 +168,10 @@ class LatentModelEvaluator(LatentModelUser):
     def run_vae_generator(self, z_sample=None, fn=None, num_to_save=10):
         if z_sample is None:
             z_sample = V(self.prior.sample())
-            out = F.sigmoid(self.models[1](z_sample, view_as_img=True))
-            # Sample according to Bernoulli distribution for each pixel
-            # TODO: sample for Bernoulli??
+
+        out = F.sigmoid(self.models[1](z_sample, view_as_img=True))
+        # Sample according to Bernoulli distribution for each pixel
+        # TODO: sample for Bernoulli??
         x_gen = out.data # torch.bernoulli(out).data
 
         if not fn is None:
@@ -181,8 +182,9 @@ class LatentModelEvaluator(LatentModelUser):
     def run_gan_generator(self, z_sample=None, fn=None, num_to_save=10):
         if z_sample is None:
             z_sample = V(self.prior.sample())
-            # Generator already does sigmoid
-            out = self.models[1](z_sample, view_as_img=True)
+
+        # Generator already does sigmoid
+        out = self.models[1](z_sample, view_as_img=True)
         x_gen = out.data
 
         if not fn is None:
@@ -196,7 +198,7 @@ class LatentModelEvaluator(LatentModelUser):
         z_sample_1 = V(self.prior.sample())
         x_gen_list = list()
         for alpha in np.arange(0, 1.2, 0.2):
-            z_interp = alpha * z_sample_0 + (1 - alpha) * z_sample_1
+            z_interp = self.do_cuda(alpha * z_sample_0 + (1 - alpha) * z_sample_1)
             # Already called .data in run_*_generator
             if self.mode in VAE_MODES:
                 x_gen_list.append(self.run_vae_generator(z_interp))
@@ -222,27 +224,29 @@ class LatentModelEvaluator(LatentModelUser):
             batch_lab = batch[1]
             # [batch_sz, 2]
             mu, _ = self.models[0](batch_img)
-            latent_list += mu.cpu().data.numpy()
-            label_list += batch_lab.data.numpy()
+            latent_list.append(mu.cpu().data.numpy())
+            label_list.append(batch_lab.data.numpy())
             if not num_batch is None and i >= num_batch:
                 break
             latent_all = np.concatenate(latent_list, axis=0)
             label_all = np.concatenate(label_list, axis=0)
             plt.clf()
             plt.scatter(list(latent_all[:,0]), list(latent_all[:,1]),
-                        c=list(label_all))
-            plg.legend()
+                        c=list(label_all), label=list(label_all))
+            plt.legend()
             plt.savefig(fn)
 
     def plt_image(self, x, base_fn='vis/', grid=False):
         if grid:
             # x is [K, K, ht, width]
-            big_x = np.zeros(x.shape[0] * x.shape[2],
-                             x.shape[1] * x.shape[3])
+            ht = x.shape[2]
+            wdth = x.shape[3]
+            big_x = np.zeros((x.shape[0] * x.shape[2],
+                             x.shape[1] * x.shape[3]))
             K = x.shape[0]
             for ix in range(K):
                 for iy in range(K):
-                    big_x[ix * K:(ix+1) * K,iy * K:(iy+1) * K] = \
+                    big_x[ix * ht:(ix+1) * ht,iy * wdth:(iy+1) * wdth] = \
                                                                  x[ix, iy, :, :]
                     plt.clf()
                     plt.imshow(1 - big_x, cmap='gray')
@@ -264,7 +268,7 @@ class LatentModelEvaluator(LatentModelUser):
                              np.linspace(-2, 2, latent_disc))
         z1 = z1.reshape(-1)
         z2 = z2.reshape(-2)
-        z = V(torch.FloatTensor(np.stack((z1, z2), axis=1)))
+        z = self.do_cuda(V(torch.FloatTensor(np.stack((z1, z2), axis=1))))
         # Has incorrect batch size, but that should be ok
         # shape [batch_sz, img_height, img_width]
         x_img = self.run_vae_generator(z).cpu().numpy()

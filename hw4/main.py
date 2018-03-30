@@ -6,6 +6,11 @@ import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 import torch.optim as optim
 import time
+import matplotlib
+# hack to make matplotlib work
+if torch.cuda.is_available():
+    matplotlib.use('Agg')
+
 from models import *
 from helpers import *
 import argparse
