@@ -96,8 +96,8 @@ def run_vae(args, train_loader, val_loader, test_loader, svd_models=None):
                                         cuda=args.cuda)
     if svd_models is None:
         lm_trainer = VAELatentModelTrainer(model_list, **prepare_kwargs(args, 't'),
-                                        batch_sz=args.batch_sz, mode=args.network,
-                                        cuda=args.cuda)
+                                           batch_sz=args.batch_sz, mode=args.network,
+                                           cuda=args.cuda)
         lm_trainer.train(train_loader, le=lm_evaluator, val_loader=val_loader,
                          **prepare_kwargs(args, 'tt'))
     test_loss, test_kl = lm_evaluator.evaluate(test_loader)
