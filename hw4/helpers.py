@@ -176,8 +176,9 @@ class LatentModelEvaluator(LatentModelUser):
     def run_gan_generator(self, z_sample=None, fn=None, num_to_save=10):
         if z_sample is None:
             z_sample = V(self.prior.sample())
-            # Generator already does sigmoid
-            out = self.models[1](z_sample, view_as_img=True)
+
+        # Generator already does sigmoid
+        out = self.models[1](z_sample, view_as_img=True)
         x_gen = out.data
 
         if not fn is None:

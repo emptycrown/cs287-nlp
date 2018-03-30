@@ -126,7 +126,8 @@ def run_gan(args, train_loader, val_loader, test_loader, svd_models=None):
     print('Test results: Disc acc: %f, GAN obj: %f' % \
           (test_loss_disc, test_loss_g))
 
-    # TODO: make plots
+    if args.make_plots:
+        lm_evaluator.make_gan_plots()
     
 def main(args):
     train_dataset = datasets.MNIST(root='./data/',
