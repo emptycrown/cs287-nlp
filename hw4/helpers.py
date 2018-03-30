@@ -248,12 +248,13 @@ class LatentModelEvaluator(LatentModelUser):
                 for iy in range(K):
                     big_x[ix * ht:(ix+1) * ht,iy * wdth:(iy+1) * wdth] = \
                                                                  x[ix, iy, :, :]
-                    plt.clf()
-                    plt.imshow(1 - big_x, cmap='gray')
-                    plt.axis('off')
+                    
+            plt.clf()
+            plt.imshow(1 - big_x, cmap='gray')
+            plt.axis('off')
             if base_fn == 'vis/':
                 base_fn += 'big_img.png'
-                plt.savefig(base_fn)
+            plt.savefig(base_fn)
         else:
             for i in range(x.shape[0]):
                 plt.clf()
@@ -394,12 +395,14 @@ class GANLatentModelTrainer(LatentModelTrainer):
                 batch = batch[0] # Ignore labels
 
                 for k in range(gan_k):
+                    # This will zero the grad each time
                     loss_d_real, loss_d_fake, x_fake = \
                                                        self.run_disc_gan(batch, train=True, batch_avg=True)
                     loss_d_real.backward()
                     loss_d_fake.backward()
                     self.optimizers[0].step()
-                    self.training_disc_losses[-1] += loss_d_real.data.item() + loss_d_fake.data.item()
+
+                self.training_disc_losses[-1] += loss_d_real.data.item() + loss_d_fake.data.item()
 
                 loss_g = self.run_gen_gan(batch, x_fake, train=True,
                                           batch_avg=True)
