@@ -6,10 +6,10 @@
 	   --m_latent_dim=2 --m_hidden_dim=500 \
 	   --tt_num_epochs=40 --tt_save_model_fn=vae.0 --tt_skip_epochs=4'
 
-python main.py --network=gan --batch_sz=100 --make_plots \
+python3 main.py --network=gan --batch_sz=100 --make_plots \
 	   --t_lrn_rate=0.1 --t_optimizer=sgd \
 	   --m_latent_dim=10 --m_hidden_dim=500 \
-	   --tt_num_epochs=41 --tt_skip_epochs=8 --tt_gan_k=2 --tt_save_model_fn=gan.0
+	   --tt_num_epochs=41 --tt_skip_epochs=8 --tt_gan_k=1 --tt_save_model_fn=gan.0
 # --tt_save_model_fn=gan.0
 
 : 'python main.py --network=vaeiaf --batch_sz=100 \
