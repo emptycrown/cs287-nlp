@@ -61,7 +61,9 @@ class LinearIAFEncoder(nn.Module):
         self.linear4 = nn.Linear(hidden_dim, latent_dim**2)
 
         self.id_helper = V(torch.eye(latent_dim),
-                           requires_grad=False)
+                           requires_grad=False).view(1, latent_dim, latent_dim)
+        tril = troch.ones(latent_dim, latent_dim).tril()
+        self.tril_helper = V(tril, requires_grad=False).view(1, latent_dim, latent_dim)
 
     def forward(self, x, view_as_img=True):
         if view_as_img:
@@ -69,9 +71,9 @@ class LinearIAFEncoder(nn.Module):
         h = F.relu(self.linear1(x))
         # Inverse Cholesky matrix:
         L = self.linear4(h).view(-1, self.latent_dim, self.latent_dim)
-        L = L.tril() # lower triangular part
+        L = torch.mul(L, self.tril_helper) # lower triangular part (broadcasting)
 
-        # Ensure diagonal is all 1s
+        # Ensure diagonal is all 1s; broadcasting again (in 2 ways)
         L = self.id_helper + torch.mul(1 - self.id_helper, L)
         return self.linear2(h), self.linear3(h), L
 
@@ -79,18 +81,22 @@ class IAFNormalVAE(NormalVAE):
     def __init__(self, *args):
         super(IAFNormalVAE, self).__init__(*args)
         
-    def forward(self, x_src, enc_view_img=True, dec_view_img=True,
-                sample=True)
-    vae = super(IAFNormalVAE)
-    y_sample, q_normal = vae(x_src, enc_view_img, dec_view_img)
-    if sample:
-        return torch.matmul(L, y_sample) # TOOD: verify (3-tensor
-                                         # times 2-tensor)
-    else:
-        return q_normal.log_prob(y_sample)
+    def forward(self, x_src, enc_view_img=True, dec_view_img=True):
+        mu, logvar, L = self.encoder(x_src, view_as_img=enc_view_img)
+        q_normal = Normal(loc=mu, scale=logvar.mul(0.5).exp())
+        y_sample = q_normal.rsample()
+        
+        # L is [batch_sz, latent_dim, latent_dim],
+        # y_sample is [batch_sz, latent_dim]
+        y_sample_rshp = y_sample.view(-1, self.latent_dim, 1)
+        # sample is [batch_sz, latent_dim]
+        sample = torch.bmm(L, y_sample_rshp).squeeze()
+        
+        q_probs = return q_normal.log_prob(y_sample)
         # TODO: verify: since diagonal is 1, this is a
         # volume-preserving transofmration, so just compute
         # q_{old}(y|x) (= q_{new}(z|x))
+        return (sample, q_probs)
 
 # VAE using reparameterization "rsample"
 class NormalVAE(nn.Module):

@@ -28,6 +28,8 @@ def set_parameters(model, sv_model, cuda=True):
     if cuda:
         model.cuda()
 
+        
+
 class LatentModelUser(object):
     # Model order: [encoder, decoder, [VAE]], i.e. [disc, gen]
     # (since gen and decoder are very similar)
@@ -61,23 +63,41 @@ class LatentModelUser(object):
         loss = self.bce_loss(out, x_view)
         if batch_avg:
             loss = loss / self.batch_sz
-            # Important fact: kl divergence is additive for product
-            # distributions, so we can do the KL divergence batch by batch
-            # (and coordinate by coordinate within each data point)
+        # Important fact: kl divergence is additive for product
+        # distributions, so we can do the KL divergence batch by batch
+        # (and coordinate by coordinate within each data point)
         kl = kl_divergence(q, self.prior).sum()
         if batch_avg:
             kl = kl / self.batch_sz
         return loss, kl
 
-    def run_model_iaf_vae(self. batch, train=True, batch_avg=True):
+    def run_model_iaf_vae(self, batch, train=True, batch_avg=True):
         if train:
             for model in self.models:
                 model.zero_grad()
 
         x = V(batch.type(torch.FloatTensor))
-        # TODO: FINISH (use eq (6) in Kingma paper)
+        # samples and posterior approximation
+        # out, q_prob are [batch_sz, latent_dim]
+        out, q_prob = self.models[2](x, enc_view_img=True, dec_view_img=False)
 
-    def run_disc_gan(self,  batch, train=True, batch_avg=True,
+        # Images are still discrete, so use the same bce_loss
+        x_view = x.view(-1, self.models[0].img_size)
+
+        # Loss is log(p(x|z))
+        loss = self.bce_loss(out, x_view)
+        if batch_avg:
+            loss = loss / self.batch_sz
+        # Approximate the KL divergence:
+        # log(q(z|x) / p(z)) = log(q(z|x)) - log(p(z))
+        # first term is log(q), second term is log(p)
+        kl =  q_prob.sum() - self.prior.log_probs(out)
+        print(kl) # Should be non-negative most of the time
+        if batch_avg:
+            kl = kl / self.batch_sz
+        return loss, kl
+
+    def run_disc_gan(self, batch, train=True, batch_avg=True,
                      do_classf=False):
         if train:
             for opt in self.optimizers:
