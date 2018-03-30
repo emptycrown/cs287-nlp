@@ -355,7 +355,7 @@ class LatentModelTrainer(LatentModelUser):
     def __init__(self, *args, lrn_rate=0.05, optimizer=optim.SGD, **kwargs):
         super().__init__(*args, **kwargs)
         self.base_lrn_rate = lrn_rate
-        if args.network in GAN_MODES:
+        if args.network in VAE_MODES:
             assert len(self.base_lrn_rate) == 0
             self.base_lrn_rate = self.base_lrn_rate[0]
             
@@ -386,8 +386,8 @@ class GANLatentModelTrainer(LatentModelTrainer):
     def init_optimizers(self):
         self.optimizers = [self.optimizer_type(filter(lambda p : p.requires_grad,
                                                       model.parameters()),
-                                               lr = self.base_lrn_rate) for \
-                           model in self.models]
+                                               lr = self.base_lrn_rate[i]) for \
+                           i,model in enumerate(self.models)]
 
     def init_lists(self):
         self.training_disc_losses = list()
