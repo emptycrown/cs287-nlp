@@ -350,10 +350,12 @@ class LatentModelTrainer(LatentModelUser):
         super().__init__(*args, **kwargs)
         self.base_lrn_rate = lrn_rate
         self.optimizer_type = optimizer
-        self.init_optimizers()
         if self.cuda:
             for model in self.models:
                 model.cuda()
+
+        # Has to be done after model.cuda()
+        self.init_optimizers()
                 
     def init_parameters(self):
         for model in self.models:
