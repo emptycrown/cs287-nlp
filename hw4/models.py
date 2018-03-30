@@ -125,6 +125,12 @@ class MLPGenerator(MLPDecoder):
     def __init__(self, **kwargs):
         super(MLPGenerator, self).__init__(**kwargs)
 
+    # Pixels are all in [0,1], so may as well apply sigmoid
+    # TODO: this is new, untested!
+    def forward(self, *args, **kwargs):
+        x = super(MLPGenerator, self).forward(*args, **kwargs)
+        return F.sigmoid(x)
+
 # TODO: set things right here        
 class MLPDiscriminator(nn.Module):
     def __init__(self, hidden_dim=200, latent_dim=10, img_width=28,

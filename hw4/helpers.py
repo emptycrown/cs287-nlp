@@ -28,12 +28,14 @@ def set_parameters(model, sv_model, cuda=True):
     if cuda:
         model.cuda()
 
-        
+GAN_MODES = {'gan'}
+
+VAE_MODES = {'vaestd', 'vaeiaf'}
 
 class LatentModelUser(object):
     # Model order: [encoder, decoder, [VAE]], i.e. [disc, gen]
     # (since gen and decoder are very similar)
-    def __init__(self, models, batch_sz=None, mode='vae', cuda=True):
+    def __init__(self, models, batch_sz=None, mode='vaestd', cuda=True):
         self.models = models
         self.cuda = cuda and torch.cuda.is_available()
         self.mode = mode
@@ -48,6 +50,11 @@ class LatentModelUser(object):
         latent_dim = self.models[0].latent_dim
         self.prior = Normal(V(torch.zeros(self.batch_sz, latent_dim)), 
                             V(torch.ones(self.batch_sz, latent_dim)))
+
+        if mode == 'vaestd':
+            self.vae_run_handle = self.run_model_vae
+        elif mode == 'vaeiaf':
+            self.vae_run_handle = self.run_model_iaf_vae
 
     def run_model_vae(self, batch, train=True, batch_avg=True):
         if train:
@@ -139,8 +146,9 @@ class LatentModelUser(object):
 
         if x_fake is None:
             x_fake = self.models[1](self.prior.sample())
-            # No detach here (we will not modify D parameters, but if we
-            # do detach, we lose the gradients from the generator)
+
+        # No detach here (we will not modify D parameters, but if we
+        # do detach, we lose the gradients from the generator)
         d_fake = self.models[0](x_fake)
         # loss_g = (1 - d_fake + 1e-10).log().sum()
         loss_g = -(d_fake + 1e-10).log().sum()
@@ -165,15 +173,32 @@ class LatentModelEvaluator(LatentModelUser):
             
         return x_gen
 
-    def interpolate_vae_generator(self, fn=None, num_to_save=10):
+    def run_gan_generator(self, z_sample=None, fn=None, num_to_save=10):
+        if z_sample is None:
+            z_sample = V(self.prior.sample())
+            # Generator already does sigmoid
+            out = self.models[1](z_sample, view_as_img=True)
+        x_gen = out.data
+
+        if not fn is None:
+            self.plt_image(x_gen[:num_to_save].numpy(), base_fn=fn)
+
+        return x_gen
+
+    def interpolate_generator(self, fn=None, num_to_save=10):
         # shape [batch_sz, latent_dim]
         z_sample_0 = V(self.prior.sample())
         z_sample_1 = V(self.prior.sample())
         x_gen_list = list()
         for alpha in np.arange(0, 1.2, 0.2):
-            # Already called .data in run_vae_generator
-            x_gen_list.append(self.run_vae_generator(
-                alpha * z_sample_0 + (1 - alpha) * z_sample_1))
+            z_interp = alpha * z_sample_0 + (1 - alpha) * z_sample_1
+            # Already called .data in run_*_generator
+            if self.mode in VAE_MODES:
+                x_gen_list.append(self.run_vae_generator(z_interp))
+            elif self.mode in GAN_MODES:
+                x_gen_list.append(self.run_gan_generator(z_interp))
+            else:
+                raise ValueError('self.mode: %s not a valid mode' % self.mode)
 
         if not fn is None:
             # Show images side by side
@@ -247,10 +272,16 @@ class LatentModelEvaluator(LatentModelUser):
             model.eval()
 
         self.run_vae_generator(fn='vis/vae_generator', num_to_save=3)
-        self.interpolate_vae_generator(fn='vis/vae_interpolation', num_to_save=3)
+        self.interpolate_generator(fn='vis/vae_interpolation', num_to_save=3)
         if self.models[0].latent_dim == 2:
             self.scatter_vae(test_loader, fn='vis/vae_scatter.png', num_batch=num_batch)
             self.grid_vae(fn='vis/vae_grid.png')
+
+    def make_gan_plots(self):
+        for model in self.models:
+            model.eval()
+        self.run_gan_generator(fn='vis/gan_generator', num_to_save=3)
+        self.interpolate_generator(fn='vis/gan_interpolation', num_to_save=3)
             
 
     def evaluate(self, val_loader, num_iter=None):
@@ -269,11 +300,11 @@ class LatentModelEvaluator(LatentModelUser):
         # compute KL divergence and NLL in batches
         for i,batch in enumerate(val_loader):
             batch = batch[0] # Ignore label
-            if self.mode == 'vae':
-                loss, kl = self.run_model_vae(batch, train=False, batch_avg=False)
+            if self.mode in VAE_MODES:
+                loss, kl = self.vae_run_handle(batch, train=False, batch_avg=False)
                 loss_0_sum += loss.data.item()
                 loss_1_sum += kl.data.item()
-            elif self.mode == 'gan':
+            elif self.mode in GAN_MODES:
                 loss_d_real, loss_d_fake, x_fake = \
                                                    self.run_disc_gan(batch, train=False, batch_avg=False,
                                                                      do_classf=True)
@@ -419,7 +450,7 @@ class VAELatentModelTrainer(LatentModelTrainer):
             self.training_kls.append(0)
             for i, batch in enumerate(train_loader):
                 batch = batch[0] # Ignore labels
-                loss, kl = self.run_model_vae(batch, **kwargs)
+                loss, kl = self.vae_run_handle(batch, **kwargs)
                 loss_comb = loss + kl
                 loss_comb.backward()
                 self.optimizer.step()

@@ -21,7 +21,7 @@ OPT_NAMES = {'sgd' : optim.SGD,
 
 def parse_input(input_str=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--network', default='vae')
+    parser.add_argument('--network', default='vaestd')
     parser.add_argument('--batch_sz', type=int, default=100)
     parser.add_argument('--cuda', action='store_true', default=True)
     parser.add_argument('--load_model_fn', default=None)
@@ -76,11 +76,11 @@ def run_vae(args, train_loader, val_loader, test_loader, svd_models=None):
         
     vae = NormalVAE(encoder_mlp, decoder_mlp)
     model_list = [encoder_mlp, decoder_mlp, vae]
-    lm_evaluator = LatentModelEvaluator(model_list, batch_sz=args.batch_sz, mode='vae',
+    lm_evaluator = LatentModelEvaluator(model_list, batch_sz=args.batch_sz, mode=args.network,
                                         cuda=args.cuda)
     if svd_models is None:
         lm_trainer = VAELatentModelTrainer(model_list, **prepare_kwargs(args, 't'),
-                                        batch_sz=args.batch_sz, mode='vae',
+                                        batch_sz=args.batch_sz, mode=args.network,
                                         cuda=args.cuda)
         lm_trainer.train(train_loader, le=lm_evaluator, val_loader=val_loader,
                          **prepare_kwargs(args, 'tt'))
@@ -99,10 +99,10 @@ def run_gan(args, train_loader, val_loader, test_loader, svd_models=None):
 
     model_list = [disc_mlp, gen_mlp]
     lm_evaluator = LatentModelEvaluator(model_list, batch_sz=args.batch_sz,
-                                        mode='gan', cuda=args.cuda)
+                                        mode=args.network, cuda=args.cuda)
     if svd_models is None:
         lm_trainer = GANLatentModelTrainer(model_list, **prepare_kwargs(args, 't'),
-                                           batch_sz=args.batch_sz, mode='gan',
+                                           batch_sz=args.batch_sz, mode=args.network,
                                            cuda=args.cuda)
         lm_trainer.train(train_loader, le=lm_evaluator, val_loader=val_loader,
                          **prepare_kwargs(args, 'tt'))
@@ -121,7 +121,7 @@ def main(args):
                                train=False, 
                                transform=transforms.ToTensor())
     torch.manual_seed(3435)
-    if args.network == 'vae':
+    if args.network in VAE_MODES:
         train_img = torch.stack([torch.bernoulli(d[0]) for d in train_dataset])
         test_img = torch.stack([torch.bernoulli(d[0]) for d in test_dataset])
     else:
@@ -148,10 +148,10 @@ def main(args):
     if not args.load_model_fn is None:
         svd_models = load_checkpoint('saved_models/' + args.load_model_fn)
 
-    if args.network == 'vae':
+    if args.network in VAE_MODES:
         run_vae(args, train_loader, val_loader, test_loader,
                 svd_models=svd_models)
-    elif args.network == 'gan':
+    elif args.network in GAN_MODES:
         run_gan(args, train_loader, val_loader, test_loader,
                 svd_models=svd_models)
     else:
