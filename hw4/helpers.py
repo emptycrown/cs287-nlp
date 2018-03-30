@@ -86,7 +86,7 @@ class LatentModelUser(object):
         x = V(batch.type(torch.FloatTensor))
         # samples and posterior approximation
         # out, q_prob are [batch_sz, latent_dim]
-        out, q_prob = self.models[2](x, enc_view_img=True, dec_view_img=False)
+        out, q_prob, z_sample = self.models[2](x, enc_view_img=True, dec_view_img=False)
 
         # Images are still discrete, so use the same bce_loss
         x_view = x.view(-1, self.models[0].img_size)
@@ -98,8 +98,8 @@ class LatentModelUser(object):
         # Approximate the KL divergence:
         # log(q(z|x) / p(z)) = log(q(z|x)) - log(p(z))
         # first term is log(q), second term is log(p)
-        kl =  q_prob.sum() - self.prior.log_probs(out)
-        print(kl) # Should be non-negative most of the time
+        kl =  q_prob.sum() - self.prior.log_prob(z_sample).sum()
+        # print(kl) # Should be non-negative most of the time
         if batch_avg:
             kl = kl / self.batch_sz
         return loss, kl

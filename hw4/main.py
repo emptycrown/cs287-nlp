@@ -60,6 +60,10 @@ def prepare_kwargs(args, root):
             print('Argument: %s, Value: %s' % (key, args_dict[key]))
             ret_dict[key[root_len:]] = prepare_special_args(
                 args_dict, key, key[root_len:])
+
+    # Special cases:
+    if args.network in VAE_MODES and 'gan_k' in ret_dict:
+        del ret_dict['gan_k']
     return ret_dict
 
 def load_enc_dec(classes_models, svd_models, args):
@@ -69,12 +73,24 @@ def load_enc_dec(classes_models, svd_models, args):
                        cuda_status)
 
 def run_vae(args, train_loader, val_loader, test_loader, svd_models=None):
-    encoder_mlp = MLPEncoder(**prepare_kwargs(args, 'm'))
-    decoder_mlp = MLPDecoder(**prepare_kwargs(args, 'm'))
+    # Do case work
+    if args.network == 'vaestd':
+        encoder_name = MLPEncoder
+        decoder_name = MLPDecoder
+        vae_name = NormalVAE
+    elif args.network == 'vaeiaf':
+        encoder_name = LinearIAFMLPEncoder
+        decoder_name = MLPDecoder
+        vae_name = IAFNormalVAE
+    else:
+        raise ValueError('Invalid network %s' % args.network)
+        
+    encoder_mlp = encoder_name(**prepare_kwargs(args, 'm'))
+    decoder_mlp = decoder_name(**prepare_kwargs(args, 'm'))
     if not svd_models is None:
         load_enc_dec([encoder_mlp, decoder_mlp], svd_models, args)
-        
-    vae = NormalVAE(encoder_mlp, decoder_mlp)
+
+    vae = vae_name(encoder_mlp, decoder_mlp)    
     model_list = [encoder_mlp, decoder_mlp, vae]
     lm_evaluator = LatentModelEvaluator(model_list, batch_sz=args.batch_sz, mode=args.network,
                                         cuda=args.cuda)

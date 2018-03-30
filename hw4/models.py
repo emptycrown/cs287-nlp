@@ -47,10 +47,10 @@ class MLPDecoder(nn.Module):
         return x
 
 # Fancy posterior
-class LinearIAFEncoder(nn.Module):
+class LinearIAFMLPEncoder(nn.Module):
     def __init__(self, hidden_dim=200, latent_dim=10, img_width=28,
                  img_height=28):
-        super(MLPEncoder, self).__init__()
+        super(LinearIAFMLPEncoder, self).__init__()
         self.img_size = img_width * img_height
         self.latent_dim = latent_dim
         self.linear1 = nn.Linear(self.img_size, hidden_dim)
@@ -62,7 +62,7 @@ class LinearIAFEncoder(nn.Module):
 
         self.id_helper = V(torch.eye(latent_dim),
                            requires_grad=False).view(1, latent_dim, latent_dim)
-        tril = troch.ones(latent_dim, latent_dim).tril()
+        tril = torch.ones(latent_dim, latent_dim).tril()
         self.tril_helper = V(tril, requires_grad=False).view(1, latent_dim, latent_dim)
 
     def forward(self, x, view_as_img=True):
@@ -76,27 +76,6 @@ class LinearIAFEncoder(nn.Module):
         # Ensure diagonal is all 1s; broadcasting again (in 2 ways)
         L = self.id_helper + torch.mul(1 - self.id_helper, L)
         return self.linear2(h), self.linear3(h), L
-
-class IAFNormalVAE(NormalVAE):
-    def __init__(self, *args):
-        super(IAFNormalVAE, self).__init__(*args)
-        
-    def forward(self, x_src, enc_view_img=True, dec_view_img=True):
-        mu, logvar, L = self.encoder(x_src, view_as_img=enc_view_img)
-        q_normal = Normal(loc=mu, scale=logvar.mul(0.5).exp())
-        y_sample = q_normal.rsample()
-        
-        # L is [batch_sz, latent_dim, latent_dim],
-        # y_sample is [batch_sz, latent_dim]
-        y_sample_rshp = y_sample.view(-1, self.latent_dim, 1)
-        # sample is [batch_sz, latent_dim]
-        sample = torch.bmm(L, y_sample_rshp).squeeze()
-        
-        q_probs = return q_normal.log_prob(y_sample)
-        # TODO: verify: since diagonal is 1, this is a
-        # volume-preserving transofmration, so just compute
-        # q_{old}(y|x) (= q_{new}(z|x))
-        return (sample, q_probs)
 
 # VAE using reparameterization "rsample"
 class NormalVAE(nn.Module):
@@ -120,6 +99,28 @@ class NormalVAE(nn.Module):
         z_sample = q_normal.rsample()
         #z_sample = mu
         return self.decoder(z_sample, view_as_img=dec_view_img), q_normal
+
+class IAFNormalVAE(NormalVAE):
+    def __init__(self, *args):
+        super(IAFNormalVAE, self).__init__(*args)
+        
+    def forward(self, x_src, enc_view_img=True, dec_view_img=True):
+        mu, logvar, L = self.encoder(x_src, view_as_img=enc_view_img)
+        q_normal = Normal(loc=mu, scale=logvar.mul(0.5).exp())
+        y_sample = q_normal.rsample()
+        
+        # L is [batch_sz, latent_dim, latent_dim],
+        # y_sample is [batch_sz, latent_dim]
+        y_sample_rshp = y_sample.view(-1, self.encoder.latent_dim, 1)
+        # sample is [batch_sz, latent_dim]
+        z_sample = torch.bmm(L, y_sample_rshp).squeeze()
+        x_reconstruct = self.decoder(z_sample, view_as_img=dec_view_img)
+        
+        q_probs = q_normal.log_prob(y_sample)
+        # TODO: verify: since diagonal is 1, this is a
+        # volume-preserving transofmration, so just compute
+        # q_{old}(y|x) (= q_{new}(z|x))
+        return (x_reconstruct, q_probs, z_sample)
     
 class MLPGenerator(MLPDecoder):
     def __init__(self, **kwargs):
