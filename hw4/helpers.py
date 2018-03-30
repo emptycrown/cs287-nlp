@@ -48,20 +48,25 @@ class LatentModelUser(object):
         self.batch_sz = batch_sz
         # Set prior
         latent_dim = self.models[0].latent_dim
-        self.prior = Normal(V(torch.zeros(self.batch_sz, latent_dim)), 
-                            V(torch.ones(self.batch_sz, latent_dim)))
+        self.prior = Normal(self.do_cuda(V(torch.zeros(self.batch_sz, latent_dim))), 
+                            self.do_cuda(V(torch.ones(self.batch_sz, latent_dim))))
 
         if mode == 'vaestd':
             self.vae_run_handle = self.run_model_vae
         elif mode == 'vaeiaf':
             self.vae_run_handle = self.run_model_iaf_vae
 
+    def do_cuda(self, t):
+        if self.cuda:
+            return t.cuda()
+        return t
+        
     def run_model_vae(self, batch, train=True, batch_avg=True):
         if train:
             for model in self.models:
                 model.zero_grad()
 
-        x = V(batch.type(torch.FloatTensor))
+        x = self.do_cuda(V(batch.type(torch.FloatTensor)))
         out, q = self.models[2](x, enc_view_img=True, dec_view_img=False)
 
         # This is the NLL of the images according to the generative model out
@@ -83,7 +88,7 @@ class LatentModelUser(object):
             for model in self.models:
                 model.zero_grad()
 
-        x = V(batch.type(torch.FloatTensor))
+        x = self.do_cuda(V(batch.type(torch.FloatTensor)))
         # samples and posterior approximation
         # out, q_prob are [batch_sz, latent_dim]
         out, q_prob, z_sample = self.models[2](x, enc_view_img=True, dec_view_img=False)
@@ -111,7 +116,7 @@ class LatentModelUser(object):
                 opt.zero_grad()
 
         # Disc: -E[log(D(x))]
-        x_real = V(batch.type(torch.FloatTensor))
+        x_real = self.do_cuda(V(batch.type(torch.FloatTensor)))
         d_real = self.models[0](x_real)
         if do_classf:
             # This is classf accuracy, not error
@@ -163,13 +168,14 @@ class LatentModelEvaluator(LatentModelUser):
     def run_vae_generator(self, z_sample=None, fn=None, num_to_save=10):
         if z_sample is None:
             z_sample = V(self.prior.sample())
-            out = F.sigmoid(self.models[1](z_sample, view_as_img=True))
-            # Sample according to Bernoulli distribution for each pixel
-            # TODO: sample for Bernoulli??
+
+        out = F.sigmoid(self.models[1](z_sample, view_as_img=True))
+        # Sample according to Bernoulli distribution for each pixel
+        # TODO: sample for Bernoulli??
         x_gen = out.data # torch.bernoulli(out).data
 
         if not fn is None:
-            self.plt_image(x_gen[:num_to_save].numpy(), base_fn=fn)
+            self.plt_image(x_gen[:num_to_save].cpu().numpy(), base_fn=fn)
             
         return x_gen
 
@@ -182,7 +188,7 @@ class LatentModelEvaluator(LatentModelUser):
         x_gen = out.data
 
         if not fn is None:
-            self.plt_image(x_gen[:num_to_save].numpy(), base_fn=fn)
+            self.plt_image(x_gen[:num_to_save].cpu().numpy(), base_fn=fn)
 
         return x_gen
 
@@ -192,7 +198,7 @@ class LatentModelEvaluator(LatentModelUser):
         z_sample_1 = V(self.prior.sample())
         x_gen_list = list()
         for alpha in np.arange(0, 1.2, 0.2):
-            z_interp = alpha * z_sample_0 + (1 - alpha) * z_sample_1
+            z_interp = self.do_cuda(alpha * z_sample_0 + (1 - alpha) * z_sample_1)
             # Already called .data in run_*_generator
             if self.mode in VAE_MODES:
                 x_gen_list.append(self.run_vae_generator(z_interp))
@@ -204,7 +210,7 @@ class LatentModelEvaluator(LatentModelUser):
         if not fn is None:
             # Show images side by side
             x_gen_stack = np.concatenate(
-                [x.numpy() for x in x_gen_list], axis=2)
+                [x.cpu().numpy() for x in x_gen_list], axis=2)
             self.plt_image(x_gen_stack[:num_to_save], base_fn=fn)
         return x_gen_list
 
@@ -214,31 +220,33 @@ class LatentModelEvaluator(LatentModelUser):
         latent_list = list()
         label_list = list()
         for i,batch in enumerate(test_loader):
-            batch_img = V(batch[0])
+            batch_img = self.do_cuda(V(batch[0]))
             batch_lab = batch[1]
             # [batch_sz, 2]
             mu, _ = self.models[0](batch_img)
-            latent_list += mu.data.numpy()
-            label_list += batch_lab.data.numpy()
+            latent_list.append(mu.cpu().data.numpy())
+            label_list.append(batch_lab.data.numpy())
             if not num_batch is None and i >= num_batch:
                 break
             latent_all = np.concatenate(latent_list, axis=0)
             label_all = np.concatenate(label_list, axis=0)
             plt.clf()
             plt.scatter(list(latent_all[:,0]), list(latent_all[:,1]),
-                        c=list(label_all))
-            plg.legend()
+                        c=list(label_all), label=list(label_all))
+            plt.legend()
             plt.savefig(fn)
 
     def plt_image(self, x, base_fn='vis/', grid=False):
         if grid:
             # x is [K, K, ht, width]
-            big_x = np.zeros(x.shape[0] * x.shape[2],
-                             x.shape[1] * x.shape[3])
+            ht = x.shape[2]
+            wdth = x.shape[3]
+            big_x = np.zeros((x.shape[0] * x.shape[2],
+                             x.shape[1] * x.shape[3]))
             K = x.shape[0]
             for ix in range(K):
                 for iy in range(K):
-                    big_x[ix * K:(ix+1) * K,iy * K:(iy+1) * K] = \
+                    big_x[ix * ht:(ix+1) * ht,iy * wdth:(iy+1) * wdth] = \
                                                                  x[ix, iy, :, :]
                     plt.clf()
                     plt.imshow(1 - big_x, cmap='gray')
@@ -260,10 +268,10 @@ class LatentModelEvaluator(LatentModelUser):
                              np.linspace(-2, 2, latent_disc))
         z1 = z1.reshape(-1)
         z2 = z2.reshape(-2)
-        z = V(torch.FloatTensor(np.stack((z1, z2), axis=1)))
+        z = self.do_cuda(V(torch.FloatTensor(np.stack((z1, z2), axis=1))))
         # Has incorrect batch size, but that should be ok
         # shape [batch_sz, img_height, img_width]
-        x_img = self.run_vae_generator(z).numpy()
+        x_img = self.run_vae_generator(z).cpu().numpy()
         x_img = x_img.reshape((latent_disc, latent_disc,
                                x_img.shape[1], x_img.shape[2]))
         self.plt_image(x_img, base_fn=fn, grid=True)
