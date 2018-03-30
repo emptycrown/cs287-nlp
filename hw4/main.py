@@ -33,7 +33,8 @@ def parse_input(input_str=None):
     parser.add_argument('--make_plots', action='store_true', default=False)
 
     # Arguments for Trainer
-    parser.add_argument('--t_lrn_rate', type=float, default=0.1)
+    # First learning rate is D, second is G
+    parser.add_argument('--t_lrn_rate', type=float, nargs='+', default=0.1)
     parser.add_argument('--t_optimizer', default='sgd')
 
     # Arguments for model:
@@ -128,8 +129,8 @@ def run_gan(args, train_loader, val_loader, test_loader, svd_models=None):
         lm_trainer.train(train_loader, le=lm_evaluator, val_loader=val_loader,
                          **prepare_kwargs(args, 'tt'))
     test_loss_disc, test_loss_g = lm_evaluator.evaluate(test_loader)
-    print('Test results: Disc acc: %f, GAN obj: %f' % \
-          (test_loss_disc, test_loss_g))
+    print('Test results: Disc acc real: %f, Disc acc fake: %f, GAN obj: %f' % \
+          (test_loss_disc[0] * 2, test_loss_disc[1] * 2, test_loss_g))
 
     if args.make_plots:
         lm_evaluator.make_gan_plots()

@@ -28,6 +28,8 @@ def set_parameters(model, sv_model, cuda=True):
     if cuda:
         model.cuda()
 
+EPS = 1e-10
+
 GAN_MODES = {'gan'}
 
 VAE_MODES = {'vaestd', 'vaeiaf'}
@@ -122,7 +124,7 @@ class LatentModelUser(object):
             # This is classf accuracy, not error
             loss_d_real = 0.5 * (d_real > 0.5).type(torch.FloatTensor).sum()
         else:
-            loss_d_real = -0.5 * (d_real + 1e-10).log().sum()
+            loss_d_real = -0.5 * torch.clamp(d_real, EPS, 1.0).log().sum()
 
         # Disc: -E[log(1 - D(G(z)) )]
         seed = self.prior.sample()
@@ -133,7 +135,7 @@ class LatentModelUser(object):
             # Classf accuracy
             loss_d_fake = 0.5 * (d_fake <= 0.5).type(torch.FloatTensor).sum()
         else:
-            loss_d_fake = -0.5 * (1 - d_fake + 1e-10).log().sum()
+            loss_d_fake = -0.5 * torch.clamp(1 - d_fake, EPS, 1.0).log().sum()
 
         if batch_avg:
             # TODO: confirm batch size is correct! (same in run_gen)
@@ -156,7 +158,7 @@ class LatentModelUser(object):
         # do detach, we lose the gradients from the generator)
         d_fake = self.models[0](x_fake)
         # loss_g = (1 - d_fake + 1e-10).log().sum()
-        loss_g = -(d_fake + 1e-10).log().sum()
+        loss_g = -torch.clamp(d_fake, EPS, 1.0).log().sum()
         if batch_avg:
             loss_g = loss_g / self.batch_sz
         return loss_g
@@ -307,7 +309,11 @@ class LatentModelEvaluator(LatentModelUser):
         for model in self.models:
             model.eval()
 
-        loss_0_sum = 0
+        if self.mode in VAE_MODES:
+            loss_0_sum = 0
+        else:
+            loss_0_sum = np.array([0,0])
+            
         loss_1_sum = 0
         data_cnt = 0
 
@@ -328,7 +334,7 @@ class LatentModelEvaluator(LatentModelUser):
                                                                      do_classf=True)
                 loss_g = self.run_gen_gan(batch, x_fake, train=False,
                                           batch_avg=False)
-                loss_0_sum += loss_d_real.data.item() + loss_d_fake.data.item()
+                loss_0_sum += np.array([loss_d_real.data.item(), loss_d_fake.data.item()])
                 loss_1_sum += loss_g.data.item()
             else:
                raise ValueError('Invalid mode %s' % self.mode)
@@ -349,6 +355,10 @@ class LatentModelTrainer(LatentModelUser):
     def __init__(self, *args, lrn_rate=0.05, optimizer=optim.SGD, **kwargs):
         super().__init__(*args, **kwargs)
         self.base_lrn_rate = lrn_rate
+        if args.network in GAN_MODES:
+            assert len(self.base_lrn_rate) == 0
+            self.base_lrn_rate = self.base_lrn_rate[0]
+            
         self.optimizer_type = optimizer
         if self.cuda:
             for model in self.models:
@@ -399,7 +409,7 @@ class GANLatentModelTrainer(LatentModelTrainer):
             for model in self.models:
                 model.train()
 
-            self.training_disc_losses.append(0)
+            self.training_disc_losses.append(np.array([0,0]))
             self.training_gen_losses.append(0)
             for i,batch in enumerate(train_loader):
                 batch = batch[0] # Ignore labels
@@ -412,7 +422,8 @@ class GANLatentModelTrainer(LatentModelTrainer):
                     loss_d_fake.backward()
                     self.optimizers[0].step()
 
-                self.training_disc_losses[-1] += loss_d_real.data.item() + loss_d_fake.data.item()
+                self.training_disc_losses[-1] += np.array([loss_d_real.data.item(),
+                                                           loss_d_fake.data.item()])
 
                 loss_g = self.run_gen_gan(batch, x_fake, train=True,
                                           batch_avg=True)
@@ -423,8 +434,10 @@ class GANLatentModelTrainer(LatentModelTrainer):
             self.training_disc_losses[-1] /= len(train_loader)
             self.training_gen_losses[-1] /= len(train_loader)
 
-            print('Epoch %d, disc loss: %f, gen_loss: %f, lrn_rate: %f, elapsed: %f' \
-                  % (epoch, self.training_disc_losses[-1],
+            print('Epoch %d, disc loss real: %f, disc loss fake: %f, '
+                  'gen_loss: %f, lrn_rate: %s, elapsed: %f' \
+                  % (epoch, self.training_disc_losses[-1][0] * 2,
+                     self.training_disc_losses[-1][0] * 2
                      self.training_gen_losses[-1],
                      self.base_lrn_rate, time.time() - start_time))
 
@@ -433,8 +446,9 @@ class GANLatentModelTrainer(LatentModelTrainer):
                 self.val_disc_losses.append(loss_d_val)
                 self.val_gen_losses.append(loss_g_val)
 
-                print('Validation set: disc loss: %f, gen loss: %f' \
-                      % (loss_d_val, loss_g_val))
+                print('Validation set: disc loss real: %f, disc loss fake: %f, '
+                      'gen loss: %f' \
+                      % (loss_d_val[0] * 2, loss_d_val[1] * 2, loss_g_val))
 
 
             if (epoch % skip_epochs == 0) and (not save_model_fn is None):
@@ -485,7 +499,7 @@ class VAELatentModelTrainer(LatentModelTrainer):
             self.training_losses[-1] /= len(train_loader)
             self.training_kls[-1] /= len(train_loader)
 
-            print('Epoch %d, loss: %f, KL: %f, lrn_rate: %f, elapsed: %f' \
+            print('Epoch %d, loss: %f, KL: %f, lrn_rate: %s, elapsed: %f' \
                   % (epoch, self.training_losses[-1], self.training_kls[-1],
                      self.base_lrn_rate, time.time() - start_time))
 
