@@ -440,12 +440,7 @@ class GANLatentModelTrainer(LatentModelTrainer):
                 loss_g = self.run_gen_gan(batch, x_fake, train=True,
                                           batch_avg=True)
                 loss_g.backward()
-                print('0 parameters', self.models[0].parameters())
-                print('1 parameters', self.models[1].parameters())
                 self.optimizers[1].step()
-                print('0 parameters', self.models[0].parameters())
-                print('1 parameters', self.models[1].parameters())
-
                 self.training_gen_losses[-1] += loss_g.data.item()
 
             self.training_disc_losses[-1] /= len(train_loader)
