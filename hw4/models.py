@@ -132,6 +132,7 @@ class MLPGenerator(nn.Module):
         self.latent_dim = latent_dim
         self.mlp = nn.Sequential(
             nn.Linear(latent_dim, hidden_dim),
+            nn.Dropout(0.2),
             # nn.ReLU(),
             # nn.Linear(int(hidden_dim/2), hidden_dim),
             nn.ReLU(),
