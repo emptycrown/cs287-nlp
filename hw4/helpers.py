@@ -310,9 +310,9 @@ class LatentModelEvaluator(LatentModelUser):
             model.eval()
 
         if self.mode in VAE_MODES:
-            loss_0_sum = 0
+            loss_0_sum = 0.0
         else:
-            loss_0_sum = np.array([0,0])
+            loss_0_sum = np.array([0.0,0.0])
             
         loss_1_sum = 0
         data_cnt = 0
@@ -355,7 +355,7 @@ class LatentModelTrainer(LatentModelUser):
     def __init__(self, *args, lrn_rate=0.05, optimizer=optim.SGD, **kwargs):
         super().__init__(*args, **kwargs)
         self.base_lrn_rate = lrn_rate
-        if args.network in VAE_MODES:
+        if self.mode in VAE_MODES:
             assert len(self.base_lrn_rate) == 0
             self.base_lrn_rate = self.base_lrn_rate[0]
             
@@ -409,8 +409,8 @@ class GANLatentModelTrainer(LatentModelTrainer):
             for model in self.models:
                 model.train()
 
-            self.training_disc_losses.append(np.array([0,0]))
-            self.training_gen_losses.append(0)
+            self.training_disc_losses.append(np.array([0.0,0.0]))
+            self.training_gen_losses.append(0.0)
             for i,batch in enumerate(train_loader):
                 batch = batch[0] # Ignore labels
 
@@ -437,7 +437,7 @@ class GANLatentModelTrainer(LatentModelTrainer):
             print('Epoch %d, disc loss real: %f, disc loss fake: %f, '
                   'gen_loss: %f, lrn_rate: %s, elapsed: %f' \
                   % (epoch, self.training_disc_losses[-1][0] * 2,
-                     self.training_disc_losses[-1][0] * 2
+                     self.training_disc_losses[-1][0] * 2,
                      self.training_gen_losses[-1],
                      self.base_lrn_rate, time.time() - start_time))
 
