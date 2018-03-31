@@ -262,6 +262,8 @@ class LatentModelEvaluator(LatentModelUser):
             plt.axis('off')
             if base_fn == 'vis/':
                 base_fn += 'big_img.png'
+            elif base_fn[-4:] != '.png':
+                base_fn += '.png'
             plt.savefig(base_fn)
         else:
             for i in range(x.shape[0]):
@@ -453,7 +455,7 @@ class GANLatentModelTrainer(LatentModelTrainer):
                       'gen loss: %f' \
                       % (loss_d_val[0] * 2, loss_d_val[1] * 2, loss_g_val))
 
-                self.run_generator(fn='vis/%s_generator_final.epoch_%d' \
+                le.run_generator(fn='vis/%s_generator_final.epoch_%d' \
                                    % (self.mode, epoch), num_to_save=25)
 
             if (epoch % skip_epochs == 0) and (not save_model_fn is None):
@@ -516,7 +518,7 @@ class VAELatentModelTrainer(LatentModelTrainer):
                 print('Validation set: loss: %f, KL: %f' \
                       % (val_loss, val_kl))
 
-                self.run_generator(fn='vis/%s_generator_final.epoch_%d' \
+                le.run_generator(fn='vis/%s_generator_final.epoch_%d' \
                                    % (self.mode, epoch), num_to_save=25)
 
             if (epoch % skip_epochs == 0) and (not save_model_fn is None):
