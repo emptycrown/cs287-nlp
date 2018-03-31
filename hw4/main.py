@@ -24,6 +24,9 @@ OPT_NAMES = {'sgd' : optim.SGD,
              'adagrad' : optim.Adagrad,
              'adadelta' : optim.Adadelta}
 
+GAN_CLASSES = {'ganmlp' : [MLPDiscriminator, MLPGenerator],
+               'ganconv' : [MLPDiscriminator, DeconvGenerator]}
+
 def parse_input(input_str=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--network', default='vaestd')
@@ -114,8 +117,9 @@ def run_vae(args, train_loader, val_loader, test_loader, svd_models=None):
         lm_evaluator.make_vae_plots(test_loader, num_batch=10)
 
 def run_gan(args, train_loader, val_loader, test_loader, svd_models=None):
-    gen_mlp = MLPGenerator(**prepare_kwargs(args, 'm'))
-    disc_mlp = MLPDiscriminator(**prepare_kwargs(args, 'm'))
+    gan_classes = GAN_CLASSES[args.network]
+    gen_mlp = gan_classes[1](**prepare_kwargs(args, 'm'))
+    disc_mlp = gan_classes[0](**prepare_kwargs(args, 'm'))
     if not svd_models is None:
         load_enc_dec([disc_mlp, gen_mlp], svd_models, args)
 

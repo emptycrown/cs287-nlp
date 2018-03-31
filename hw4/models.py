@@ -132,6 +132,8 @@ class MLPGenerator(nn.Module):
         self.latent_dim = latent_dim
         self.mlp = nn.Sequential(
             nn.Linear(latent_dim, hidden_dim),
+            # nn.ReLU(),
+            # nn.Linear(int(hidden_dim/2), hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, self.img_size))
 
@@ -145,29 +147,33 @@ class MLPGenerator(nn.Module):
 
 class DeconvGenerator(nn.Module):
     def __init__(self, hidden_dim=200, latent_dim=10, img_width=28,
-                 img_height=28, num_chans_start=10, dim_start=7):
-        super(MLPGenerator, self).__init__()
+                 img_height=28, num_chans_start=5, dim_start=7, num_chans_mid=64):
+        super(DeconvGenerator, self).__init__()
         self.img_size = img_width * img_height
         self.img_height = img_height
         self.img_width = img_width
         self.latent_dim = latent_dim
+        self.dim_start = dim_start
+        self.num_chans_start = num_chans_start
+        self.num_chans_mid = num_chans_mid
         self.linear1 = nn.Linear(latent_dim, num_chans_start * (dim_start**2))
         self.layer_sizes = [None,
-                            [-1, 32, 14, 14],
+                            [-1, num_chans_mid, 14, 14],
                             None,
                             [-1, 1, 28, 28]]
         self.deconv_net = nn.Sequential(
             nn.ReLU(),
-            nn.ConvTranspose2d(num_chans_start, 32, 5, stride=2,
-                               padding=3), # 7 * 2 - 2 * 3 + 5 
+            nn.ConvTranspose2d(num_chans_start, num_chans_mid, 5, stride=2,
+                               padding=2), # 6 * 2 - 2 * 2 + 5 
             nn.ReLU(),
-            nn.ConvTranspose2d(14, 1, 5, stride=2,
-                               padding=3)) # 14 * 2 - 2 * 3 + 5
+            nn.ConvTranspose2d(num_chans_mid, 1, 5, stride=2,
+                               padding=2)) # 13 * 2 - 2 * 2 + 5
 
     # Pixels are all in [0,1], so may as well apply sigmoid
     # TODO: this is new, untested!
     def forward(self, z, view_as_img=True):
-        x = self.linear1(z).reshape((-1, 1, self.img_height, self.img_width))
+        x = self.linear1(z).view(-1, self.num_chans_start, self.dim_start,
+                                     self.dim_start)
         for i in range(len(self.deconv_net)):
             if i % 2 == 0:
                 x = self.deconv_net[i](x)
@@ -176,7 +182,9 @@ class DeconvGenerator(nn.Module):
                 
         if not view_as_img:
             x = x.view(-1, self.img_size)
-        return F.sigmoid(x)
+
+        # squeeze the output channel
+        return F.sigmoid(x.squeeze())
 
 # TODO: set things right here        
 class MLPDiscriminator(nn.Module):

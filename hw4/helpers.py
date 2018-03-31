@@ -31,7 +31,7 @@ def set_parameters(model, sv_model, cuda=True):
 
 EPS = 1e-10
 
-GAN_MODES = {'gan'}
+GAN_MODES = {'ganmlp', 'ganconv'}
 
 VAE_MODES = {'vaestd', 'vaeiaf'}
 
