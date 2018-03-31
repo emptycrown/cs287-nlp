@@ -1,0 +1,218 @@
+GANs (MLP, dropout)
+Epoch 0, disc loss real: 0.439856, disc loss fake: 0.312186, gen_loss: 1.493104, lrn_rate: [0.01, 0.1], elapsed: 2.615398, norms: [36.27277166416912, 42.65078759348872]
+Validation set: disc loss real: 0.903400, disc loss fake: 1.000000, gen loss: 1.189359
+Saving model to saved_models/gan.0.epoch_0.ckpt.tar
+Epoch 1, disc loss real: 0.350691, disc loss fake: 0.513459, gen_loss: 1.090942, lrn_rate: [0.01, 0.1], elapsed: 5.372383, norms: [36.32248795409541, 43.246323022030026]
+Validation set: disc loss real: 0.910400, disc loss fake: 0.996800, gen loss: 0.890383
+Epoch 2, disc loss real: 0.355760, disc loss fake: 0.428554, gen_loss: 1.242728, lrn_rate: [0.01, 0.1], elapsed: 8.049292, norms: [36.37492610592079, 43.474776171759444]
+Validation set: disc loss real: 0.803300, disc loss fake: 1.000000, gen loss: 1.277452
+Epoch 3, disc loss real: 0.357794, disc loss fake: 0.313888, gen_loss: 1.573916, lrn_rate: [0.01, 0.1], elapsed: 10.717324, norms: [36.42500090429524, 43.806742066118055]
+Validation set: disc loss real: 0.858600, disc loss fake: 1.000000, gen loss: 1.608958
+Epoch 4, disc loss real: 0.258005, disc loss fake: 0.232511, gen_loss: 1.836932, lrn_rate: [0.01, 0.1], elapsed: 13.385430, norms: [36.47966634208854, 44.09908584057612]
+Validation set: disc loss real: 0.929500, disc loss fake: 1.000000, gen loss: 1.769635
+Epoch 5, disc loss real: 0.236001, disc loss fake: 0.203247, gen_loss: 1.979591, lrn_rate: [0.01, 0.1], elapsed: 15.950391, norms: [36.52972753142318, 44.33775089942006]
+Validation set: disc loss real: 0.950000, disc loss fake: 1.000000, gen loss: 1.889525
+Epoch 6, disc loss real: 0.186076, disc loss fake: 0.170181, gen_loss: 2.143129, lrn_rate: [0.01, 0.1], elapsed: 18.574464, norms: [36.57726449168701, 44.62155345764586]
+Validation set: disc loss real: 0.937600, disc loss fake: 1.000000, gen loss: 1.992823
+Epoch 7, disc loss real: 0.165127, disc loss fake: 0.143473, gen_loss: 2.297814, lrn_rate: [0.01, 0.1], elapsed: 21.255334, norms: [36.621555852105054, 44.68857666795537]
+Validation set: disc loss real: 0.955000, disc loss fake: 1.000000, gen loss: 2.128984
+Epoch 8, disc loss real: 0.177003, disc loss fake: 0.134484, gen_loss: 2.369855, lrn_rate: [0.01, 0.1], elapsed: 23.982113, norms: [36.66358927119118, 44.87177518118899]
+Validation set: disc loss real: 0.902800, disc loss fake: 1.000000, gen loss: 2.205413
+Saving model to saved_models/gan.0.epoch_8.ckpt.tar
+Epoch 9, disc loss real: 0.155658, disc loss fake: 0.125788, gen_loss: 2.450800, lrn_rate: [0.01, 0.1], elapsed: 26.602024, norms: [36.69852306210277, 45.00282208056175]
+Validation set: disc loss real: 0.935400, disc loss fake: 1.000000, gen loss: 2.360406
+Epoch 10, disc loss real: 0.187769, disc loss fake: 0.132132, gen_loss: 2.436706, lrn_rate: [0.01, 0.1], elapsed: 29.278143, norms: [36.73279034563489, 45.24666592592082]
+Validation set: disc loss real: 0.916100, disc loss fake: 0.985900, gen loss: 2.099476
+Epoch 11, disc loss real: 0.297810, disc loss fake: 0.233845, gen_loss: 1.926721, lrn_rate: [0.01, 0.1], elapsed: 31.939474, norms: [36.76396791411956, 45.78052668490813]
+Validation set: disc loss real: 0.904200, disc loss fake: 1.000000, gen loss: 1.954576
+Epoch 12, disc loss real: 0.289476, disc loss fake: 0.196385, gen_loss: 2.044014, lrn_rate: [0.01, 0.1], elapsed: 34.508761, norms: [36.79602062674061, 46.25909647149343]
+Validation set: disc loss real: 0.856200, disc loss fake: 0.999600, gen loss: 1.710587
+Epoch 13, disc loss real: 0.234330, disc loss fake: 0.150882, gen_loss: 2.275909, lrn_rate: [0.01, 0.1], elapsed: 37.171870, norms: [36.83122797073242, 46.79196422023572]
+Validation set: disc loss real: 0.928400, disc loss fake: 0.999300, gen loss: 2.132746
+Epoch 14, disc loss real: 0.181889, disc loss fake: 0.125939, gen_loss: 2.491511, lrn_rate: [0.01, 0.1], elapsed: 39.863089, norms: [36.86433289255868, 47.104940243747755]
+Validation set: disc loss real: 0.931800, disc loss fake: 1.000000, gen loss: 2.123539
+Epoch 15, disc loss real: 0.162141, disc loss fake: 0.105049, gen_loss: 2.592823, lrn_rate: [0.01, 0.1], elapsed: 42.479742, norms: [36.89787248390131, 47.307687939178095]
+Validation set: disc loss real: 0.928600, disc loss fake: 1.000000, gen loss: 2.222130
+Epoch 16, disc loss real: 0.142046, disc loss fake: 0.095101, gen_loss: 2.763913, lrn_rate: [0.01, 0.1], elapsed: 45.156024, norms: [36.925929911688826, 47.465379596389376]
+Validation set: disc loss real: 0.968800, disc loss fake: 1.000000, gen loss: 2.632298
+Saving model to saved_models/gan.0.epoch_16.ckpt.tar
+Epoch 17, disc loss real: 0.163083, disc loss fake: 0.108904, gen_loss: 2.604954, lrn_rate: [0.01, 0.1], elapsed: 47.754936, norms: [36.955639884886, 47.70341504446281]
+Validation set: disc loss real: 0.929900, disc loss fake: 1.000000, gen loss: 2.212310
+Epoch 18, disc loss real: 0.147542, disc loss fake: 0.098654, gen_loss: 2.664486, lrn_rate: [0.01, 0.1], elapsed: 50.315674, norms: [36.98325829236633, 47.774769078529204]
+Validation set: disc loss real: 0.939000, disc loss fake: 1.000000, gen loss: 2.279577
+Epoch 19, disc loss real: 0.125756, disc loss fake: 0.095364, gen_loss: 2.706418, lrn_rate: [0.01, 0.1], elapsed: 52.875256, norms: [37.0137537588479, 48.07702729384138]
+Validation set: disc loss real: 0.927000, disc loss fake: 1.000000, gen loss: 2.201363
+Epoch 20, disc loss real: 0.156006, disc loss fake: 0.110614, gen_loss: 2.610002, lrn_rate: [0.01, 0.1], elapsed: 55.406391, norms: [37.04315023743513, 48.11094213817643]
+Validation set: disc loss real: 0.906200, disc loss fake: 0.997500, gen loss: 2.194169
+Epoch 21, disc loss real: 0.208900, disc loss fake: 0.134136, gen_loss: 2.409664, lrn_rate: [0.01, 0.1], elapsed: 57.938080, norms: [37.07224418155478, 48.29367837475423]
+Validation set: disc loss real: 0.913000, disc loss fake: 1.000000, gen loss: 2.332906
+Epoch 22, disc loss real: 0.187747, disc loss fake: 0.122272, gen_loss: 2.528412, lrn_rate: [0.01, 0.1], elapsed: 60.513776, norms: [37.10006089410211, 48.637836048136265]
+Validation set: disc loss real: 0.925700, disc loss fake: 1.000000, gen loss: 2.268288
+Epoch 23, disc loss real: 0.148672, disc loss fake: 0.094864, gen_loss: 2.739231, lrn_rate: [0.01, 0.1], elapsed: 63.076709, norms: [37.12994434006315, 48.813892816237015]
+Validation set: disc loss real: 0.937000, disc loss fake: 1.000000, gen loss: 2.755792
+Epoch 24, disc loss real: 0.162272, disc loss fake: 0.106485, gen_loss: 2.681657, lrn_rate: [0.01, 0.1], elapsed: 65.630597, norms: [37.15943004885152, 49.11274777702623]
+Validation set: disc loss real: 0.958700, disc loss fake: 1.000000, gen loss: 2.748437
+Saving model to saved_models/gan.0.epoch_24.ckpt.tar
+Epoch 25, disc loss real: 0.114120, disc loss fake: 0.081580, gen_loss: 2.900529, lrn_rate: [0.01, 0.1], elapsed: 68.200145, norms: [37.186355798289924, 49.18772542697583]
+Validation set: disc loss real: 0.933700, disc loss fake: 0.999900, gen loss: 2.392183
+Epoch 26, disc loss real: 0.146943, disc loss fake: 0.099583, gen_loss: 2.688590, lrn_rate: [0.01, 0.1], elapsed: 70.853370, norms: [37.214942611529096, 49.1967097862446]
+Validation set: disc loss real: 0.936400, disc loss fake: 1.000000, gen loss: 2.542841
+Epoch 27, disc loss real: 0.135856, disc loss fake: 0.100300, gen_loss: 2.743741, lrn_rate: [0.01, 0.1], elapsed: 73.422726, norms: [37.24342369637838, 49.278135260097116]
+Validation set: disc loss real: 0.928300, disc loss fake: 0.999500, gen loss: 2.370902
+Epoch 28, disc loss real: 0.150897, disc loss fake: 0.105768, gen_loss: 2.678223, lrn_rate: [0.01, 0.1], elapsed: 75.978826, norms: [37.27207305827384, 49.437717872092094]
+Validation set: disc loss real: 0.971200, disc loss fake: 1.000000, gen loss: 2.806554
+Epoch 29, disc loss real: 0.179158, disc loss fake: 0.114329, gen_loss: 2.684953, lrn_rate: [0.01, 0.1], elapsed: 78.673615, norms: [37.29761572225348, 49.332762074356985]
+Validation set: disc loss real: 0.871200, disc loss fake: 0.992200, gen loss: 2.114373
+Epoch 30, disc loss real: 0.194679, disc loss fake: 0.146308, gen_loss: 2.435950, lrn_rate: [0.01, 0.1], elapsed: 81.330694, norms: [37.32585510935727, 49.31411985805856]
+Validation set: disc loss real: 0.934100, disc loss fake: 0.999300, gen loss: 2.500335
+Epoch 31, disc loss real: 0.252314, disc loss fake: 0.168254, gen_loss: 2.259879, lrn_rate: [0.01, 0.1], elapsed: 83.946160, norms: [37.35323835016962, 49.17044695014629]
+Validation set: disc loss real: 0.883600, disc loss fake: 0.998700, gen loss: 2.340839
+Epoch 32, disc loss real: 0.272188, disc loss fake: 0.168044, gen_loss: 2.279938, lrn_rate: [0.01, 0.1], elapsed: 86.535769, norms: [37.37969410207739, 49.09786012171594]
+Validation set: disc loss real: 0.874600, disc loss fake: 0.997100, gen loss: 1.954691
+Saving model to saved_models/gan.0.epoch_32.ckpt.tar
+Epoch 33, disc loss real: 0.337190, disc loss fake: 0.238827, gen_loss: 1.981592, lrn_rate: [0.01, 0.1], elapsed: 89.113936, norms: [37.397570006981645, 49.12291628346745]
+Validation set: disc loss real: 0.794000, disc loss fake: 0.953600, gen loss: 1.953863
+Epoch 34, disc loss real: 0.366652, disc loss fake: 0.249060, gen_loss: 1.940857, lrn_rate: [0.01, 0.1], elapsed: 91.685148, norms: [37.416371932153574, 49.24941189661087]
+Validation set: disc loss real: 0.790900, disc loss fake: 0.900900, gen loss: 1.564195
+Epoch 35, disc loss real: 0.409757, disc loss fake: 0.305904, gen_loss: 1.684153, lrn_rate: [0.01, 0.1], elapsed: 94.291333, norms: [37.43371314861301, 49.48145123650291]
+Validation set: disc loss real: 0.785800, disc loss fake: 0.949800, gen loss: 1.622794
+Epoch 36, disc loss real: 0.411248, disc loss fake: 0.314407, gen_loss: 1.654427, lrn_rate: [0.01, 0.1], elapsed: 96.866789, norms: [37.45051418462575, 49.85915430237703]
+Validation set: disc loss real: 0.828900, disc loss fake: 0.915500, gen loss: 1.615822
+Epoch 37, disc loss real: 0.464675, disc loss fake: 0.364520, gen_loss: 1.547226, lrn_rate: [0.01, 0.1], elapsed: 99.518826, norms: [37.45809198529595, 50.22940246102655]
+Validation set: disc loss real: 0.783400, disc loss fake: 0.834900, gen loss: 1.295596
+Epoch 38, disc loss real: 0.520002, disc loss fake: 0.398554, gen_loss: 1.382107, lrn_rate: [0.01, 0.1], elapsed: 102.101425, norms: [37.46758701273635, 50.73364939279726]
+Validation set: disc loss real: 0.764600, disc loss fake: 0.842800, gen loss: 1.212032
+Epoch 39, disc loss real: 0.452092, disc loss fake: 0.348616, gen_loss: 1.456455, lrn_rate: [0.01, 0.1], elapsed: 104.656378, norms: [37.49141125972381, 51.196446442500225]
+Validation set: disc loss real: 0.785000, disc loss fake: 0.944700, gen loss: 1.472447
+Epoch 40, disc loss real: 0.425656, disc loss fake: 0.337081, gen_loss: 1.497159, lrn_rate: [0.01, 0.1], elapsed: 107.326369, norms: [37.51630588310879, 51.59202524916122]
+Validation set: disc loss real: 0.786300, disc loss fake: 0.917600, gen loss: 1.483914
+Saving model to saved_models/gan.0.epoch_40.ckpt.tar
+Epoch 41, disc loss real: 0.420137, disc loss fake: 0.344697, gen_loss: 1.525196, lrn_rate: [0.01, 0.1], elapsed: 109.979704, norms: [37.53827976747176, 51.978477130566446]
+Validation set: disc loss real: 0.805500, disc loss fake: 0.854600, gen loss: 1.324585
+Epoch 42, disc loss real: 0.433788, disc loss fake: 0.363202, gen_loss: 1.472125, lrn_rate: [0.01, 0.1], elapsed: 112.559784, norms: [37.55836367735793, 52.47114321135126]
+Validation set: disc loss real: 0.763000, disc loss fake: 0.957200, gen loss: 1.730775
+Epoch 43, disc loss real: 0.445444, disc loss fake: 0.365417, gen_loss: 1.467108, lrn_rate: [0.01, 0.1], elapsed: 115.109505, norms: [37.577484568373215, 52.92841629065529]
+Validation set: disc loss real: 0.790500, disc loss fake: 0.837400, gen loss: 1.224420
+Epoch 44, disc loss real: 0.447508, disc loss fake: 0.371912, gen_loss: 1.445318, lrn_rate: [0.01, 0.1], elapsed: 117.718096, norms: [37.599246530144896, 53.3152147527259]
+Validation set: disc loss real: 0.780900, disc loss fake: 0.880600, gen loss: 1.372654
+Epoch 45, disc loss real: 0.429154, disc loss fake: 0.370082, gen_loss: 1.440811, lrn_rate: [0.01, 0.1], elapsed: 120.306939, norms: [37.624888676002435, 53.76368283741259]
+Validation set: disc loss real: 0.808500, disc loss fake: 0.868500, gen loss: 1.337732
+Epoch 46, disc loss real: 0.425417, disc loss fake: 0.366564, gen_loss: 1.439805, lrn_rate: [0.01, 0.1], elapsed: 122.958505, norms: [37.65056891747357, 54.19901057664298]
+Validation set: disc loss real: 0.801900, disc loss fake: 0.885300, gen loss: 1.371923
+Epoch 47, disc loss real: 0.435122, disc loss fake: 0.373823, gen_loss: 1.433254, lrn_rate: [0.01, 0.1], elapsed: 125.609148, norms: [37.67285967938862, 54.632611399144025]
+Validation set: disc loss real: 0.788300, disc loss fake: 0.851500, gen loss: 1.293340
+Epoch 48, disc loss real: 0.433452, disc loss fake: 0.375099, gen_loss: 1.423020, lrn_rate: [0.01, 0.1], elapsed: 128.250477, norms: [37.69582725771032, 55.10876047546143]
+Validation set: disc loss real: 0.745500, disc loss fake: 0.906900, gen loss: 1.492475
+Saving model to saved_models/gan.0.epoch_48.ckpt.tar
+Epoch 49, disc loss real: 0.453425, disc loss fake: 0.389700, gen_loss: 1.402224, lrn_rate: [0.01, 0.1], elapsed: 130.914611, norms: [37.71616242502226, 55.63489419521211]
+Validation set: disc loss real: 0.754100, disc loss fake: 0.900300, gen loss: 1.440102
+Epoch 50, disc loss real: 0.451050, disc loss fake: 0.391138, gen_loss: 1.399902, lrn_rate: [0.01, 0.1], elapsed: 133.532776, norms: [37.736906839698044, 56.12871498209492]
+Validation set: disc loss real: 0.771700, disc loss fake: 0.890700, gen loss: 1.422271
+Epoch 51, disc loss real: 0.461314, disc loss fake: 0.402091, gen_loss: 1.385538, lrn_rate: [0.01, 0.1], elapsed: 136.135988, norms: [37.75578665846362, 56.631772507883014]
+Validation set: disc loss real: 0.756800, disc loss fake: 0.864500, gen loss: 1.317106
+Epoch 52, disc loss real: 0.442780, disc loss fake: 0.395347, gen_loss: 1.378760, lrn_rate: [0.01, 0.1], elapsed: 138.805374, norms: [37.77888785422441, 57.14909197246142]
+Validation set: disc loss real: 0.829100, disc loss fake: 0.764900, gen loss: 1.151765
+Epoch 53, disc loss real: 0.469130, disc loss fake: 0.413245, gen_loss: 1.357589, lrn_rate: [0.01, 0.1], elapsed: 141.411674, norms: [37.79819917618199, 57.690737416277585]
+Validation set: disc loss real: 0.759100, disc loss fake: 0.856600, gen loss: 1.317427
+Epoch 54, disc loss real: 0.479984, disc loss fake: 0.423301, gen_loss: 1.330061, lrn_rate: [0.01, 0.1], elapsed: 144.037385, norms: [37.81650435644404, 58.272346306673036]
+Validation set: disc loss real: 0.739400, disc loss fake: 0.868100, gen loss: 1.368744
+Epoch 55, disc loss real: 0.476642, disc loss fake: 0.422142, gen_loss: 1.339166, lrn_rate: [0.01, 0.1], elapsed: 146.650367, norms: [37.835119631626206, 58.87648318764066]
+Validation set: disc loss real: 0.815200, disc loss fake: 0.765500, gen loss: 1.131923
+Epoch 56, disc loss real: 0.498650, disc loss fake: 0.450578, gen_loss: 1.283510, lrn_rate: [0.01, 0.1], elapsed: 149.213293, norms: [37.84965850441426, 59.468017928953834]
+Validation set: disc loss real: 0.763500, disc loss fake: 0.761700, gen loss: 1.128321
+Saving model to saved_models/gan.0.epoch_56.ckpt.tar
+Epoch 57, disc loss real: 0.491970, disc loss fake: 0.450061, gen_loss: 1.279160, lrn_rate: [0.01, 0.1], elapsed: 151.832400, norms: [37.86705482359655, 60.04484429888448]
+Validation set: disc loss real: 0.684100, disc loss fake: 0.867900, gen loss: 1.348877
+Epoch 58, disc loss real: 0.501588, disc loss fake: 0.449179, gen_loss: 1.265250, lrn_rate: [0.01, 0.1], elapsed: 154.373417, norms: [37.88478120595864, 60.59903834588067]
+Validation set: disc loss real: 0.780800, disc loss fake: 0.810900, gen loss: 1.185250
+Epoch 59, disc loss real: 0.497809, disc loss fake: 0.457220, gen_loss: 1.265459, lrn_rate: [0.01, 0.1], elapsed: 156.951313, norms: [37.90168042291536, 61.161228038290616]
+Validation set: disc loss real: 0.720800, disc loss fake: 0.851400, gen loss: 1.303062
+Epoch 60, disc loss real: 0.490343, disc loss fake: 0.454325, gen_loss: 1.264984, lrn_rate: [0.01, 0.1], elapsed: 159.695076, norms: [37.921111591145056, 61.6944204348758]
+Validation set: disc loss real: 0.740800, disc loss fake: 0.820800, gen loss: 1.218843
+Epoch 61, disc loss real: 0.491352, disc loss fake: 0.452986, gen_loss: 1.255682, lrn_rate: [0.01, 0.1], elapsed: 162.391903, norms: [37.94146958850541, 62.18684246589475]
+Validation set: disc loss real: 0.737400, disc loss fake: 0.860900, gen loss: 1.303091
+Epoch 62, disc loss real: 0.488760, disc loss fake: 0.450119, gen_loss: 1.258149, lrn_rate: [0.01, 0.1], elapsed: 165.008269, norms: [37.962882728849095, 62.69861342106186]
+Validation set: disc loss real: 0.828000, disc loss fake: 0.775100, gen loss: 1.106618
+Epoch 63, disc loss real: 0.481186, disc loss fake: 0.449676, gen_loss: 1.267719, lrn_rate: [0.01, 0.1], elapsed: 167.671509, norms: [37.984022634185315, 63.20381592394778]
+Validation set: disc loss real: 0.797200, disc loss fake: 0.774000, gen loss: 1.114263
+Epoch 64, disc loss real: 0.493020, disc loss fake: 0.458721, gen_loss: 1.257540, lrn_rate: [0.01, 0.1], elapsed: 170.295135, norms: [38.00274836214472, 63.734114737433515]
+Validation set: disc loss real: 0.731300, disc loss fake: 0.837900, gen loss: 1.246618
+Saving model to saved_models/gan.0.epoch_64.ckpt.tar
+Epoch 65, disc loss real: 0.483516, disc loss fake: 0.447347, gen_loss: 1.277047, lrn_rate: [0.01, 0.1], elapsed: 172.844008, norms: [38.0237587426203, 64.28853136218794]
+Validation set: disc loss real: 0.804700, disc loss fake: 0.755700, gen loss: 1.096669
+Epoch 66, disc loss real: 0.491675, disc loss fake: 0.455096, gen_loss: 1.274521, lrn_rate: [0.01, 0.1], elapsed: 175.447155, norms: [38.04201502665995, 64.83114457298734]
+Validation set: disc loss real: 0.673500, disc loss fake: 0.874100, gen loss: 1.384381
+Epoch 67, disc loss real: 0.496101, disc loss fake: 0.455905, gen_loss: 1.271412, lrn_rate: [0.01, 0.1], elapsed: 178.006218, norms: [38.059640430389116, 65.37477578172356]
+Validation set: disc loss real: 0.819400, disc loss fake: 0.687600, gen loss: 0.987621
+Epoch 68, disc loss real: 0.505161, disc loss fake: 0.463253, gen_loss: 1.254118, lrn_rate: [0.01, 0.1], elapsed: 180.520443, norms: [38.07710765018922, 65.87150388151659]
+Validation set: disc loss real: 0.781600, disc loss fake: 0.730200, gen loss: 1.041752
+Epoch 69, disc loss real: 0.502796, disc loss fake: 0.466676, gen_loss: 1.239352, lrn_rate: [0.01, 0.1], elapsed: 183.151060, norms: [38.09537783599225, 66.36837745646689]
+Validation set: disc loss real: 0.775400, disc loss fake: 0.777700, gen loss: 1.114960
+Epoch 70, disc loss real: 0.496146, disc loss fake: 0.460063, gen_loss: 1.255264, lrn_rate: [0.01, 0.1], elapsed: 185.702800, norms: [38.11481310750694, 66.85967301562908]
+Validation set: disc loss real: 0.677800, disc loss fake: 0.881400, gen loss: 1.372264
+Epoch 71, disc loss real: 0.502134, disc loss fake: 0.467164, gen_loss: 1.243427, lrn_rate: [0.01, 0.1], elapsed: 188.272822, norms: [38.133302149221564, 67.33786188582998]
+Validation set: disc loss real: 0.824600, disc loss fake: 0.702700, gen loss: 0.996848
+Epoch 72, disc loss real: 0.492993, disc loss fake: 0.456796, gen_loss: 1.253829, lrn_rate: [0.01, 0.1], elapsed: 190.960544, norms: [38.15324029293429, 67.80912357019132]
+Validation set: disc loss real: 0.715000, disc loss fake: 0.843700, gen loss: 1.267022
+Saving model to saved_models/gan.0.epoch_72.ckpt.tar
+Epoch 73, disc loss real: 0.492862, disc loss fake: 0.456046, gen_loss: 1.265950, lrn_rate: [0.01, 0.1], elapsed: 193.541349, norms: [38.17211035638958, 68.28995469593677]
+Validation set: disc loss real: 0.720600, disc loss fake: 0.828600, gen loss: 1.246186
+Epoch 74, disc loss real: 0.498138, disc loss fake: 0.461946, gen_loss: 1.257399, lrn_rate: [0.01, 0.1], elapsed: 196.149200, norms: [38.190813474357476, 68.73849340155225]
+Validation set: disc loss real: 0.793800, disc loss fake: 0.758600, gen loss: 1.096180
+Epoch 75, disc loss real: 0.491259, disc loss fake: 0.460388, gen_loss: 1.256544, lrn_rate: [0.01, 0.1], elapsed: 198.742314, norms: [38.2108185991004, 69.19385826924513]
+Validation set: disc loss real: 0.747200, disc loss fake: 0.814600, gen loss: 1.196745
+Epoch 76, disc loss real: 0.485096, disc loss fake: 0.452141, gen_loss: 1.280129, lrn_rate: [0.01, 0.1], elapsed: 201.296875, norms: [38.23176449571845, 69.64136879693592]
+Validation set: disc loss real: 0.749600, disc loss fake: 0.797700, gen loss: 1.159465
+Epoch 77, disc loss real: 0.486889, disc loss fake: 0.454006, gen_loss: 1.276070, lrn_rate: [0.01, 0.1], elapsed: 203.861571, norms: [38.25233150931215, 70.07922098646422]
+Validation set: disc loss real: 0.793300, disc loss fake: 0.759100, gen loss: 1.113351
+Epoch 78, disc loss real: 0.488690, disc loss fake: 0.454462, gen_loss: 1.279974, lrn_rate: [0.01, 0.1], elapsed: 206.411255, norms: [38.272579622799356, 70.50144260472908]
+Validation set: disc loss real: 0.751300, disc loss fake: 0.828400, gen loss: 1.225890
+Epoch 79, disc loss real: 0.487971, disc loss fake: 0.456679, gen_loss: 1.279917, lrn_rate: [0.01, 0.1], elapsed: 209.074442, norms: [38.29282822583467, 70.91878538952682]
+Validation set: disc loss real: 0.692300, disc loss fake: 0.869300, gen loss: 1.337225
+Epoch 80, disc loss real: 0.482785, disc loss fake: 0.451624, gen_loss: 1.286653, lrn_rate: [0.01, 0.1], elapsed: 211.753139, norms: [38.314365384603626, 71.3308894700332]
+Validation set: disc loss real: 0.761500, disc loss fake: 0.807100, gen loss: 1.186464
+Saving model to saved_models/gan.0.epoch_80.ckpt.tar
+Epoch 81, disc loss real: 0.486699, disc loss fake: 0.457525, gen_loss: 1.287803, lrn_rate: [0.01, 0.1], elapsed: 214.356285, norms: [38.334860133072276, 71.73492743914908]
+Validation set: disc loss real: 0.815300, disc loss fake: 0.724000, gen loss: 1.044452
+Epoch 82, disc loss real: 0.481895, disc loss fake: 0.452382, gen_loss: 1.290074, lrn_rate: [0.01, 0.1], elapsed: 217.061554, norms: [38.35613585589136, 72.1179693621125]
+Validation set: disc loss real: 0.740100, disc loss fake: 0.776500, gen loss: 1.144029
+Epoch 83, disc loss real: 0.488638, disc loss fake: 0.456797, gen_loss: 1.288699, lrn_rate: [0.01, 0.1], elapsed: 219.617400, norms: [38.37658675711426, 72.51359782948522]
+Validation set: disc loss real: 0.652500, disc loss fake: 0.899300, gen loss: 1.446438
+Epoch 84, disc loss real: 0.483396, disc loss fake: 0.452878, gen_loss: 1.288263, lrn_rate: [0.01, 0.1], elapsed: 222.301442, norms: [38.39775807670203, 72.88582585652979]
+Validation set: disc loss real: 0.700500, disc loss fake: 0.861800, gen loss: 1.324568
+Epoch 85, disc loss real: 0.483862, disc loss fake: 0.455165, gen_loss: 1.293085, lrn_rate: [0.01, 0.1], elapsed: 224.885883, norms: [38.41862150431484, 73.26746880889877]
+Validation set: disc loss real: 0.747700, disc loss fake: 0.810500, gen loss: 1.195963
+Epoch 86, disc loss real: 0.480147, disc loss fake: 0.450362, gen_loss: 1.300640, lrn_rate: [0.01, 0.1], elapsed: 227.465404, norms: [38.44066775139486, 73.64793438805533]
+Validation set: disc loss real: 0.818000, disc loss fake: 0.735800, gen loss: 1.080773
+Epoch 87, disc loss real: 0.479489, disc loss fake: 0.452890, gen_loss: 1.297087, lrn_rate: [0.01, 0.1], elapsed: 230.056632, norms: [38.46235019939573, 74.00905000923058]
+Validation set: disc loss real: 0.714500, disc loss fake: 0.855600, gen loss: 1.311480
+Epoch 88, disc loss real: 0.476336, disc loss fake: 0.445819, gen_loss: 1.309313, lrn_rate: [0.01, 0.1], elapsed: 232.625215, norms: [38.484681815425915, 74.37395112226538]
+Validation set: disc loss real: 0.609200, disc loss fake: 0.920100, gen loss: 1.537183
+Saving model to saved_models/gan.0.epoch_88.ckpt.tar
+Epoch 89, disc loss real: 0.473492, disc loss fake: 0.445324, gen_loss: 1.309096, lrn_rate: [0.01, 0.1], elapsed: 235.165508, norms: [38.5074040609633, 74.7386314226011]
+Validation set: disc loss real: 0.702200, disc loss fake: 0.870000, gen loss: 1.368094
+Epoch 90, disc loss real: 0.468372, disc loss fake: 0.441860, gen_loss: 1.318342, lrn_rate: [0.01, 0.1], elapsed: 237.727414, norms: [38.53054472556751, 75.1007154012216]
+Validation set: disc loss real: 0.582800, disc loss fake: 0.936700, gen loss: 1.663075
+Epoch 91, disc loss real: 0.474119, disc loss fake: 0.445470, gen_loss: 1.325661, lrn_rate: [0.01, 0.1], elapsed: 240.300258, norms: [38.55268688532444, 75.46187857961523]
+Validation set: disc loss real: 0.789400, disc loss fake: 0.785100, gen loss: 1.168015
+Epoch 92, disc loss real: 0.475449, disc loss fake: 0.446913, gen_loss: 1.332597, lrn_rate: [0.01, 0.1], elapsed: 242.826478, norms: [38.574322643080535, 75.80992640378832]
+Validation set: disc loss real: 0.706000, disc loss fake: 0.859700, gen loss: 1.326350
+Epoch 93, disc loss real: 0.469178, disc loss fake: 0.440505, gen_loss: 1.339316, lrn_rate: [0.01, 0.1], elapsed: 245.469903, norms: [38.596990664488246, 76.15967626030398]
+Validation set: disc loss real: 0.822800, disc loss fake: 0.732000, gen loss: 1.069142
+Epoch 94, disc loss real: 0.472103, disc loss fake: 0.445142, gen_loss: 1.337968, lrn_rate: [0.01, 0.1], elapsed: 248.068691, norms: [38.61903207860118, 76.49533423017292]
+Validation set: disc loss real: 0.789800, disc loss fake: 0.772000, gen loss: 1.143474
+Epoch 95, disc loss real: 0.470389, disc loss fake: 0.443078, gen_loss: 1.353083, lrn_rate: [0.01, 0.1], elapsed: 250.720516, norms: [38.64092642720107, 76.83104555321401]
+Validation set: disc loss real: 0.688300, disc loss fake: 0.880900, gen loss: 1.405316
+Epoch 96, disc loss real: 0.467438, disc loss fake: 0.439024, gen_loss: 1.344732, lrn_rate: [0.01, 0.1], elapsed: 253.364971, norms: [38.66349769151697, 77.16099007382338]
+Validation set: disc loss real: 0.881800, disc loss fake: 0.593800, gen loss: 0.887251
+Saving model to saved_models/gan.0.epoch_96.ckpt.tar
+Epoch 97, disc loss real: 0.467711, disc loss fake: 0.441357, gen_loss: 1.351702, lrn_rate: [0.01, 0.1], elapsed: 255.975346, norms: [38.685511977055526, 77.49502071135427]
+Validation set: disc loss real: 0.670200, disc loss fake: 0.889900, gen loss: 1.442369
+Epoch 98, disc loss real: 0.467119, disc loss fake: 0.439395, gen_loss: 1.359623, lrn_rate: [0.01, 0.1], elapsed: 258.578691, norms: [38.70789780921433, 77.82557870297447]
+Validation set: disc loss real: 0.840000, disc loss fake: 0.701600, gen loss: 1.045965
+Epoch 99, disc loss real: 0.467569, disc loss fake: 0.441288, gen_loss: 1.361883, lrn_rate: [0.01, 0.1], elapsed: 261.204844, norms: [38.73000815889979, 78.15209832260109]
+Validation set: disc loss real: 0.645300, disc loss fake: 0.902800, gen loss: 1.508165
+Epoch 100, disc loss real: 0.465541, disc loss fake: 0.440187, gen_loss: 1.363131, lrn_rate: [0.01, 0.1], elapsed: 263.823319, norms: [38.75249202474288, 78.47574575767882]
+Validation set: disc loss real: 0.604800, disc loss fake: 0.923900, gen loss: 1.649849
+Test results: Disc acc real: 0.583700, Disc acc fake: 0.928400, GAN obj: 1.652907
+SUCCESS

@@ -147,7 +147,8 @@ class MLPGenerator(nn.Module):
 
 class DeconvGenerator(nn.Module):
     def __init__(self, hidden_dim=200, latent_dim=10, img_width=28,
-                 img_height=28, num_chans_start=5, dim_start=7, num_chans_mid=64):
+                 img_height=28, num_chans_start=5, dim_start=7, num_chans_mid=64,
+                 dropout=0.4):
         super(DeconvGenerator, self).__init__()
         self.img_size = img_width * img_height
         self.img_height = img_height
@@ -157,17 +158,26 @@ class DeconvGenerator(nn.Module):
         self.num_chans_start = num_chans_start
         self.num_chans_mid = num_chans_mid
         self.linear1 = nn.Linear(latent_dim, num_chans_start * (dim_start**2))
-        self.layer_sizes = [None,
-                            [-1, num_chans_mid, 14, 14],
-                            None,
-                            [-1, 1, 28, 28]]
+        self.conv_layers = {3 : [-1, num_chans_mid, 14, 14],
+                            7 : [-1, num_chans_mid, 28, 28],
+                            11 : [-1, 1, 28, 28]}
         self.deconv_net = nn.Sequential(
+            nn.Dropout(self.dropout),
+            nn.BatchNorm2d(num_chans_start),
             nn.ReLU(),
             nn.ConvTranspose2d(num_chans_start, num_chans_mid, 5, stride=2,
-                               padding=2), # 6 * 2 - 2 * 2 + 5 
+                               padding=2), # 6 * 2 - 2 * 2 + 5
+            nn.Dropout(self.dropout),
+            nn.BatchNorm2d(num_chans_mid),
             nn.ReLU(),
-            nn.ConvTranspose2d(num_chans_mid, 1, 5, stride=2,
-                               padding=2)) # 13 * 2 - 2 * 2 + 5
+            nn.ConvTranspose2d(num_chans_mid, num_chans_mid, 5, stride=2,
+                               padding=2),  # 13 * 2 - 2 * 2 + 5
+            nn.Dropout(self.dropout),
+            nn.BatchNorm2d(num_chans_mid),
+            nn.ReLU(),
+            nn.ConvTranspose2d(num_chans_mid, 1, 5, stride=1,
+                               padding=2)) # 27 * 1 - 2 * 2 + 5
+            
 
     # Pixels are all in [0,1], so may as well apply sigmoid
     # TODO: this is new, untested!
@@ -175,10 +185,10 @@ class DeconvGenerator(nn.Module):
         x = self.linear1(z).view(-1, self.num_chans_start, self.dim_start,
                                      self.dim_start)
         for i in range(len(self.deconv_net)):
-            if i % 2 == 0:
-                x = self.deconv_net[i](x)
+            if i in self.conv_layers:
+                x = self.deconv_net[i](x, output_size=self.conv_layers[i])
             else:
-                x = self.deconv_net[i](x, output_size=self.layer_sizes[i])
+                x = self.deconv_net[i](x)                
                 
         if not view_as_img:
             x = x.view(-1, self.img_size)
