@@ -8,6 +8,7 @@ import torch.optim as optim
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 # New stuff.
 from torch.distributions import Normal
@@ -167,32 +168,34 @@ class LatentModelEvaluator(LatentModelUser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def run_vae_generator(self, z_sample=None, fn=None, num_to_save=10):
+    def run_generator(self, z_sample=None, fn=None, num_to_save=10):
         if z_sample is None:
             z_sample = V(self.prior.sample())
 
-        out = F.sigmoid(self.models[1](z_sample, view_as_img=True))
-        # Sample according to Bernoulli distribution for each pixel
-        # TODO: sample for Bernoulli??
-        x_gen = out.data # torch.bernoulli(out).data
+        if self.mode in GAN_MODES:
+            # Generator already does sigmoid
+            out = self.models[1](z_sample, view_as_img=True)
+            x_gen = out.data
+        else:
+            out = F.sigmoid(self.models[1](z_sample, view_as_img=True))
+            # Sample according to Bernoulli distribution for each pixel
+            # TODO: sample for Bernoulli??
+            x_gen = out.data # torch.bernoulli(out).data
 
-        if not fn is None:
-            self.plt_image(x_gen[:num_to_save].cpu().numpy(), base_fn=fn)
-            
+        self.plt_image_wrapper(fn, x_gen, num_to_save)
         return x_gen
 
-    def run_gan_generator(self, z_sample=None, fn=None, num_to_save=10):
-        if z_sample is None:
-            z_sample = V(self.prior.sample())
-
-        # Generator already does sigmoid
-        out = self.models[1](z_sample, view_as_img=True)
-        x_gen = out.data
-
+    def plt_image_wrapper(self, fn, x_gen, num_to_save):
         if not fn is None:
-            self.plt_image(x_gen[:num_to_save].cpu().numpy(), base_fn=fn)
-
-        return x_gen
+            num_imgs = min(num_to_save, x_gen.size(0))
+            if math.sqrt(num_imgs).is_integer():
+                img_dim = math.sqrt(num_imgs)
+                x_gen_rshp = x_gen[:num_imgs]
+                x_gen_rshp = x_gen_rshp.reshape(
+                    (img_dim, img_dim, x_gen.size(1), x_gen.size(2)))
+                self.plt_image(x_gen_rshp.cpu().numpy(), base_fn=fn, grid=True)
+            else:
+                self.plt_image(x_gen[:num_to_save].cpu().numpy(), base_fn=fn)        
 
     def interpolate_generator(self, fn=None, num_to_save=10):
         # shape [batch_sz, latent_dim]
@@ -202,12 +205,7 @@ class LatentModelEvaluator(LatentModelUser):
         for alpha in np.arange(0, 1.2, 0.2):
             z_interp = self.do_cuda(alpha * z_sample_0 + (1 - alpha) * z_sample_1)
             # Already called .data in run_*_generator
-            if self.mode in VAE_MODES:
-                x_gen_list.append(self.run_vae_generator(z_interp))
-            elif self.mode in GAN_MODES:
-                x_gen_list.append(self.run_gan_generator(z_interp))
-            else:
-                raise ValueError('self.mode: %s not a valid mode' % self.mode)
+            x_gen_list.append(self.run_generator(z_interp))
 
         if not fn is None:
             # Show images side by side
@@ -282,7 +280,7 @@ class LatentModelEvaluator(LatentModelUser):
         z = self.do_cuda(V(torch.FloatTensor(np.stack((z1, z2), axis=1))))
         # Has incorrect batch size, but that should be ok
         # shape [batch_sz, img_height, img_width]
-        x_img = self.run_vae_generator(z).cpu().numpy()
+        x_img = self.run_generator(z).cpu().numpy()
         x_img = x_img.reshape((latent_disc, latent_disc,
                                x_img.shape[1], x_img.shape[2]))
         self.plt_image(x_img, base_fn=fn, grid=True)
@@ -291,17 +289,22 @@ class LatentModelEvaluator(LatentModelUser):
         for model in self.models:
             model.eval()
 
-        self.run_vae_generator(fn='vis/vae_generator', num_to_save=3)
-        self.interpolate_generator(fn='vis/vae_interpolation', num_to_save=3)
+        self.run_generator(fn='vis/%s_generator_final' % self.mode,
+                           num_to_save=25)
+        self.interpolate_generator(fn='vis/%s_interpolation_final' % self.mode,
+                                   num_to_save=5)
         if self.models[0].latent_dim == 2:
-            self.scatter_vae(test_loader, fn='vis/vae_scatter.png', num_batch=num_batch)
-            self.grid_vae(fn='vis/vae_grid.png')
+            self.scatter_vae(test_loader, fn='vis/%s_scatter.png' % self.mode,
+                             num_batch=num_batch)
+            self.grid_vae(fn='vis/%s_grid.png' % self.mode)
 
     def make_gan_plots(self):
         for model in self.models:
             model.eval()
-        self.run_gan_generator(fn='vis/gan_generator', num_to_save=3)
-        self.interpolate_generator(fn='vis/gan_interpolation', num_to_save=3)
+        self.run_generator(fn='vis/%s_generator_final' % self.mode,
+                           num_to_save=25)
+        self.interpolate_generator(fn='vis/%s_interpolation_final' % self.mode,
+                                   num_to_save=5)
             
 
     def evaluate(self, val_loader, num_iter=None):
@@ -450,6 +453,8 @@ class GANLatentModelTrainer(LatentModelTrainer):
                       'gen loss: %f' \
                       % (loss_d_val[0] * 2, loss_d_val[1] * 2, loss_g_val))
 
+                self.run_generator(fn='vis/%s_generator_final.epoch_%d' \
+                                   % (self.mode, epoch), num_to_save=25)
 
             if (epoch % skip_epochs == 0) and (not save_model_fn is None):
                 self.train_save_model(save_model_fn, epoch)
@@ -511,6 +516,8 @@ class VAELatentModelTrainer(LatentModelTrainer):
                 print('Validation set: loss: %f, KL: %f' \
                       % (val_loss, val_kl))
 
+                self.run_generator(fn='vis/%s_generator_final.epoch_%d' \
+                                   % (self.mode, epoch), num_to_save=25)
 
             if (epoch % skip_epochs == 0) and (not save_model_fn is None):
                 self.train_save_model(save_model_fn, epoch)
