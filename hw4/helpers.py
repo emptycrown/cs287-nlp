@@ -67,7 +67,8 @@ class LatentModelUser(object):
     def get_model_norms(self):
         norms = list()
         for i in range(2):
-            norms.append(sum([p.data.norm()**2 for p in self.models[i].parameters()])**0.5)
+            norms.append(sum([p.data.norm().cpu().item()**2 for \
+                              p in self.models[i].parameters()])**0.5)
         return norms
         
     def run_model_vae(self, batch, train=True, batch_avg=True):
