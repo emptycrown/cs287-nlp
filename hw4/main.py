@@ -25,7 +25,7 @@ OPT_NAMES = {'sgd' : optim.SGD,
              'adadelta' : optim.Adadelta}
 
 GAN_CLASSES = {'ganmlp' : [MLPDiscriminator, MLPGenerator],
-               'ganconv' : [MLPDiscriminator, DeconvGenerator]}
+               'ganconv' : [ConvDiscriminator, DeconvGenerator]}
 
 def parse_input(input_str=None):
     parser = argparse.ArgumentParser()

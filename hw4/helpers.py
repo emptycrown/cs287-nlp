@@ -382,7 +382,7 @@ class LatentModelTrainer(LatentModelUser):
     def init_parameters(self):
         for model in self.models:
             for p in model.parameters():
-                p.data.uniform_(-0.1, 0.1)
+                p.data.normal_(0, 0.02)
 
     def train_save_model(self, save_model_fn, epoch):
         pathname = 'saved_models/' + save_model_fn + \
@@ -441,6 +441,7 @@ class GANLatentModelTrainer(LatentModelTrainer):
                                           batch_avg=True)
                 loss_g.backward()
                 self.optimizers[1].step()
+
                 self.training_gen_losses[-1] += loss_g.data.item()
 
             self.training_disc_losses[-1] /= len(train_loader)

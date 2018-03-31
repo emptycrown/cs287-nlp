@@ -13,8 +13,8 @@
 # --tt_save_model_fn=gan.0
 
 
-python3 main.py --network=ganmlp --batch_sz=100 --make_plots \
-	   --t_lrn_rate 0.01 0.1 --t_optimizer=sgd \
+python3 main.py --network=ganconv --batch_sz=100 --make_plots \
+	   --t_lrn_rate 0.0002 0.0002 --t_optimizer=adam \
 	   --m_latent_dim=100 --m_hidden_dim=500 \
 	   --tt_num_epochs=101 --tt_skip_epochs=8 --tt_gan_k=1 --tt_save_model_fn=gan.0
 
