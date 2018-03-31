@@ -449,7 +449,7 @@ class GANLatentModelTrainer(LatentModelTrainer):
             print('Epoch %d, disc loss real: %f, disc loss fake: %f, '
                   'gen_loss: %f, lrn_rate: %s, elapsed: %f, norms: %s' \
                   % (epoch, self.training_disc_losses[-1][0] * 2,
-                     self.training_disc_losses[-1][0] * 2,
+                     self.training_disc_losses[-1][1] * 2,
                      self.training_gen_losses[-1],
                      self.base_lrn_rate, time.time() - start_time,
                      self.get_model_norms()))
