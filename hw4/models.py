@@ -122,7 +122,7 @@ class IAFNormalVAE(NormalVAE):
         # q_{old}(y|x) (= q_{new}(z|x))
         return (x_reconstruct, q_probs, z_sample)
     
-class MLPGenerator(MLPDecoder):
+class MLPGenerator(nn.Module):
     def __init__(self, hidden_dim=200, latent_dim=10, img_width=28,
                  img_height=28):
         super(MLPGenerator, self).__init__()
@@ -130,14 +130,15 @@ class MLPGenerator(MLPDecoder):
         self.img_height = img_height
         self.img_width = img_width
         self.latent_dim = latent_dim
-        self.linear1 = nn.Linear(latent_dim, hidden_dim)
-        self.bn1 = nn.BatchNorm1d(hidden_dim)
-        self.linear2 = nn.Linear(hidden_dim, self.img_size)        
+        self.mlp = nn.Sequential(
+            nn.Linear(latent_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, self.img_size))
 
     # Pixels are all in [0,1], so may as well apply sigmoid
-    # TODO: this is new, untested!
     def forward(self, z, view_as_img=True):
-        x = self.linear2(F.relu(self.bn1(self.linear1(z))))
+        x = self.mlp(z)
+        # x = self.linear3(F.relu(self.linear2(F.relu(self.linear1(z)))))
         if view_as_img:
             x = x.view(-1, self.img_height, self.img_width)
         return F.sigmoid(x)
