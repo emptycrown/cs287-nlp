@@ -63,6 +63,12 @@ class LatentModelUser(object):
         if self.cuda:
             return t.cuda()
         return t
+
+    def get_model_norms(self):
+        norms = list()
+        for i in range(2):
+            norms.append(sum([p.data.norm()**2 for p in self.models[i].parameters()])**0.5)
+        return norms
         
     def run_model_vae(self, batch, train=True, batch_avg=True):
         if train:
@@ -440,11 +446,12 @@ class GANLatentModelTrainer(LatentModelTrainer):
             self.training_gen_losses[-1] /= len(train_loader)
 
             print('Epoch %d, disc loss real: %f, disc loss fake: %f, '
-                  'gen_loss: %f, lrn_rate: %s, elapsed: %f' \
+                  'gen_loss: %f, lrn_rate: %s, elapsed: %f, norms: %s' \
                   % (epoch, self.training_disc_losses[-1][0] * 2,
                      self.training_disc_losses[-1][0] * 2,
                      self.training_gen_losses[-1],
-                     self.base_lrn_rate, time.time() - start_time))
+                     self.base_lrn_rate, time.time() - start_time,
+                     self.get_model_norms()))
 
             if (not le is None) and (not val_loader is None):
                 loss_d_val, loss_g_val = le.evaluate(val_loader)
@@ -506,9 +513,10 @@ class VAELatentModelTrainer(LatentModelTrainer):
             self.training_losses[-1] /= len(train_loader)
             self.training_kls[-1] /= len(train_loader)
 
-            print('Epoch %d, loss: %f, KL: %f, lrn_rate: %s, elapsed: %f' \
+            print('Epoch %d, loss: %f, KL: %f, lrn_rate: %s, elapsed: %f, norms: %s' \
                   % (epoch, self.training_losses[-1], self.training_kls[-1],
-                     self.base_lrn_rate, time.time() - start_time))
+                     self.base_lrn_rate, time.time() - start_time,
+                     self.get_model_norms()))
 
             if (not le is None) and (not val_loader is None):
                 val_loss, val_kl = le.evaluate(val_loader)
