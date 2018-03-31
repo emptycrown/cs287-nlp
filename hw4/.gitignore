@@ -2,3 +2,4 @@ data/*
 .ipynb_checkpoints/*
 saved_models/*
 vis/*
+vis_remote/*
