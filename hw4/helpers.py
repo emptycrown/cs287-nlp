@@ -368,7 +368,7 @@ class LatentModelTrainer(LatentModelUser):
         super().__init__(*args, **kwargs)
         self.base_lrn_rate = lrn_rate
         if self.mode in VAE_MODES:
-            assert len(self.base_lrn_rate) == 0
+            assert len(self.base_lrn_rate) == 1
             self.base_lrn_rate = self.base_lrn_rate[0]
             
         self.optimizer_type = optimizer
@@ -396,9 +396,11 @@ class GANLatentModelTrainer(LatentModelTrainer):
         super().__init__(*args, **kwargs)
 
     def init_optimizers(self):
+        # TODO: this is temporary, just for Adam
         self.optimizers = [self.optimizer_type(filter(lambda p : p.requires_grad,
                                                       model.parameters()),
-                                               lr = self.base_lrn_rate[i]) for \
+                                               lr = self.base_lrn_rate[i],
+                                               betas=(0.5, 0.999)) for \
                            i,model in enumerate(self.models)]
 
     def init_lists(self):

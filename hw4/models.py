@@ -148,7 +148,7 @@ class MLPGenerator(nn.Module):
 
 class DeconvGenerator(nn.Module):
     def __init__(self, hidden_dim=200, latent_dim=10, img_width=28,
-                 img_height=28, num_chans_start=5, dim_start=7, num_chans_mid=32,
+                 img_height=28, num_chans_start=5, dim_start=7, num_chans_mid=64,
                  dropout=0.3):
         super(DeconvGenerator, self).__init__()
         self.img_size = img_width * img_height
@@ -166,14 +166,14 @@ class DeconvGenerator(nn.Module):
         self.deconv_net = nn.Sequential(
             # nn.Dropout(self.dropout),
             nn.BatchNorm2d(num_chans_start),
-            nn.LeakyReLU(0.2),
+            nn.ReLU(),
             nn.ConvTranspose2d(num_chans_start, num_chans_mid, 5, stride=2,
-                               padding=2), # 6 * 2 - 2 * 2 + 5
+                               padding=2, bias=False), # 6 * 2 - 2 * 2 + 5
             # nn.Dropout(self.dropout),
             nn.BatchNorm2d(num_chans_mid),
-            nn.LeakyReLU(0.2),
+            nn.ReLU(),
             nn.ConvTranspose2d(num_chans_mid, 1, 5, stride=2,
-                               padding=2))  # 13 * 2 - 2 * 2 + 5
+                               padding=2, bias=False))  # 13 * 2 - 2 * 2 + 5
             # nn.Dropout(self.dropout),
             # nn.BatchNorm2d(num_chans_mid),
             # nn.ReLU(),
@@ -216,22 +216,29 @@ class MLPDiscriminator(nn.Module):
 
 class ConvDiscriminator(nn.Module):
     def __init__(self, latent_dim=10, img_width=28, img_height=28,
-                 num_chans_mid=32, dim_end=7, num_chans_end=4,
-                 hidden_dim=0, kernel_size=4):
+                 num_chans_mid=64, dim_end=7, num_chans_end=10,
+                 hidden_dim=0, kernel_size=4, dropout=0.3):
         super(ConvDiscriminator, self).__init__()
         self.img_size = img_width * img_height
         self.img_width = img_width
         self.img_height = img_height
+        self.dropout = dropout
         self.num_chans_mid = num_chans_mid
         self.num_chans_end = num_chans_end
         self.dim_end = dim_end
         self.latent_dim = latent_dim
         self.conv_net = nn.Sequential(
-            nn.Conv2d(1, num_chans_mid, 4, stride=2, padding=1),
+            nn.Conv2d(1, num_chans_mid, 4, stride=2, padding=1, bias=False),
             nn.LeakyReLU(0.2),
-            nn.Conv2d(num_chans_mid, num_chans_end, 4, stride=2, padding=1),
+            # nn.Dropout(self.dropout),
+            nn.Conv2d(num_chans_mid, num_chans_end, 4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(num_chans_end),
             nn.LeakyReLU(0.2))
+            # nn.Dropout(self.dropout),
+            # nn.Conv2d(num_chans_mid, num_chans_end, 4, stride=2, padding=1, bias=False),
+            # nn.LeakyReLU(0.2),
+            # nn.Dropout(self.dropout),
+            # nn.BatchNorm2d(num_chans_end))
         self.linear = nn.Linear(dim_end**2 * num_chans_end, 1)
 
     def forward(self, x, view_as_img=True):
